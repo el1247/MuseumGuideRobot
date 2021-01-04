@@ -1,5 +1,6 @@
 #include <string.h>
 #include <math.h>
+#include "coordinate.h"
 
 typedef struct Coordinates 
 {
