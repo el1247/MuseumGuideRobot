@@ -1,6 +1,3 @@
-#ifdef COORDINATE_H
-#define COORDINATE_H
-
 typedef struct Coordinates{
     double x, y;  //x is x-coordinate, y is y-coordinate
     char audio[50]; //name of audio file
@@ -11,5 +8,3 @@ typedef struct Time_Distance_Heading{
 } time_dist_head;
 
 time_dist_head nav(coords, coords, double);
-
-#endif
