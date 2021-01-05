@@ -9,7 +9,7 @@ LIBS =
 EXE = tpee4g8mgr
 VERSION = 0.0.1
 
-SRCS = 
+SRCS = movement.c 
 
 COBJS = $(patsubst %.c,build/%.o,$(filter %.c,$(SRCS))) 
 CXXOBJS = $(patsubst %.cpp,build/%.o,$(filter %.cpp,$(SRCS))) 
