@@ -8,8 +8,8 @@ typedef struct Coordinates{
 
 typedef struct Time_Distance_Heading{
     double time, distance, heading;
-} tdh;
+} time_dist_head;
 
-tdh nav(coords, coords, double);
+time_dist_head nav(coords, coords, double);
 
 #endif
