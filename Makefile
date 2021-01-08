@@ -1,15 +1,15 @@
 CC = $(TOOLCHAIN)gcc
 CXX = $(TOOLCHAIN)g++
 
-CFLAGS ?= -g -Wall -pedantic
+CFLAGS ?= -g -Wall -pedantic -pthread
 CXXFLAGS ?= $(CFLAGS)
 INCLUDES = -Iinclude
-LIBS = 
+LIBS = -lpigpio -lrt 
 
 EXE = tpee4g8mgr
 VERSION = 0.0.1
 
-SRCS = 
+SRCS = movement.c 
 
 COBJS = $(patsubst %.c,build/%.o,$(filter %.c,$(SRCS))) 
 CXXOBJS = $(patsubst %.cpp,build/%.o,$(filter %.cpp,$(SRCS))) 
