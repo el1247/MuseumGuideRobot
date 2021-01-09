@@ -31,6 +31,7 @@ void m_init(void) {
     gpioSetMode(PIN_M_R_FWD, PI_OUTPUT);
     gpioSetMode(PIN_M_R_REV, PI_OUTPUT);
     gpioSetMode(PIN_M_R_PWM, PI_OUTPUT);
+    atexit(m_fini);
 }
 
 
