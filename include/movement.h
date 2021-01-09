@@ -9,7 +9,7 @@ int m_drive(double,unsigned);
 void m_stop(void);
 void m_fini(void);
 
-#ifdef __Cplusplus
+#ifdef __cplusplus
 }
 #endif
 #endif
