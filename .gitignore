@@ -1,3 +1,5 @@
+.vs/
+
 ipch/
 *.aps
 *.json
@@ -7,3 +9,7 @@ ipch/
 *.sdf
 *.sqlite
 *.cachefile
+
+#Specific files
+.vs/VSWorkspaceState.json
+*.db
