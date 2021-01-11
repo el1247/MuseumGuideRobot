@@ -13,3 +13,4 @@ ipch/
 #Specific files
 .vs/VSWorkspaceState.json
 *.db
+.vs/MuesumGuideRobot/v16/Browse.VC.db
