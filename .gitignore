@@ -1,7 +1,9 @@
 ipch/
 *.aps
+*.json
 *.ncb
 *.opendb
 *.opensdf
 *.sdf
+*.sqlite
 *.cachefile
