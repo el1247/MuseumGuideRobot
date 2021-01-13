@@ -1,9 +1,25 @@
+/* Copyright (C) 2021 Gautam Gupta
+ *  
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <string.h>
 #include <math.h>
 #include "coordinate.h"
 #include <stdio.h>
 
-int head_dist_time(double start_x, double start_y, double end_x, double end_y, double velocity, int select) {
+int heading(double start_x, double start_y, double end_x, double end_y) {
 	int head = atan((end_y - start_y) / (end_x - start_x));
 	return head;
 }
