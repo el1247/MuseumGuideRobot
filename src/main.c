@@ -19,6 +19,7 @@
 #include <stdlib.h>
 
 #include "movement.h"
+#include "sensors.h"
 
 int main(int argc, char ** argv) {
     /* Initialise pigpio library */
@@ -26,6 +27,7 @@ int main(int argc, char ** argv) {
     atexit(gpioTerminate);
     
     /* Initialise modules */
+    imu_init();
     m_init();
     
     /* TODO main loop goes here */

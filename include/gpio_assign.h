@@ -28,5 +28,11 @@ enum {
     PIN_M_R_PWM = 13,
 };
 
+enum {
+    /* IMU */
+    I2CADDR_IMU = 0x68, /* Or 0x69 depending on AD0 setting */
+};
+
+
 #endif
 
