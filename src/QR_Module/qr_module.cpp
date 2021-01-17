@@ -15,14 +15,18 @@
  */
 
 #include <iostream>
+#include <string>
+#include "opencv2/core.hpp"  //These need to be modified as per ZBAR and OPENCV's installation in the system
+#include "opencv2/highgui.hpp"
+#include "opencv2/imgproc.hpp"
+//#include "/opt/opencv-4.1.0/include/opencv4/opencv2/core.hpp"
+//#include "/opt/opencv-4.1.0/include/opencv4/opencv2/imgproc.hpp"
+//#include "/opt/opencv-4.1.0/include/opencv4/opencv2/highgui.hpp"
+#include "zbar.h"
 
-#include <opencv2/core/core.hpp>  //These need to be modified as per ZBAR and OPENCV's installation in the system
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include "ZBar/include/zbar.h"
-
-using namespace cv;
 using namespace zbar;
+using namespace cv;
+using namespace std;
 
 int decode(Mat &im) {
 	ImageScanner scanner; //creating qr scanner
@@ -31,7 +35,7 @@ int decode(Mat &im) {
 	
 	// Converting image to grayscale
 	Mat imGray;
-	cvtColor(im, imGray, CV_BGR2GRAY);
+	cvtColor(im, imGray, COLOR_RGB2GRAY);
 
 	// Convert image to zbar image
 	Image image(im.cols, im.rows, "Y800", (uchar *)imGray.data, im.cols * im.rows);
@@ -47,6 +51,5 @@ int decode(Mat &im) {
 		//decodedObjects.push_back(obj);
 	}
 
-	return n;
+	return 0;
 }
-

@@ -14,10 +14,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <opencv2/core/core.hpp>  //These need to be modified as per ZBAR and OPENCV's installation in the system
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include "ZBar/include/zbar.h"
+#include "opencv2/core.hpp"  //These need to be modified as per ZBAR and OPENCV's installation in the system
+#include "opencv2/highgui.hpp"
+#include "opencv2/imgproc.hpp"
+#include "zbar.h"
 
 #ifndef QRMODULE_H
 #define QRMODULE_H
