@@ -44,14 +44,15 @@ void logic::emergencyStop(){
 
 
 int logic::giveInfo(int locationID){
+	string pointInfo; //Container for information about a display // format may need to change
 	//lookup location information with locationID
 	pointInfo = "This is information about a location"; //Temporary placeholder, will replace with lookup on in memory
 	if pointInfo.empty(){
-		return 0;
+		return 0; //returns 0 to indicate there was no information to display
 	}
 	//call audio out module with this input
 	cout << "Giving tour information" << endl; //Placeholder to info programmer of exection and robots intentions
-	return 1;
+	return 1; //returns 1 to indicate there was information to provide to user
 }
 
 
