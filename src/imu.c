@@ -15,13 +15,13 @@
  */
 
 #include <endian.h>
+#include <math.h>
 #include <pigpio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 #include "gpio_assign.h"
-#include "icm20948_api.h"
 #include "MadgwickAHRS.h"
 #include "sensors.h"
 
@@ -41,9 +41,7 @@ enum imu_regs {
     IMUREG_ACCEL_CONFIG       = 0x214,
     IMUREG_MST_CTRL           = 0x301,
     IMUREG_MST_DELAY_CTRL     = 0x302,
-}
-
-
+};
 
 #define IMUREG_BANK_SEL 0x7F
 #define IMU_ID 0xEA
@@ -53,7 +51,7 @@ enum imu_regs {
 #define IMU_READ(reg)               ((imu_bank_cur==REG_BANK(reg) ? 0 \
 			                 : i2cWriteByteData(imu,IMUREG_BANK_SEL,imu_bank_cur=REG_BANK(reg))) \
 			                ?: i2cReadByteData(imu,REG_ADDR(reg)))
-#define IMU_READ_BLOCK(reg.buf,len) ((imu_bank_cur==REG_BANK(reg) ? 0 \
+#define IMU_READ_BLOCK(reg,buf,len) ((imu_bank_cur==REG_BANK(reg) ? 0 \
 			                 : i2cWriteByteData(imu,IMUREG_BANK_SEL,imu_bank_cur=REG_BANK(reg))) \
 			                ?: i2cReadI2CBlockData(imu,REG_ADDR(reg),buf,len))
 #define IMU_WRITE(reg,data)         ((imu_bank_cur==REG_BANK(reg) ? 0 \
@@ -81,6 +79,7 @@ typedef uint16_t uint16_be_t, uint16_le_t; /* For clarity we write the non-host 
 #define MAGNET_READ(buf,len) /* TODO */
 
 void imu_tick(void) {
+    int err;
     uint16_be_t buf[6];
     err = IMU_READ_BLOCK(ACCEL_XOUT_H, (char*)buf, 12);
     
@@ -88,7 +87,7 @@ void imu_tick(void) {
         uint16_le_t mbuf[3];
         MAGNET_READ((char*)mbuf, 6); /* XxX TODO figure out */
         MadgwickAHRSupdate(R2F(buf[3]), R2F(buf[4]), R2F(buf[5]), R2F(buf[0]), R2F(buf[1]), R2F(buf[2]),
-                           M2F(mbuf[0]), M2F(mbuf[1]), M2F(mbuf[2]);
+                           M2F(mbuf[0]), M2F(mbuf[1]), M2F(mbuf[2]));
     } else {
         MadgwickAHRSupdateIMU(R2F(buf[3]), R2F(buf[4]), R2F(buf[5]), R2F(buf[0]), R2F(buf[1]), R2F(buf[2]));
     }
@@ -96,6 +95,8 @@ void imu_tick(void) {
     /* TODO update velocity */
 }
 
+#define GYRO_RATE_DIV 0 /* TODO */
+#define ACCEL_RATE_DIV 0 /* TODO */
 
 void imu_init(void) {
     int tmp;
@@ -120,11 +121,11 @@ void imu_init(void) {
     if((tmp = IMU_WRITE(MST_DELAY_CTRL, 0x01))) goto error;
     /* XXX slave magnetometer??? */
 
-    beta = /* XXX TODO */;
+    beta = 0 /* XXX TODO */;
 
     atexit(imu_fini);
     return;
-  error:
+  error:;
     /* TODO */
 }
 
@@ -132,4 +133,4 @@ void imu_init(void) {
 void imu_fini(void) {
     i2cClose(imu);
 }
-#endif
+
