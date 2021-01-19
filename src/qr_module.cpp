@@ -14,11 +14,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* g++ -std=c++0x qr_module.cpp -oqr_module -lzbar -L/opt/opencv-4.1.0/lib -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_videoio */
+//Current linker command^
+//NOTE: MODIFY IT AS PER OPENCV INSTALLATION
+
 #include <iostream>
 #include <string>
-#include "opencv2/core.hpp"  //These need to be modified as per ZBAR and OPENCV's installation in the system
+#include "opencv2/core.hpp"  //Point LD_LIBRARY_PATH to opencv2 folder
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
+#include "opencv2/videoio/videoio_c.h"
 //#include "/opt/opencv-4.1.0/include/opencv4/opencv2/core.hpp"
 //#include "/opt/opencv-4.1.0/include/opencv4/opencv2/imgproc.hpp"
 //#include "/opt/opencv-4.1.0/include/opencv4/opencv2/highgui.hpp"
@@ -47,9 +52,34 @@ int decode(Mat &im) {
 		string data = symbol->get_data();
 
 		// Print type and data
-		std::cout << "Data : " << data << std::endl;
+		cout << "Data : " << data << endl;
 		//decodedObjects.push_back(obj);
 	}
 
+	return 0;
+}
+
+int main(int argv, char** argc){
+
+	Mat frame;
+	VideoCapture cap(0);
+
+	if (!cap.isOpened()){
+		cerr<< "ERROR!Unable to open Camera\n";
+		return -1;
+	}
+	cout << "Start grabbing"<<endl<<"Press any key to terminate"<<endl;
+
+	for (;;){
+	cap.read(frame);
+	if (frame.empty()){
+		cerr<<"ERROR!Blank frame grabbed\n";
+		break;
+		}
+	imshow("Live", frame);
+	if (waitKey (5) >= 0){
+		break;
+		}
+	}
 	return 0;
 }
