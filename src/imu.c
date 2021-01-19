@@ -58,15 +58,15 @@ enum imu_regs {
  			                 : i2cWriteByteData(imu,IMUREG_BANK_SEL,imu_bank_cur=REG_BANK(reg))) \
 			                ?: i2cWriteByteData(imu,REG_ADDR(reg),data))
 
-static unsigned hdg = 0;
+static float hdg = 0.0f;
 static float vel = 0.0f;
 static float vx = 0.0f, vy = 0.0f;
 
-unsigned get_current_heading(void) {
+float get_current_heading(void) {
     return hdg;
 }
 
-double get_current_velocity(void) {
+float get_current_velocity(void) {
     return vel;
 }
 
@@ -95,7 +95,7 @@ void imu_tick(void) {
     }
     const float qy = (q1*q2-q0*q3), qx = (q2*q2+q3*q3) - 0.5f;
     const float qinvnorm = invSqrt(qy*qy+qx*qx); 
-    hdg = (unsigned) (180/M_PI * atan2f(qy, qx));
+    hdg = atan2f(qy, qx);
     const float sinhdg = qy*qinvnorm, coshdg = qx*qinvnorm;
     vx += ax*coshdg - ay*sinhdg;
     vy += ay*coshdg + ay*sinhdg;

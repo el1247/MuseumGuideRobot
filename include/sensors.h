@@ -23,8 +23,8 @@ extern "C" {
 
 
 void imu_init(void);
-unsigned get_current_heading(void);
-double get_current_velocity(void);
+float get_current_heading(void);
+float get_current_velocity(void);
 void imu_fini(void);
 
 #ifdef __cplusplus

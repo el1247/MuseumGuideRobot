@@ -20,7 +20,7 @@ extern "C" {
 #endif
 
 void m_init(void);
-int m_drive(double,unsigned);
+int m_drive(float,float);
 void m_stop(void);
 void m_fini(void);
 
