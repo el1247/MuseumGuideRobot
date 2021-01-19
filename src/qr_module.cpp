@@ -77,6 +77,7 @@ int main(int argv, char** argc){
 		break;
 		}
 	imshow("Live", frame);
+	decode(frame);
 	if (waitKey (5) >= 0){
 		break;
 		}
