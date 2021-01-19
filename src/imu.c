@@ -60,6 +60,7 @@ enum imu_regs {
 
 static unsigned hdg = 0;
 static float vel = 0.0f;
+static float vx = 0.0f, vy = 0.0f;
 
 unsigned get_current_heading(void) {
     return hdg;
@@ -82,17 +83,23 @@ void imu_tick(void) {
     int err;
     uint16_be_t buf[6];
     err = IMU_READ_BLOCK(ACCEL_XOUT_H, (char*)buf, 12);
+    const float ax = R2F(buf[0]), ay = R2F(buf[1]), az = R2F(buf[2]);
+    const float gx = R2F(buf[3]), gy = R2F(buf[4]), gz = R2F(buf[5]);
     
     if(USE_MAGNET) {
         uint16_le_t mbuf[3];
         MAGNET_READ((char*)mbuf, 6); /* XxX TODO figure out */
-        MadgwickAHRSupdate(R2F(buf[3]), R2F(buf[4]), R2F(buf[5]), R2F(buf[0]), R2F(buf[1]), R2F(buf[2]),
-                           M2F(mbuf[0]), M2F(mbuf[1]), M2F(mbuf[2]));
+        MadgwickAHRSupdate(gx, gy, gz, ax, ay, az, M2F(mbuf[0]), M2F(mbuf[1]), M2F(mbuf[2]));
     } else {
-        MadgwickAHRSupdateIMU(R2F(buf[3]), R2F(buf[4]), R2F(buf[5]), R2F(buf[0]), R2F(buf[1]), R2F(buf[2]));
+        MadgwickAHRSupdateIMU(gx, gy, gz, ax, ay, az);
     }
-    hdg = (unsigned)atan2f(2*(q1*q2-q0*q3), 2*(q2*q2+q3*q3) - 1);
-    /* TODO update velocity */
+    const float qy = (q1*q2-q0*q3), qx = (q2*q2+q3*q3) - 0.5f;
+    const float qinvnorm = invSqrt(qy*qy+qx*qx); 
+    hdg = (unsigned) (180/M_PI * atan2f(qy, qx));
+    const float sinhdg = qy*qinvnorm, coshdg = qx*qinvnorm;
+    vx += ax*coshdg - ay*sinhdg;
+    vy += ay*coshdg + ay*sinhdg;
+    vel = sqrt(vx*vx+vy*vy);
 }
 
 #define GYRO_RATE_DIV 0 /* TODO */
