@@ -24,3 +24,10 @@ If new source files are added or existing ones renamed, the `SRCS` variable in t
 
 Similarly, any libraries required for linking must be included in the `LIBS` variable in the makefile. Any time a new library is referenced in the source code, the makefile should be edited accordingly.
 
+###Installing OpenCV
+
+This tutorial is based on the instructions from https://solarianprogrammer.com/2019/09/17/install-opencv-raspberry-pi-raspbian-cpp-python-development/
+
+Open terminal ti download the desired version of OpenCV:
+'''wget https://github.com/sol-prog/raspberry-pi-opencv/releases/download/opencv4rpi2.1/opencv-4.1.0-armhf.tar.bz2'''
+
