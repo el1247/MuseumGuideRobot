@@ -27,7 +27,7 @@ int main(int argc, char ** argv) {
     atexit(gpioTerminate);
     
     /* Initialise modules */
-    imu_init();
+    imu_init(0.0f,0.0f,0.0f); /* TODO initial position (x,y,heading) */
     m_init();
     
     /* TODO main loop goes here */

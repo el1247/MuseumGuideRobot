@@ -1,4 +1,4 @@
-/* Copyright (C) 2021 Duncan Lowther
+/* Coposyright (C) 2021 Duncan Lowther
  *  
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,7 +10,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
- * You should have received a copy of the GNU General Public License
+ * You should have received a coposy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
@@ -61,6 +61,7 @@ enum imu_regs {
 static float hdg = 0.0f;
 static float vel = 0.0f;
 static float vx = 0.0f, vy = 0.0f;
+static float posx = 0.0f, posy = 0.0f;
 
 float get_current_heading(void) {
     return hdg;
@@ -68,6 +69,10 @@ float get_current_heading(void) {
 
 float get_current_velocity(void) {
     return vel;
+}
+
+void get_current_position(float * x, float * y) {
+    *x = posx; *y = posy;
 }
 
 
@@ -100,13 +105,20 @@ void imu_tick(void) {
     vx += ax*coshdg - ay*sinhdg;
     vy += ay*coshdg + ay*sinhdg;
     vel = sqrt(vx*vx+vy*vy);
+    posx += vx*coshdg - vy*sinhdg;
+    posy += vy*coshdg + vy*sinhdg;
 }
 
 #define GYRO_RATE_DIV 0 /* TODO */
 #define ACCEL_RATE_DIV 0 /* TODO */
 
-void imu_init(void) {
+void imu_init(float startx, float starty, float starthdg) {
     int tmp;
+    posx = startx;
+    posy = starty;
+    q0 = cosf(starthdg/2.0f);
+    q1 = q2 = 0.0f;
+    q3 = -sinf(starthdg/2.0f);
     tmp = i2cOpen(1, I2CADDR_IMU, 0); 
     if(tmp < 0) goto error;
     imu = (unsigned) tmp;
