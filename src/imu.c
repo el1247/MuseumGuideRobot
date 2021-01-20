@@ -19,6 +19,7 @@
 #include <pigpio.h>
 #include <signal.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -209,7 +210,7 @@ void imu_init(float startx, float starty, float starthdg, void (*on_err)(int)) {
     atexit(imu_fini);
     return;
   error:
-    if(on_error) (*on_error)(err);
+    if(on_error) (*on_error)(tmp);
 }
 
 static int mag_read(unsigned reg) {
