@@ -16,3 +16,7 @@ ipch/
 *.db
 .vs/MuesumGuideRobot/v16/Browse.VC.db
 .vs/MuesumGuideRobot/v16/.suo
+
+build/
+
+test3.cpp
