@@ -22,7 +22,7 @@ extern "C" {
 #endif
 
 
-void imu_init(float,float,float);
+void imu_init(float,float,float,void(*)(int));
 float get_current_heading(void);
 float get_current_velocity(void);
 void get_current_position(float*,float*);

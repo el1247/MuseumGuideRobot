@@ -40,7 +40,8 @@
 #define PID_DECLS(id) static float id##_err, id##_sum; float id##_last
 #define PID(id,ecalc,kp,ki,kd) (id##_last = id##_err, id##_sum += (id##_err = (ecalc)), \
 		                    (kp)*id##_err + (ki)*id##_sum + (kd)*(id##_err-id##_last))
-#define TWOPI ((float)(2*M_PI)
+#define PI ((float)M_PI)
+#define TWOPI ((float)(2*M_PI))
 #define THREEPI ((float)(3*M_PI))
 
 void m_init(void) {
@@ -61,7 +62,7 @@ int m_drive(float velocity, float heading) {
     PID_DECLS(hdg);
 
     cm = PID(vel, velocity - get_current_velocity(), VEL_KP, VEL_KI, VEL_KD);
-    diff = PID(hdg, fmodf(THREEPI + heading - get_current_heading(), TWOPI) - PI_F, HDG_KP, HDG_KI, HDG_KD);
+    diff = PID(hdg, fmodf(THREEPI + heading - get_current_heading(), TWOPI) - PI, HDG_KP, HDG_KI, HDG_KD);
 
     left = (int) ((cm - diff) * PWM_RNG);
     right = (int) ((cm + diff) * PWM_RNG);

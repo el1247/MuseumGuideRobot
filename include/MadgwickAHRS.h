@@ -17,6 +17,8 @@
 #ifndef MadgwickAHRS_h
 #define MadgwickAHRS_h
 
+#define SAMPLE_TIME_NS 1000000
+
 //----------------------------------------------------------------------------------------------------
 // Variable declaration
 
