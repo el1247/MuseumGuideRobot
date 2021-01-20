@@ -17,7 +17,7 @@
 #pragma once
 #include <string>
 #include "movement.h"
-#include "navigation.h"
+//#include "navigation.h"
 
 
 class logic {
@@ -32,6 +32,6 @@ public:
 	void doTour(int tourID);
 	void emergencyStop();
 	int giveInfo(int locationID);
-	void gohome();
+	void goHome();
 	void stopTour();
 };

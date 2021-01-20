@@ -9,7 +9,7 @@ LIBS = -lpigpio -lrt
 EXE = tpee4g8mgr
 VERSION = 0.0.1
 
-SRCS = main.c movement.c 
+SRCS = main.c movement.c logic.cpp
 
 COBJS = $(patsubst %.c,build/%.o,$(filter %.c,$(SRCS))) 
 CXXOBJS = $(patsubst %.cpp,build/%.o,$(filter %.cpp,$(SRCS))) 
