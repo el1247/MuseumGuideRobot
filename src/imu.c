@@ -158,7 +158,7 @@ void imu_tick(__sigval_t _) {
     return;
 error:
     timer_delete(ticker);
-    (*on_error)(err);
+    if(on_error) (*on_error)(err);
 }
 
 #define GYRO_RATE_DIV 4 /* TODO */
@@ -186,13 +186,11 @@ void imu_init(float startx, float starty, float starthdg, void (*on_err)(int)) {
            ?: IMU_WRITE(ACCEL_SMPLRT_DIV_2, ACCEL_RATE_DIV&0xFF)
            ?: IMU_WRITE(ACCEL_CONFIG, 0x19|(ACCEL_FS<<1)))) goto error;
 #ifndef NO_MAGNET    
-    if((tmp = IMU_WRITE(I2C_MST_CTRL, 0x4D)
-           ?: IMU_WRITE(I2C_MST_DELAY_CTRL, 0x01))) goto error;
-    has_magnet = (mag_read(MAGREG_WIA) == MAG_ID);
-    if(has_magnet) {
-        if((tmp = mag_write(MAGREG_CNTL3, 0x01))) goto error;
-	while(mag_read(MAGREG_CNTL3) == 0x01) usleep(1000);
-    }
+    has_magnet = !IMU_WRITE(I2C_MST_CTRL, 0x4D)
+              && !IMU_WRITE(I2C_MST_DELAY_CTRL, 0x01)
+	      && (mag_read(MAGREG_WIA) == MAG_ID)
+              && mag_write(MAGREG_CNTL3, 0x01);
+    if(has_magnet) while(mag_read(MAGREG_CNTL3) == 0x01) usleep(1000);
 #endif
     beta = 0.0755749735f; /* Calibrated as per Madgwick for 5 degrees per second error */
     
@@ -202,13 +200,16 @@ void imu_init(float startx, float starty, float starthdg, void (*on_err)(int)) {
 
     if(timer_create(CLOCK_MONOTONIC, &tickevt, &ticker)
         || timer_settime(ticker, 0, &tickspec, NULL)) {
-        /* TODO ERROR */
+        perror("Error starting imu update timer: ");
+        i2cClose(imu);
+        if(on_error) (*on_error)(0);
+	return;
     }
 
     atexit(imu_fini);
     return;
-  error:;
-    /* TODO */
+  error:
+    if(on_error) (*on_error)(err);
 }
 
 static int mag_read(unsigned reg) {
