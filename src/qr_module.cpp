@@ -24,10 +24,9 @@
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
 #include "opencv2/videoio/videoio_c.h"
-//#include "/opt/opencv-4.1.0/include/opencv4/opencv2/core.hpp"
-//#include "/opt/opencv-4.1.0/include/opencv4/opencv2/imgproc.hpp"
-//#include "/opt/opencv-4.1.0/include/opencv4/opencv2/highgui.hpp"
+#include "qr.hpp"
 #include "zbar.h"
+
 
 using namespace zbar;
 using namespace cv;
