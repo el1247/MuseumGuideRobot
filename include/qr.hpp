@@ -14,6 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <string>
+#include <vector>
 #include "opencv2/core.hpp"  //These need to be modified as per ZBAR and OPENCV's installation in the system
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
@@ -21,13 +23,12 @@
 
 #ifndef QRMODULE_H
 #define QRMODULE_H
-#ifdef __cplusplus
-extern "C" {
-    #endif
 
-    int decode(Mat);
+int decode(cv::Mat &im);
 
-    #ifdef __cplusplus
-}
-#endif
+typedef struct{
+	std::string data;
+	std::vector <cv::Point> location;
+} qr_code;
+
 #endif
