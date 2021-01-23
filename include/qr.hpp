@@ -29,6 +29,6 @@ int decode(cv::Mat &im);
 typedef struct{
 	std::string data;
 	std::vector <cv::Point> location;
-} qr_code;
+} qr_Code;
 
 #endif

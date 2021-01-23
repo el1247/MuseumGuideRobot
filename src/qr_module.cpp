@@ -32,7 +32,7 @@ using namespace zbar;
 using namespace cv;
 using namespace std;
 
-int decode(Mat &im) {
+int decode(Mat &im, vector<qr_Code>&qr_Codes) {
 	ImageScanner scanner; //creating qr scanner
 	scanner.set_config(ZBAR_NONE, ZBAR_CFG_ENABLE, 0);
 	scanner.set_config(ZBAR_QRCODE, ZBAR_CFG_ENABLE, 1); //configuring the scanner
@@ -48,11 +48,21 @@ int decode(Mat &im) {
 	int n = scanner.scan(image);
 
 	for (Image::SymbolIterator symbol = image.symbol_begin(); symbol != image.symbol_end(); ++symbol){
-		string data = symbol->get_data();
+		// QR code class initialisation
+		qr_Code qrcode;
+
+		// Storing 
+		qrcode.data = symbol->get_data();
 
 		// Print type and data
-		cout << "Data : " << data << endl;
-		//decodedObjects.push_back(obj);
+		cout << "Data : " << qr_Code.data << endl;
+
+		// Storing the coordinates of the QR codes
+		for (int i = 0; i < symbol->get_location_size(); i++){
+			qrcode.location.push_back(Point(symbol->get_location_x(i), symbol->get_location_y(i)));
+		}
+
+		qr_Codes.push_back(qrcode);
 	}
 
 	return 0;
@@ -60,7 +70,8 @@ int decode(Mat &im) {
 
 int main(int argv, char** argc){
 
-	Mat frame;
+	Mat frame; //To store the image
+	vector<qr_Code> qr_Codes;
 	VideoCapture cap(0);
 
 	if (!cap.isOpened()){
@@ -76,7 +87,7 @@ int main(int argv, char** argc){
 		break;
 		}
 	imshow("Live", frame);
-	decode(frame);
+	decode(frame, qr_Codes); // Decodes the frames from the camera
 	if (waitKey (5) >= 0){
 		break;
 		}
