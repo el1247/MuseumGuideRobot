@@ -15,6 +15,7 @@
  */
 
 #pragma once
+#include <iostream>
 #include <string>
 #include "movement.h"
 //#include "navigation.h"
