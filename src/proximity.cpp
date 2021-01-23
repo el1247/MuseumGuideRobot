@@ -1,5 +1,6 @@
 #include "proximity.h"
 
-void proximity::measure(){
+void proximity::measuredist(){
+	//Function to capture and store latest value from proximity sensor
 	//measure distance
-}
+};

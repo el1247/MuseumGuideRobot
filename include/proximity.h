@@ -2,5 +2,7 @@
 
 class proximity {
 	private:
-		int distance;
-}
+		int distance; //Distance to object measured from proximity sensor
+	public:
+		void measuredist();
+};

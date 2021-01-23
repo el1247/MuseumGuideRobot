@@ -1,0 +1,23 @@
+.vs/
+
+
+ipch/
+*.aps
+*.json
+*.ncb
+*.opendb
+*.opensdf
+*.sdf
+*.sqlite
+*.cachefile
+
+#Specific files
+.vs/VSWorkspaceState.json
+*.db
+.vs/MuesumGuideRobot/v16/Browse.VC.db
+.vs/MuesumGuideRobot/v16/.suo
+
+build/
+
+test3.cpp
+test3.exe
