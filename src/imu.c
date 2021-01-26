@@ -29,52 +29,6 @@
 
 static unsigned imu, imu_bank_cur, mag;
 static int has_magnet, mag_transparent;
-
-/* High byte is register bank (0-3), low byte is register address */
-enum imu_regs {
-    IMUREG_WHO_AM_I             = 0x000,
-    IMUREG_USER_CTRL            = 0x003,
-    IMUREG_PWR_MGMT_1           = 0x006,
-    IMUREG_PWR_MGMT_2           = 0x007,
-    IMUREG_INT_PIN_CFG          = 0x00F,
-    IMUREG_ACCEL_XOUT_H         = 0x02D,
-    IMUREG_EXT_SLV_SENS_DATA_00 = 0x03B,
-    IMUREG_GYRO_SMPLRT_DIV      = 0x200,
-    IMUREG_GYRO_CONFIG_1        = 0x201,
-    IMUREG_ACCEL_SMPLRT_DIV_1   = 0x210,
-    IMUREG_ACCEL_SMPLRT_DIV_2   = 0x211,
-    IMUREG_ACCEL_CONFIG         = 0x214,
-    IMUREG_I2C_MST_CTRL         = 0x301,
-    IMUREG_I2C_MST_DELAY_CTRL   = 0x302,
-    IMUREG_I2C_SLV0_ADDR        = 0x303,
-    IMUREG_I2C_SLV0_REG         = 0x304,
-    IMUREG_I2C_SLV0_CTRL        = 0x305,
-    IMUREG_I2C_SLV0_DO          = 0x306,
-};
-
-#define I2CADDR_MAG 0x0c
-
-enum mag_regs {
-    MAGREG_WIA   = 0x01,
-    MAGREG_ST1   = 0x10,
-    MAGREG_HXL   = 0x11,
-    MAGREG_CNTL2 = 0x31,
-    MAGREG_CNTL3 = 0x32,
-};
-
-#define MAG_ID 0x09
-
-
-#define IMUREG_BANK_SEL 0x7F
-#define IMU_ID 0xEA
-#define REG_BANK(reg) (((IMUREG_##reg)&0x300)>>4)
-#define REG_ADDR(reg) ((IMUREG_##reg)&0xFF)
-
-#define SET_BANK(reg) (imu_bank_cur==REG_BANK(reg)?0:i2cWriteByteData(imu,IMUREG_BANK_SEL,imu_bank_cur=REG_BANK(reg)))
-#define IMU_READ(reg)               (SET_BANK(reg) ?: i2cReadByteData(imu,REG_ADDR(reg)))
-#define IMU_READ_BLOCK(reg,buf,len) (SET_BANK(reg) ?: i2cReadI2CBlockData(imu,REG_ADDR(reg),buf,len))
-#define IMU_WRITE(reg,data)         (SET_BANK(reg) ?: i2cWriteByteData(imu,REG_ADDR(reg),data))
-
 static float hdg = 0.0f;
 static float vel = 0.0f;
 static float vx = 0.0f, vy = 0.0f;
@@ -108,6 +62,50 @@ void imu_reset(float cx, float cy, float chdg) {
     q3 = -sinf(chdg/2.0f);
     q1 = q2 = vx = vy = 0.0f;
 }
+
+/* High byte is register bank (0-3), low byte is register address */
+enum imu_regs {
+    IMUREG_WHO_AM_I             = 0x000,
+    IMUREG_USER_CTRL            = 0x003,
+    IMUREG_PWR_MGMT_1           = 0x006,
+    IMUREG_PWR_MGMT_2           = 0x007,
+    IMUREG_INT_PIN_CFG          = 0x00F,
+    IMUREG_ACCEL_XOUT_H         = 0x02D,
+    IMUREG_EXT_SLV_SENS_DATA_00 = 0x03B,
+    IMUREG_GYRO_SMPLRT_DIV      = 0x200,
+    IMUREG_GYRO_CONFIG_1        = 0x201,
+    IMUREG_ACCEL_SMPLRT_DIV_1   = 0x210,
+    IMUREG_ACCEL_SMPLRT_DIV_2   = 0x211,
+    IMUREG_ACCEL_CONFIG         = 0x214,
+    IMUREG_I2C_MST_CTRL         = 0x301,
+    IMUREG_I2C_MST_DELAY_CTRL   = 0x302,
+    IMUREG_I2C_SLV0_ADDR        = 0x303,
+    IMUREG_I2C_SLV0_REG         = 0x304,
+    IMUREG_I2C_SLV0_CTRL        = 0x305,
+    IMUREG_I2C_SLV0_DO          = 0x306,
+};
+
+enum mag_regs {
+    MAGREG_WIA   = 0x01,
+    MAGREG_ST1   = 0x10,
+    MAGREG_HXL   = 0x11,
+    MAGREG_CNTL2 = 0x31,
+    MAGREG_CNTL3 = 0x32,
+};
+
+#define MAG_ID 0x09
+
+
+#define IMUREG_BANK_SEL 0x7F
+#define IMU_ID 0xEA
+#define REG_BANK(reg) (((IMUREG_##reg)&0x300)>>4)
+#define REG_ADDR(reg) ((IMUREG_##reg)&0xFF)
+
+#define SET_BANK(reg) (imu_bank_cur==REG_BANK(reg)?0:i2cWriteByteData(imu,IMUREG_BANK_SEL,imu_bank_cur=REG_BANK(reg)))
+#define IMU_READ(reg)               (SET_BANK(reg) ?: i2cReadByteData(imu,REG_ADDR(reg)))
+#define IMU_READ_BLOCK(reg,buf,len) (SET_BANK(reg) ?: i2cReadI2CBlockData(imu,REG_ADDR(reg),buf,len))
+#define IMU_WRITE(reg,data)         (SET_BANK(reg) ?: i2cWriteByteData(imu,REG_ADDR(reg),data))
+
 
 typedef uint16_t uint16_be_t, uint16_le_t; /* For clarity we write the non-host endianness explicitly  */
 

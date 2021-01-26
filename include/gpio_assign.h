@@ -31,6 +31,7 @@ enum {
 enum {
     /* IMU */
     I2CADDR_IMU = 0x68, /* Or 0x69 depending on AD0 setting */
+    I2CADDR_MAG = 0x0c,
 };
 
 
