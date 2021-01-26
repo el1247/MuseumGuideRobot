@@ -27,8 +27,8 @@
 #include "MadgwickAHRS.h"
 #include "sensors.h"
 
-static unsigned imu, imu_bank_cur;
-static int has_magnet;
+static unsigned imu, imu_bank_cur, mag;
+static int has_magnet, mag_transparent;
 
 /* High byte is register bank (0-3), low byte is register address */
 enum imu_regs {
@@ -52,7 +52,7 @@ enum imu_regs {
     IMUREG_I2C_SLV0_DO          = 0x306,
 };
 
-#define MAG_I2C_ADDR 0x0c
+#define I2CADDR_MAG 0x0c
 
 enum mag_regs {
     MAGREG_WIA   = 0x01,
@@ -87,8 +87,8 @@ struct sigevent tickevt;
 struct itimerspec tickspec = { .it_interval = { .tv_sec = 0, .tv_nsec = SAMPLE_TIME_NS },
 	                       .it_value = { .tv_sec = 0, .tv_nsec = 500000000 }};
 
-static int mag_read(unsigned);
-static int mag_write(unsigned,unsigned);
+static int mag_read_indir(unsigned);
+static int mag_write_indir(unsigned,unsigned);
 
 float get_current_heading(void) {
     return hdg;
@@ -126,6 +126,14 @@ typedef uint16_t uint16_be_t, uint16_le_t; /* For clarity we write the non-host 
 #define ASSUME_TAKEN(x) __builtin_expect(!!(x),1)
 #define ASSUME_NOT_TAKEN(x) __builtin_expect(!!(x),0)
 
+#define MAG_BLOCK_READ_H6(buf) (mag_transparent ? i2cReadI2CBlockData(mag,MAGREG_HXL,buf,6) \
+	                                        : IMU_READ_BLOCK(EXT_SLV_SENS_DATA_00,buf,6))
+#define MAG_READ(reg)          (mag_transparent ? i2cReadByteData(mag,MAGREG_##reg) \
+		                                : mag_read_indir(MAGREG_##reg))
+#define MAG_WRITE(reg,data)    (mag_transparent ? i2cWriteByteData(mag,MAGREG_##reg,data) \
+		                                : mag_write_indir(MAGREG_##reg,data))
+
+
 void imu_tick(__sigval_t _) {
     int err;
     uint16_be_t buf[6];
@@ -136,7 +144,7 @@ void imu_tick(__sigval_t _) {
     
     if(USE_MAGNET && has_magnet) {
         uint16_le_t mbuf[3];
-        if(ASSUME_TAKEN(IMU_READ_BLOCK(EXT_SLV_SENS_DATA_00, (char*)mbuf, 6) >= 0)) {
+        if(ASSUME_TAKEN(MAG_BLOCK_READ_H6((char*)mbuf) >= 0)) {
             MadgwickAHRSupdate(gx, gy, gz, ax, ay, az, M2F(mbuf[0]), M2F(mbuf[1]), M2F(mbuf[2]));
 	} else {
             MadgwickAHRSupdateIMU(gx, gy, gz, ax, ay, az);
@@ -184,20 +192,31 @@ void imu_init(float startx, float starty, float starthdg, void (*on_err)(int)) {
            ?: IMU_WRITE(ACCEL_SMPLRT_DIV_1, (ACCEL_RATE_DIV>>8)&0xFF)
            ?: IMU_WRITE(ACCEL_SMPLRT_DIV_2, ACCEL_RATE_DIV&0xFF)
            ?: IMU_WRITE(ACCEL_CONFIG, 0x19|(ACCEL_FS<<1)))) goto error;
-#ifndef NO_MAGNET    
-    has_magnet = !IMU_WRITE(I2C_MST_CTRL, 0x4D)
-              && !IMU_WRITE(I2C_MST_DELAY_CTRL, 0x01)
-	      && (mag_read(MAGREG_WIA) == MAG_ID)
-              && !mag_write(MAGREG_CNTL3, 0x01);
-    if(has_magnet) {
-        while(mag_read(MAGREG_CNTL3) == 0x01) usleep(1000);
-	/* Setup magnetometer for 100Hz reading and prime registers for block reads */
-	tmp = mag_write(MAGREG_CNTL2, 0x08) /* Continuous 4 (100 Hz) */
-	   ?: IMU_WRITE(I2C_SLV0_ADDR, MAG_I2C_ADDR | 0x80) /* High bit = RD/¬WR */
-           ?: IMU_WRITE(I2C_SLV0_REG, MAGREG_HXL)
-           ?: IMU_WRITE(I2C_SLV0_CTRL, 0x86) /* EN_READ, len=6 */
-           ?: IMU_READ(USER_CTRL);
-	has_magnet = (tmp > 0) && !IMU_WRITE(USER_CTRL, tmp | 0x20);
+#ifndef NO_MAGNET
+    mag_transparent = has_magnet = 1;
+    tmp = i2cOpen(1, I2CADDR_MAG, 0);
+    if(tmp > 0) {
+        mag = (unsigned) tmp;
+	if((MAG_READ(WIA) != MAG_ID) || MAG_WRITE(CNTL3, 0x01)) mag_transparent = 0;
+	else {
+            has_magnet = !MAG_WRITE(CNTL2, 0x08); /* Continuous 4 (100 Hz) */
+	}
+    }
+    if(!mag_transparent) {
+        has_magnet = !IMU_WRITE(I2C_MST_CTRL, 0x4D)
+                  && !IMU_WRITE(I2C_MST_DELAY_CTRL, 0x01)
+	          && (MAG_READ(WIA) == MAG_ID)
+                  && !MAG_WRITE(CNTL3, 0x01);
+        if(has_magnet) {
+            while(MAG_READ(CNTL3) == 0x01) usleep(1000);
+	    /* Setup magnetometer for 100Hz reading and prime registers for block reads */
+            tmp = MAG_WRITE(CNTL2, 0x08) /* Continuous 4 (100 Hz) */
+               ?: IMU_WRITE(I2C_SLV0_ADDR, I2CADDR_MAG | 0x80) /* High bit = RD/¬WR */
+               ?: IMU_WRITE(I2C_SLV0_REG, MAGREG_HXL)
+               ?: IMU_WRITE(I2C_SLV0_CTRL, 0x86) /* EN_READ, len=6 */
+               ?: IMU_READ(USER_CTRL);
+    	    has_magnet = (tmp > 0) && !IMU_WRITE(USER_CTRL, tmp | 0x20);
+        }
     }
 #endif
     beta = 0.0755749735f; /* Calibrated as per Madgwick for 5 degrees per second error */
@@ -220,9 +239,9 @@ void imu_init(float startx, float starty, float starthdg, void (*on_err)(int)) {
     if(on_error) (*on_error)(tmp);
 }
 
-static int mag_read(unsigned reg) {
+static int mag_read_indir(unsigned reg) {
     int ret;
-    int user = IMU_WRITE(I2C_SLV0_ADDR, MAG_I2C_ADDR | 0x80)/* High bit = RD/¬WR */
+    int user = IMU_WRITE(I2C_SLV0_ADDR, I2CADDR_MAG | 0x80)/* High bit = RD/¬WR */
 	    ?: IMU_WRITE(I2C_SLV0_REG, reg)
             ?: IMU_WRITE(I2C_SLV0_CTRL, 0x81) /* EN_READ */
             ?: IMU_READ(USER_CTRL);
@@ -233,9 +252,9 @@ static int mag_read(unsigned reg) {
 	?: IMU_READ(EXT_SLV_SENS_DATA_00);
 }
 
-static int mag_write(unsigned reg, unsigned data) {
+static int mag_write_indir(unsigned reg, unsigned data) {
     int ret;
-    int user = IMU_WRITE(I2C_SLV0_ADDR, MAG_I2C_ADDR) /* High bit = RD/¬WR */
+    int user = IMU_WRITE(I2C_SLV0_ADDR, I2CADDR_MAG) /* High bit = RD/¬WR */
 	    ?: IMU_WRITE(I2C_SLV0_REG, reg)
             ?: IMU_WRITE(I2C_SLV0_DO, data) 
             ?: IMU_READ(USER_CTRL);
