@@ -23,6 +23,7 @@ extern "C" {
 
 
 void imu_init(float,float,float,void(*)(int));
+void imu_reset(float,float,float);
 float get_current_heading(void);
 float get_current_velocity(void);
 void get_current_position(float*,float*);

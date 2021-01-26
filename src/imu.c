@@ -103,6 +103,12 @@ void get_current_position(float * x, float * y) {
     *x = posx; *y = posy;
 }
 
+void imu_reset(float x, float y, float heading) {
+    posx = x, posy = y, hdg = heading;
+    q0 = cosf(starthdg/2.0f);
+    q3 = -sinf(starthdg/2.0f);
+    q1 = q2 = vx = vy = 0.0f;
+}
 
 typedef uint16_t uint16_be_t, uint16_le_t; /* For clarity we write the non-host endianness explicitly  */
 
