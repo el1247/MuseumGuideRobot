@@ -32,7 +32,7 @@ using namespace zbar;
 using namespace cv;
 using namespace std;
 
-int decode(Mat &im, vector<qr_Code>&qr_Codes) {
+int decode(Mat &im, qr_Code &qrcode) {
 	ImageScanner scanner; //creating qr scanner
 	scanner.set_config(ZBAR_NONE, ZBAR_CFG_ENABLE, 0);
 	scanner.set_config(ZBAR_QRCODE, ZBAR_CFG_ENABLE, 1); //configuring the scanner
@@ -49,30 +49,35 @@ int decode(Mat &im, vector<qr_Code>&qr_Codes) {
 
 	for (Image::SymbolIterator symbol = image.symbol_begin(); symbol != image.symbol_end(); ++symbol){
 		// QR code class initialisation
-		qr_Code qrcode;
+		//qr_Code qrcode;
 
 		// Storing 
 		qrcode.data = symbol->get_data();
 
 		// Print type and data
-		cout << "Data : " << qr_Code.data << endl;
+		cout << "Data : " << qrcode.data << endl;
 
 		// Storing the coordinates of the QR codes
 		for (int i = 0; i < symbol->get_location_size(); i++){
 			qrcode.location.push_back(Point(symbol->get_location_x(i), symbol->get_location_y(i)));
 		}
 
-		qr_Codes.push_back(qrcode);
+		//qr_Codes.push_back(qrcode);
 	}
 
 	return 0;
 }
 
-int main(int argv, char** argc){
+void position(qr_Code &qrcode){
+	cout << qrcode.location << endl;
+}
 
-	Mat frame; //To store the image
-	vector<qr_Code> qr_Codes;
-	VideoCapture cap(0);
+int main(int argv, char** argc){ //TESTING MAIN FUNCTION, TO BE COMMENTED OUT
+
+	Mat frame; //To store the frames from the video
+	//vector<qr_Code> qr_Codes; // Vector to contain all the qr codes scanned
+	qr_Code qrcode;
+	VideoCapture cap(0); //Camera select, default picam is 0
 
 	if (!cap.isOpened()){
 		cerr<< "ERROR!Unable to open Camera\n";
@@ -80,17 +85,18 @@ int main(int argv, char** argc){
 	}
 	cout << "Start grabbing"<<endl<<"Press any key to terminate"<<endl;
 
-	for (;;){
-	cap.read(frame);
-	if (frame.empty()){
-		cerr<<"ERROR!Blank frame grabbed\n";
-		break;
-		}
-	imshow("Live", frame);
-	decode(frame, qr_Codes); // Decodes the frames from the camera
-	if (waitKey (5) >= 0){
-		break;
-		}
+	for (;;){ // Infinite loop, can be modified to stop the video whenever
+		cap.read(frame);
+		if (frame.empty()){
+			cerr<<"ERROR!Blank frame grabbed\n"; //Error catching in case no camera
+			break;
+			}
+		imshow("Live", frame); // This can be removed to disable video display
+		decode(frame, qrcode); // Decodes the frames from the camera
+		position(qrcode); //Displays the position
+		if (waitKey (5) >= 0){
+			break;
+			}
 	}
 	return 0;
 }
