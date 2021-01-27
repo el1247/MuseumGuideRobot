@@ -1,4 +1,4 @@
-/* Copyright (C) 2021 Gautam Gupta
+/* Copyright (C) 2021 Gautam Gupta, Duncan Lowther
  *  
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,10 +27,9 @@
 typedef struct{
 	std::string data;
 	std::vector <cv::Point> location;
+	float dx, dy, face;
 } qr_Code;
 
 int decode(cv::Mat &im, qr_Code &qrcode);
-
-void position(qr_Code &qrcode);
 
 #endif

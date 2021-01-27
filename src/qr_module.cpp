@@ -1,4 +1,4 @@
-/* Copyright (C) 2021 Gautam Gupta
+/* Copyright (C) 2021 Gautam Gupta, Duncan Lowther
  *  
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 //Current linker command^
 //NOTE: MODIFY IT AS PER OPENCV INSTALLATION
 
+#include <cmath>
 #include <iostream>
 #include <string>
 #include "opencv2/core.hpp"  //Point LD_LIBRARY_PATH to opencv2 folder
@@ -31,6 +32,12 @@
 using namespace zbar;
 using namespace cv;
 using namespace std;
+
+/* XXX TODO Placeholders */
+#define L  1.0f   /* One-half the side length of the QR code in real life */
+#define ZF 320.0f /* Pixel distance between the image of the optical axis and the image of a line 45 degrees away.
+                   * Can be caluclated as (linear resolution/(2*tan(FOV angle/2))) */
+#define OX 320    /* X-coordinate of the image of the optical axis */
 
 int decode(Mat &im, qr_Code &qrcode) {
 	ImageScanner scanner; //creating qr scanner
@@ -61,15 +68,16 @@ int decode(Mat &im, qr_Code &qrcode) {
 		for (int i = 0; i < symbol->get_location_size(); i++){
 			qrcode.location.push_back(Point(symbol->get_location_x(i), symbol->get_location_y(i)));
 		}
-
+#define Q(i,j,xy) (symbol->get_location_##xy ((i)+((j)<<1))) /* XXX placeholder; fix indexing */
+		float a0 = 1/(float)(Q(0,0,y) - Q(0,1,y));
+		float a1 = 1/(float)(Q(1,0,y) - Q(1,1,y));
+ 		qrcode.dx = L * ((Q(0,0,x) - OX) * a0 + (Q(1,0,x) - OX) * a1);
+		qrcode.dy = L * ZF * (a0 + a1);
+		qrcode.face = asinf(ZF * (a1 - a0));
 		//qr_Codes.push_back(qrcode);
 	}
 
 	return 0;
-}
-
-void position(qr_Code &qrcode){
-	cout << qrcode.location << endl;
 }
 
 int main(int argv, char** argc){ //TESTING MAIN FUNCTION, TO BE COMMENTED OUT
@@ -93,7 +101,7 @@ int main(int argv, char** argc){ //TESTING MAIN FUNCTION, TO BE COMMENTED OUT
 			}
 		imshow("Live", frame); // This can be removed to disable video display
 		decode(frame, qrcode); // Decodes the frames from the camera
-		position(qrcode); //Displays the position
+		cout << "(x,y,\u03b8) = (" << qrcode.dx << ", " << qrcode.dy << ", " << qrcode.face << ")" << endl;
 		if (waitKey (5) >= 0){
 			break;
 			}
