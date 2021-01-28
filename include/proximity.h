@@ -1,15 +1,11 @@
-#pragma once
+#ifndef PROXIMITY_H
+#define PROXIMITY_H
+
 #include <stdio.h>
 #include <iostream>
 #include <pigpio.h>
 
-#ifndef proximity_H
-#define proximity_H
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#define proxstart = 0b01000010 //integration time 50ms, channel interrupt, interrupt persistance setting 1, interrupt enabled, ALS power on
+#define proxstart 0b01000010 //integration time 50ms, channel interrupt, interrupt persistance setting 1, interrupt enabled, ALS power on
 
 
 class proximity{
@@ -20,7 +16,4 @@ class proximity{
 		void measuredist(); //Method for measuring distance
 };
 
-#ifdef __cplusplus
-}
-#endif
 #endif
