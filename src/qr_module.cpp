@@ -68,9 +68,9 @@ int decode(Mat &im, qr_Code &qrcode) {
 		for (int i = 0; i < symbol->get_location_size(); i++){
 			qrcode.location.push_back(Point(symbol->get_location_x(i), symbol->get_location_y(i)));
 		}
-#define Q(i,j,xy) (symbol->get_location_##xy ((i)+((j)<<1))) /* XXX placeholder; fix indexing */
-		float a0 = 1/(float)(Q(0,0,y) - Q(0,1,y));
-		float a1 = 1/(float)(Q(1,0,y) - Q(1,1,y));
+#define Q(i,j,xy) (symbol->get_location_##xy ((i<<1)+((i)^(j)))) /* indexing map 00=>0, 01=>1, 11=>2, 10=>3 */
+		float a0 = -1/(float)(Q(0,0,y) - Q(0,1,y));
+		float a1 = -1/(float)(Q(1,0,y) - Q(1,1,y));
  		qrcode.dx = L * ((Q(0,0,x) - OX) * a0 + (Q(1,0,x) - OX) * a1);
 		qrcode.dy = L * ZF * (a0 + a1);
 		qrcode.face = asinf(ZF * (a1 - a0));
