@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <math.h>
 #include <pigpio.h>
 #include <stdlib.h>
 
@@ -36,9 +37,12 @@
 #define HDG_KI 0.0
 #define HDG_KD 0.0
 
-#define PID_DECLS(id) static double id##_err, id##_sum; double id##_last
+#define PID_DECLS(id) static float id##_err, id##_sum; float id##_last
 #define PID(id,ecalc,kp,ki,kd) (id##_last = id##_err, id##_sum += (id##_err = (ecalc)), \
-		                    (kp)*id##_err + (ki)*id##_sum + (kd)*(id##_err-id##_last))
+                                    (kp)*id##_err + (ki)*id##_sum + (kd)*(id##_err-id##_last))
+#define PI ((float)M_PI)
+#define TWOPI ((float)(2*M_PI))
+#define THREEPI ((float)(3*M_PI))
 
 void m_init(void) {
     gpioSetMode(PIN_M_L_FWD, PI_OUTPUT);
@@ -51,24 +55,24 @@ void m_init(void) {
 }
 
 
-int m_drive(double velocity, unsigned heading) {
-    double cm, diff;
+int m_drive(float velocity, float heading) {
+    float cm, diff;
     int left, right, err0, err1, err2, err3, err4, err5;
     PID_DECLS(vel);
     PID_DECLS(hdg);
 
     cm = PID(vel, velocity - get_current_velocity(), VEL_KP, VEL_KI, VEL_KD);
-    diff = PID(hdg, (int)((540 + heading - get_current_heading()) % 360) - 180, HDG_KP, HDG_KI, HDG_KD);
+    diff = PID(hdg, fmodf(THREEPI + heading - get_current_heading(), TWOPI) - PI, HDG_KP, HDG_KI, HDG_KD);
 
     left = (int) ((cm - diff) * PWM_RNG);
     right = (int) ((cm + diff) * PWM_RNG);
     if(left > PWM_RNG) {
         if(right > left) { left -= (right - PWM_RNG); right = PWM_RNG; } 
-	else { right -= (left - PWM_RNG); left = PWM_RNG; }
+        else { right -= (left - PWM_RNG); left = PWM_RNG; }
     } else if(right > PWM_RNG) { left -= (right - PWM_RNG); right = PWM_RNG; }
     if(left < -PWM_RNG) {
         if(right < left) { left -= (right + PWM_RNG); right = -PWM_RNG; } 
-	else { right -= (left + PWM_RNG); left = -PWM_RNG; }
+        else { right -= (left + PWM_RNG); left = -PWM_RNG; }
     } else if(right < -PWM_RNG) { left -= (right + PWM_RNG); right = -PWM_RNG; }
 
     err0 = gpioWrite(PIN_M_L_FWD, left > 0);
