@@ -14,17 +14,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+
+#ifndef LOGIC_H
+#define LOGIC_H
+
 #include <iostream>
 #include <string>
 #include "movement.h"
 //#include "navigation.h"
-
-#ifndef logic_H
-#define logic_H
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 class logic {
 private:
@@ -42,7 +39,4 @@ public:
 	void stopTour();
 };
 
-#ifdef __cplusplus
-}
-#endif
 #endif
