@@ -119,7 +119,7 @@ typedef uint16_t uint16_be_t, uint16_le_t; /* For clarity we write the non-host 
 #define G2F(x) (GYRO_LSB*(float)(int16_t)be16toh(x))
 #define M2F(x) ((float)(int16_t)le16toh(x))
 
-#define USE_MAGNET 0
+#define USE_MAGNET 1 /* XXX if magnet reads screw up performance, alter this */
 
 #define ASSUME_TAKEN(x) __builtin_expect(!!(x),1)
 #define ASSUME_NOT_TAKEN(x) __builtin_expect(!!(x),0)
