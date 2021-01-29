@@ -39,7 +39,7 @@
 
 #define PID_DECLS(id) static float id##_err, id##_sum; float id##_last
 #define PID(id,ecalc,kp,ki,kd) (id##_last = id##_err, id##_sum += (id##_err = (ecalc)), \
-		                    (kp)*id##_err + (ki)*id##_sum + (kd)*(id##_err-id##_last))
+                                    (kp)*id##_err + (ki)*id##_sum + (kd)*(id##_err-id##_last))
 #define PI ((float)M_PI)
 #define TWOPI ((float)(2*M_PI))
 #define THREEPI ((float)(3*M_PI))
@@ -68,11 +68,11 @@ int m_drive(float velocity, float heading) {
     right = (int) ((cm + diff) * PWM_RNG);
     if(left > PWM_RNG) {
         if(right > left) { left -= (right - PWM_RNG); right = PWM_RNG; } 
-	else { right -= (left - PWM_RNG); left = PWM_RNG; }
+        else { right -= (left - PWM_RNG); left = PWM_RNG; }
     } else if(right > PWM_RNG) { left -= (right - PWM_RNG); right = PWM_RNG; }
     if(left < -PWM_RNG) {
         if(right < left) { left -= (right + PWM_RNG); right = -PWM_RNG; } 
-	else { right -= (left + PWM_RNG); left = -PWM_RNG; }
+        else { right -= (left + PWM_RNG); left = -PWM_RNG; }
     } else if(right < -PWM_RNG) { left -= (right + PWM_RNG); right = -PWM_RNG; }
 
     err0 = gpioWrite(PIN_M_L_FWD, left > 0);

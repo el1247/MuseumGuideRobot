@@ -39,7 +39,7 @@ static void (*on_error)(int);
 static timer_t ticker;
 struct sigevent tickevt;
 struct itimerspec tickspec = { .it_interval = { .tv_sec = 0, .tv_nsec = SAMPLE_TIME_NS },
-	                       .it_value = { .tv_sec = 0, .tv_nsec = 500000000 }};
+                               .it_value = { .tv_sec = 0, .tv_nsec = 500000000 }};
 
 static int mag_read_indir(unsigned);
 static int mag_write_indir(unsigned,unsigned);
@@ -125,11 +125,11 @@ typedef uint16_t uint16_be_t, uint16_le_t; /* For clarity we write the non-host 
 #define ASSUME_NOT_TAKEN(x) __builtin_expect(!!(x),0)
 
 #define MAG_BLOCK_READ_H6(buf) (mag_transparent ? i2cReadI2CBlockData(mag,MAGREG_HXL,buf,6) \
-	                                        : IMU_READ_BLOCK(EXT_SLV_SENS_DATA_00,buf,6))
+                                                : IMU_READ_BLOCK(EXT_SLV_SENS_DATA_00,buf,6))
 #define MAG_READ(reg)          (mag_transparent ? i2cReadByteData(mag,MAGREG_##reg) \
-		                                : mag_read_indir(MAGREG_##reg))
+                                                : mag_read_indir(MAGREG_##reg))
 #define MAG_WRITE(reg,data)    (mag_transparent ? i2cWriteByteData(mag,MAGREG_##reg,data) \
-		                                : mag_write_indir(MAGREG_##reg,data))
+                                                : mag_write_indir(MAGREG_##reg,data))
 
 
 void imu_tick(__sigval_t _) {
@@ -144,10 +144,10 @@ void imu_tick(__sigval_t _) {
         uint16_le_t mbuf[3];
         if(ASSUME_TAKEN(MAG_BLOCK_READ_H6((char*)mbuf) >= 0)) {
             MadgwickAHRSupdate(gx, gy, gz, ax, ay, az, M2F(mbuf[0]), M2F(mbuf[1]), M2F(mbuf[2]));
-	} else {
+        } else {
             MadgwickAHRSupdateIMU(gx, gy, gz, ax, ay, az);
-	    has_magnet = 0;
-	}
+            has_magnet = 0;
+        }
     } else {
         MadgwickAHRSupdateIMU(gx, gy, gz, ax, ay, az);
     }
@@ -195,25 +195,25 @@ void imu_init(float startx, float starty, float starthdg, void (*on_err)(int)) {
     tmp = i2cOpen(1, I2CADDR_MAG, 0);
     if(tmp > 0) {
         mag = (unsigned) tmp;
-	if((MAG_READ(WIA) != MAG_ID) || MAG_WRITE(CNTL3, 0x01)) mag_transparent = 0;
-	else {
+        if((MAG_READ(WIA) != MAG_ID) || MAG_WRITE(CNTL3, 0x01)) mag_transparent = 0;
+        else {
             has_magnet = !MAG_WRITE(CNTL2, 0x08); /* Continuous 4 (100 Hz) */
-	}
+        }
     }
     if(!mag_transparent) {
         has_magnet = !IMU_WRITE(I2C_MST_CTRL, 0x4D)
                   && !IMU_WRITE(I2C_MST_DELAY_CTRL, 0x01)
-	          && (MAG_READ(WIA) == MAG_ID)
+                  && (MAG_READ(WIA) == MAG_ID)
                   && !MAG_WRITE(CNTL3, 0x01);
         if(has_magnet) {
             while(MAG_READ(CNTL3) == 0x01) usleep(1000);
-	    /* Setup magnetometer for 100Hz reading and prime registers for block reads */
+            /* Setup magnetometer for 100Hz reading and prime registers for block reads */
             tmp = MAG_WRITE(CNTL2, 0x08) /* Continuous 4 (100 Hz) */
                ?: IMU_WRITE(I2C_SLV0_ADDR, I2CADDR_MAG | 0x80) /* High bit = RD/¬WR */
                ?: IMU_WRITE(I2C_SLV0_REG, MAGREG_HXL)
                ?: IMU_WRITE(I2C_SLV0_CTRL, 0x86) /* EN_READ, len=6 */
                ?: IMU_READ(USER_CTRL);
-    	    has_magnet = (tmp > 0) && !IMU_WRITE(USER_CTRL, tmp | 0x20);
+                has_magnet = (tmp > 0) && !IMU_WRITE(USER_CTRL, tmp | 0x20);
         }
     }
 #endif
@@ -228,7 +228,7 @@ void imu_init(float startx, float starty, float starthdg, void (*on_err)(int)) {
         perror("Error starting imu update timer: ");
         i2cClose(imu);
         if(on_error) (*on_error)(0);
-	return;
+        return;
     }
 
     atexit(imu_fini);
@@ -240,20 +240,20 @@ void imu_init(float startx, float starty, float starthdg, void (*on_err)(int)) {
 static int mag_read_indir(unsigned reg) {
     int ret;
     int user = IMU_WRITE(I2C_SLV0_ADDR, I2CADDR_MAG | 0x80)/* High bit = RD/¬WR */
-	    ?: IMU_WRITE(I2C_SLV0_REG, reg)
+            ?: IMU_WRITE(I2C_SLV0_REG, reg)
             ?: IMU_WRITE(I2C_SLV0_CTRL, 0x81) /* EN_READ */
             ?: IMU_READ(USER_CTRL);
     if(ASSUME_NOT_TAKEN(user < 0)) return user;
     if(ASSUME_NOT_TAKEN(ret = IMU_WRITE(USER_CTRL, user | 0x20))) return ret;
     usleep(5000);
     return IMU_WRITE(USER_CTRL, user)
-	?: IMU_READ(EXT_SLV_SENS_DATA_00);
+        ?: IMU_READ(EXT_SLV_SENS_DATA_00);
 }
 
 static int mag_write_indir(unsigned reg, unsigned data) {
     int ret;
     int user = IMU_WRITE(I2C_SLV0_ADDR, I2CADDR_MAG) /* High bit = RD/¬WR */
-	    ?: IMU_WRITE(I2C_SLV0_REG, reg)
+            ?: IMU_WRITE(I2C_SLV0_REG, reg)
             ?: IMU_WRITE(I2C_SLV0_DO, data) 
             ?: IMU_READ(USER_CTRL);
     if(ASSUME_NOT_TAKEN(user < 0)) return user;
