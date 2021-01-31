@@ -80,7 +80,7 @@ int decode(Mat &im, qr_Code &qrcode) {
 	return 0;
 }
 
-int main(int argv, char** argc){ //TESTING MAIN FUNCTION, TO BE COMMENTED OUT
+/*int main(int argv, char** argc){ //TESTING MAIN FUNCTION, REFER TO THIS TO WRITE MAIN
 
 	Mat frame; //To store the frames from the video
 	//vector<qr_Code> qr_Codes; // Vector to contain all the qr codes scanned
@@ -107,4 +107,4 @@ int main(int argv, char** argc){ //TESTING MAIN FUNCTION, TO BE COMMENTED OUT
 			}
 	}
 	return 0;
-}
+}*/
