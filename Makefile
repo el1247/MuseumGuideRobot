@@ -10,7 +10,7 @@ LIBS = -lpigpio -lrt
 EXE = tpee4g8mgr
 VERSION = 0.0.1
 
-SRCS = main.c imu.c MadgwickAHRS.c movement.c 
+SRCS = main.c imu.c MadgwickAHRS.c movement.c qr_module.cpp
 
 COBJS = $(patsubst %.c,build/%.o,$(filter %.c,$(SRCS))) 
 CXXOBJS = $(patsubst %.cpp,build/%.o,$(filter %.cpp,$(SRCS))) 
@@ -31,6 +31,9 @@ $(COBJS) : build/%.o : %.c
 
 $(CXXOBJS) : build/%.o : %.cpp
 	$(CXX) -MMD -MP $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+
+qr-standalone : qr_module.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -DQR_STANDALONE -o $@ $<
 
 clean:
 	-rm -rf build/* $(EXE)
