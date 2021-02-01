@@ -5,7 +5,7 @@ CFLAGS ?= -g -Wall
 CFLAGS += -pthread
 CXXFLAGS ?= $(CFLAGS)
 INCLUDES = -Iinclude
-LIBS = -lpigpio -lrt 
+LIBS = -lpigpio -lrt -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_videoio -lzbar
 
 EXE = tpee4g8mgr
 VERSION = 0.0.1
