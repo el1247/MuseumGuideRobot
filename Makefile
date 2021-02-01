@@ -32,6 +32,9 @@ $(COBJS) : build/%.o : %.c
 $(CXXOBJS) : build/%.o : %.cpp
 	$(CXX) -MMD -MP $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
+qr-standalone : qr_module.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -DQR_STANDALONE -o $@ $<
+
 clean:
 	-rm -rf build/* $(EXE)
 
