@@ -24,12 +24,6 @@
 #ifndef QRMODULE_H
 #define QRMODULE_H
 
-typedef struct{
-	std::string data;
-	std::vector <cv::Point> location;
-	float dx, dy, face;
-} qr_Code;
-
 int decode(cv::Mat &im, qr_Code &qrcode);
 
 #endif

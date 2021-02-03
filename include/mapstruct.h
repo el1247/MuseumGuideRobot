@@ -28,6 +28,11 @@ typedef struct{
     std::string sound_name;
 }waypoint;
 
+typedef struct{
+	std::string data;
+	float dx, dy, face;
+} qr_Code;
+
 #ifdef __cplusplus
 }
 #endif
