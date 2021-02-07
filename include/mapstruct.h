@@ -25,11 +25,11 @@ extern "C"{
 typedef struct{
     float dx, dy;
     unsigned qr; //0 -> no QR at location, 1 -> QR is present
-    std::string sound_name;
-}waypoint;
+    static char sound_name;
+} Waypoint;
 
 typedef struct{
-	std::string data;
+	static char data;
 	float dx, dy, face;
 } qr_Code;
 

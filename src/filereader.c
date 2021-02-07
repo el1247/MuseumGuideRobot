@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "mapstruct.h"
 
+#define MAP_PATH "/home/pi/MuesumGuideRobot/bin/map.bin"
 void writemap(){
 	int num_waypoints;
 	int i;
@@ -9,19 +10,26 @@ void writemap(){
 
 	printf("Enter the number of waypoints in the tour:");
 	scanf("%d", &num_waypoints);
-	waypoint waypoints[num_waypoints];
+	Waypoint waypoints[num_waypoints];
 
-	if ((fp = fopen("/home/pi/MuesumGuideRobot/bin/map.bin","wb")) == NULL){
+	if ((fp = fopen(MAP_PATH,"wb")) == NULL){
 		printf("Error opening file");
 		exit(1);
 	}
 
+	fwrite(&num_waypoints, sizeof(num_waypoints), 1, fp);
+
 	for(i = 0; i < num_waypoints; i++){
 		printf("Enter waypoint no. %d x and y-coordinates, whether a QR code exists there or not, and the sound file to be played there:", i);
-		scanf("%f %f %u %s", &waypoints[i].dx, &waypoints[i].dy, &waypoints[i].qr, &waypoints[i].sound_name);
+		scanf("%f %f %u %c", &waypoints[i].dx, &waypoints[i].dy, &waypoints[i].qr, &waypoints[i].sound_name);
 	}
 
 	fwrite(waypoints, sizeof(waypoints), 1, fp);
 	fclose(fp);
 }
 
+void read_map(){
+	int num_waypoints_read;
+	int i;
+	FILE *fpt;
+}
