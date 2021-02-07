@@ -21,13 +21,13 @@
 #include <iostream>
 #include <pigpio.h>
 
-#define proxstart 0b01000010 //integration time 50ms, channel interrupt, interrupt persistance setting 1, interrupt enabled, ALS power on
-
-
 class proximity{
 	private:
 		int distance; //Distance to object measured from proximity sensor
+		int error; //Record of any errors
+		int prox_i2c_r, prox_i2c_w; //Stores the handle for the i2c connections
 		proximity(); //Initialiser
+		~proximity(); //Destructor
 	public:
 		void measuredist(); //Method for measuring distance
 };
