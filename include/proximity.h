@@ -28,6 +28,7 @@ class proximity{
 		int prox_i2c_r, prox_i2c_w; //Stores the handle for the i2c connections
 		proximity(); //Initialiser
 		~proximity(); //Destructor
+		uint16_t read16(uint16_t comcode); //16 bit read method for 16 bit addr registers
 	public:
 		void measuredist(); //Method for measuring distance
 };

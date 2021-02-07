@@ -13,6 +13,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+/*Current issues: 
+	understanding the addressing system of the proximity sensor and how to speak to it
+	Investigation into interrupts options required		
+*/
+
 #include "proximity.h"
 
 
@@ -46,7 +52,19 @@ proximity::proximity(){
 	}else if (i2cWriteByteData(prox_i2c_w,PROX_ALS_CONF, CMD_PROX_START)){
 		std::cout << "Proximity sensor config failure" << std::endl;
 		error = 4; //marks failure for i2c configuration
-	}else error = 0;
+	} 	//look into interrupts and PS config
+	else error = 0;
+}
+
+
+uint16_t proximity::read16(uint16_t comcode){ ///WRONG AS this is not 16 bit memory address
+	//Code to read 16 bits from 16 bit memory address ///https://github.com/joan2937/pigpio/issues/301
+	char buf[2];
+	buf[0] = comcode >> 8;
+	buf[1] = comcode & 0xFF;
+	i2cWriteDevice(prox_i2c_r, buf, 2); ///uses read address to write, potential issue?
+	i2cReadDevice(prox_i2c_r, buf, 2);
+	return buf[0] << 8 | buf[1];
 }
 
 
