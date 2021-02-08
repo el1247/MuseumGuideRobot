@@ -16,6 +16,7 @@
 
 #include <math.h>
 #include <pigpio.h>
+#include <signal.h>
 #include <stdlib.h>
 
 #include "gpio_assign.h"
@@ -44,6 +45,17 @@
 #define TWOPI ((float)(2*M_PI))
 #define THREEPI ((float)(3*M_PI))
 
+void m_watchdog_timeout(__sigval_t);
+
+static timer_t watchdog;
+static pthread_attr_t wd_attr;
+static struct sched_param wd_param = { .sched_priority = 99 }; /* Watchdog is highest priority */
+static struct sigevent wd_evt = { .sigev_notify = SIGEV_THREAD,
+                                  .sigev_notify_function = m_watchdog_timeout,
+                                  .sigev_notify_attributes = &wd_attr };
+static struct itimerspec wd_spec = { .it_interval = { .tv_sec = 0, .tv_nsec = 100000000 },
+                                     .it_value =    { .tv_sec = 0, .tv_nsec = 100000000 }};
+
 void m_init(void) {
     gpioSetMode(PIN_M_L_FWD, PI_OUTPUT);
     gpioSetMode(PIN_M_L_REV, PI_OUTPUT);
@@ -51,6 +63,13 @@ void m_init(void) {
     gpioSetMode(PIN_M_R_FWD, PI_OUTPUT);
     gpioSetMode(PIN_M_R_REV, PI_OUTPUT);
     gpioSetMode(PIN_M_R_PWM, PI_OUTPUT);
+
+    pthread_attr_init(&wd_attr);
+    pthread_attr_setinheritsched(&wd_attr, PTHREAD_EXPLICIT_SCHED);
+    pthread_attr_setschedpolicy(&wd_attr, SCHED_FIFO);
+    pthread_attr_setschedparam(&wd_attr, &wd_param);
+    timer_create(CLOCK_MONOTONIC, &wd_evt, &watchdog);
+
     atexit(m_fini);
 }
 
@@ -81,6 +100,7 @@ int m_drive(float velocity, float heading) {
     err3 = gpioWrite(PIN_M_R_FWD, right > 0);
     err4 = gpioWrite(PIN_M_R_REV, right < 0);
     err5 = gpioHardwarePWM(PIN_M_R_PWM, PWM_FREQ, abs(right));
+    timer_settime(watchdog, 0, &wd_spec, NULL);
 
     if(__builtin_expect(err0|err1|err2|err3|err4|err5, 0)) {
         /* XXX TODO Probably should log errors somehow -- for now just inform caller */
@@ -90,11 +110,16 @@ int m_drive(float velocity, float heading) {
     }
 }
 
+void m_watchdog_timeout(__sigval_t _) {
+    gpioWrite_Bits_0_31_Set(MASK_MOTOR_ALL);
+}
+
 void m_stop(void) {
     gpioWrite_Bits_0_31_Set(MASK_MOTOR_ALL);
 }
 
 void m_fini(void) {
     gpioWrite_Bits_0_31_Clear(MASK_MOTOR_ALL);
+    timer_delete(watchdog);
 }
 

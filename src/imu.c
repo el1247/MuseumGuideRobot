@@ -35,11 +35,16 @@ static float vx = 0.0f, vy = 0.0f;
 static float posx = 0.0f, posy = 0.0f;
 
 static void (*on_error)(int);
+void imu_tick(__sigval_t);
 
 static timer_t ticker;
-struct sigevent tickevt;
-struct itimerspec tickspec = { .it_interval = { .tv_sec = 0, .tv_nsec = SAMPLE_TIME_NS },
-                               .it_value = { .tv_sec = 0, .tv_nsec = 500000000 }};
+static pthread_attr_t tickattr;
+static struct sched_param tickparam = { .sched_priority = 70 }; /* Knowing where we are is reasonably high priority */
+static struct sigevent tickevt = { .sigev_notify = SIGEV_THREAD,
+                                   .sigev_notify_function = imu_tick,
+                                   .sigev_notify_attributes = &tickattr };
+static struct itimerspec tickspec = { .it_interval = { .tv_sec = 0, .tv_nsec = SAMPLE_TIME_NS },
+                                      .it_value =    { .tv_sec = 0, .tv_nsec = 500000000 }};
 
 static int mag_read_indir(unsigned);
 static int mag_write_indir(unsigned,unsigned);
@@ -131,6 +136,9 @@ typedef uint16_t uint16_be_t, uint16_le_t; /* For clarity we write the non-host 
 #define MAG_WRITE(reg,data)    (mag_transparent ? i2cWriteByteData(mag,MAGREG_##reg,data) \
                                                 : mag_write_indir(MAGREG_##reg,data))
 
+#define MAX_TICKS 32 /* Fairly arbitrary value -- if the IMU tick thread has been stalled too much to give an accurate
+                      * DR increment, fail with an error. This value is the maximum number of 'ticks' to allow a single
+		      * sample to cover */
 
 void imu_tick(__sigval_t _) {
     int err;
@@ -153,7 +161,9 @@ void imu_tick(__sigval_t _) {
     }
     const float qy = (q1*q2-q0*q3), qx = (q2*q2+q3*q3) - 0.5f;
     hdg = atan2f(qy, qx);
-    const float tqinvnorm = invSqrt(qy*qy+qx*qx) * (SAMPLE_TIME_NS/1000000000.0f); 
+    const unsigned ticks = 1 + __builtin_expect(timer_getoverrun(ticker),0);
+    if(!ticks || ticks > MAX_TICKS) { err = ticks; goto error; }
+    const float tqinvnorm = invSqrt(qy*qy+qx*qx) * (SAMPLE_TIME_NS/1000000000.0f) * ticks;
     const float tsinhdg = qy*tqinvnorm, tcoshdg = qx*tqinvnorm;
     vx += ax*tcoshdg - ay*tsinhdg;
     vy += ay*tcoshdg + ay*tsinhdg;
@@ -219,9 +229,10 @@ void imu_init(float startx, float starty, float starthdg, void (*on_err)(int)) {
 #endif
     beta = 0.0755749735f; /* Calibrated as per Madgwick for 5 degrees per second error */
     
-    tickevt.sigev_notify = SIGEV_THREAD;
-    tickevt.sigev_notify_function = imu_tick;
-    tickevt.sigev_notify_attributes = NULL; /* XXX Possibly increase priority? */
+    pthread_attr_init(&tickattr);
+    pthread_attr_setinheritsched(&tickattr, PTHREAD_EXPLICIT_SCHED);
+    pthread_attr_setschedpolicy(&tickattr, SCHED_FIFO);
+    pthread_attr_setschedparam(&tickattr, &tickparam);
 
     if(timer_create(CLOCK_MONOTONIC, &tickevt, &ticker)
         || timer_settime(ticker, 0, &tickspec, NULL)) {
