@@ -23,14 +23,22 @@
 
 class proximity{
 	private:
+		uint16_t ALSval, PSval; //ALS value and PS value
 		int distance; //Distance to object measured from proximity sensor
-		int error; //Record of any errors
+		uint8_t error; //Record of any errors
 		int prox_i2c_r, prox_i2c_w; //Stores the handle for the i2c connections
-		proximity(); //Initialiser
+
+		proximity(uint16_t ALSint_thresh_lowini, uint16_t ALSint_thresh_highini, uint16_t PSint_thresh_lowini, uint16_t PSint_thresh_highini); //Initialiser
 		~proximity(); //Destructor
-		uint16_t read16(uint16_t comcode); //16 bit read method for 16 bit addr registers
+		int writeMSB_Prox(uint8_t reg, uint8_t MSB);
+		int writeLSB_Prox(uint8_t reg, uint8_t LSB);
+		//uint16_t read16(uint16_t comcode); //16 bit read method for 16 bit addr registers
+
 	public:
-		void measuredist(); //Method for measuring distance
+		int configALSthresh(uint16_t ALSint_thresh_low, uint16_t ALSint_thresh_high);
+		int configPSthresh(uint16_t PSint_thresh_low, uint16_t PSint_thresh_high);
+		int measureALS(); //Method for measuring ALS value
+		int measurePS(); //Method for measuring PS value
 };
 
 #endif
