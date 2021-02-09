@@ -5,12 +5,14 @@ CFLAGS ?= -g -Wall
 CFLAGS += -pthread
 CXXFLAGS ?= $(CFLAGS)
 INCLUDES = -Iinclude
-LIBS = -lpigpio -lrt 
+LIBS = -lpigpio -lrt -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_videoio -lzbar
 
 EXE = tpee4g8mgr
 VERSION = 0.0.1
 
-SRCS = main.c imu.c MadgwickAHRS.c movement.c proximity.cpp
+
+SRCS = main.c imu.c MadgwickAHRS.c movement.c qr_module.cpp proximity.cpp
+
 
 COBJS = $(patsubst %.c,build/%.o,$(filter %.c,$(SRCS))) 
 CXXOBJS = $(patsubst %.cpp,build/%.o,$(filter %.cpp,$(SRCS))) 
@@ -31,6 +33,9 @@ $(COBJS) : build/%.o : %.c
 
 $(CXXOBJS) : build/%.o : %.cpp
 	$(CXX) -MMD -MP $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+
+qr-standalone : qr_module.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(LDFLAGS) -DQR_STANDALONE -o $@ $< $(LIBS)
 
 clean:
 	-rm -rf build/* $(EXE)
