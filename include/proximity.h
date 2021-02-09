@@ -26,7 +26,7 @@ class proximity{
 		uint16_t ALSval, PSval; //ALS value and PS value
 		int distance; //Distance to object measured from proximity sensor
 		uint8_t error; //Record of any errors
-		int prox_i2c_r, prox_i2c_w; //Stores the handle for the i2c connections
+		int prox_i2c; //Stores the handle for the i2c connections
 
 		proximity(uint16_t ALSint_thresh_lowini, uint16_t ALSint_thresh_highini, uint16_t PSint_thresh_lowini, uint16_t PSint_thresh_highini); //Initialiser
 		~proximity(); //Destructor

@@ -28,8 +28,6 @@
 //Proximity sensor I2C addressing
 #define PROX_I2CBUSNO 0 //I2C bus number 					///check
 #define PROX_ADDR 0x51 //7 bit slave address (lsb 0=r, 1=w)
-#define PROX_ADDR_R PROX_ADDR << 1 //8 bit slave address read
-#define PROX_ADDR_W (PROX_ADDR << 1) | 1 //8 bit slave address write
 
 //Proximity sensor Registers
 #define PROX_ALS_CONF 0x00 //Low
@@ -52,8 +50,8 @@
 #define CMD_PROX_START_PS3 0b00000001 //reserved, mulit pulse number 1, smart persistence disabled, active force mode disabled, no PS active force mode trigger
 									  // typical sunlight immunity, sunlight cancellation function enabled
 #define CMD_PROX_START_PSMS 0b00000010 //reserved, proximity normal operation /w interrupt function, typical sunlight capability, 00h in sunlihgt protect mode, LED current 100ma ///LEDcheck
-#define CMD_PROX_START_PS12 (CMD_PROX_START_PS2 << 8) | CMD_PROX_START_PS1
-#define CMD_PROX_START_PS3MS (CMD_PROX_START_PSMS << 8) | CMD_PROX_START_PS3
+#define CMD_PROX_START_PS12 ((CMD_PROX_START_PS2 << 8) | CMD_PROX_START_PS1)
+#define CMD_PROX_START_PS3MS ((CMD_PROX_START_PSMS << 8) | CMD_PROX_START_PS3)
 #define CMD_PROX_CANC 0x0000 //PS cancellation level set to 0
 
 //Constants
@@ -63,29 +61,29 @@
 
 proximity::proximity(uint16_t ALSint_thresh_lowini, uint16_t ALSint_thresh_highini, uint16_t PSint_thresh_lowini, uint16_t PSint_thresh_highini){
 	//Initialises GPIO libary and establishes I2C connection to proximity sensor
-	if (gpioInitialise() < 0){
+	int temp;
+	if (gpioInitialise() < 0){ ///Potentially redundant
 		std::cout << "Pigpio failed to initialise" << std::endl; //Possibile duplicate command, may already be initialised
 		error = 1; //marks failure for gpio initialisation
-	}else if ((prox_i2c_r = (unsigned) i2cOpen(PROX_I2CBUSNO, PROX_ADDR_R, 0)) < 0) {
+	}else if ((temp = i2cOpen(PROX_I2CBUSNO, PROX_ADDR, 0)) < 0) {
 		std::cout << "Proximity I2C read connection failed" << std::endl;
-		error = 2; //marks failure for i2c read connection failing
-	}else if ((prox_i2c_w = (unsigned) i2cOpen(PROX_I2CBUSNO, PROX_ADDR_W, 0)) < 0) {
-		std::cout << "Proximity I2C write connection failed" << std::endl;
-		error = 3; //marks failure for i2c write connection failing
-	}else if (writeLSB_Prox(PROX_ALS_CONF, CMD_PROX_START_ALS)){
+		error = 2; //marks failure for i2c connection failing
+	}
+	prox_2c = (unsigned) temp;
+	if (writeLSB_Prox(PROX_ALS_CONF, CMD_PROX_START_ALS)){
 		std::cout << "Proximity ALS config failure" << std::endl;
-		error = 4; //marks failure for i2c configuration
+		error = 3; //marks failure for i2c configuration
 	}else if (configALSthresh(ALSint_thresh_lowini, ALSint_thresh_highini)) {
 
-	}else if (i2cWriteWordData(prox_i2c_w, PROX_PS_CONF1, CMD_PROX_START_PS12)){
+	}else if (i2cWriteWordData(prox_i2c, PROX_PS_CONF1, CMD_PROX_START_PS12)){
 		std::cout << "Proximity PS config failure 1-2" << std::endl;
-		error = 7; //marks failure for PS configuration 1-2
-	}else if (i2cWriteWordData(prox_i2c_w, PROX_PS_CONF3, CMD_PROX_START_PS3MS)){
+		error = 6; //marks failure for PS configuration 1-2
+	}else if (i2cWriteWordData(prox_i2c, PROX_PS_CONF3, CMD_PROX_START_PS3MS)){
 		std::cout << "Proximty PS config failure 3-MS" << std::endl;
-		error = 8; //marks failure for PS configuration 3-mode select
-	}else if (i2cWriteWordData(prox_i2c_w, PROX_PS_CANC, CMD_PROX_CANC)){
+		error = 7; //marks failure for PS configuration 3-mode select
+	}else if (i2cWriteWordData(prox_i2c, PROX_PS_CANC, CMD_PROX_CANC)){
 		std::cout << "Proximity PS cancellation setting failure" << std::endl;
-		error = 9; //marks failure for PS cancellation settings
+		error = 8; //marks failure for PS cancellation settings
 	}else if (configPSthresh(PSint_thresh_lowini, PSint_thresh_highini)){
 
 	}else error = 0; //marks not failure
@@ -93,13 +91,13 @@ proximity::proximity(uint16_t ALSint_thresh_lowini, uint16_t ALSint_thresh_highi
 
 
 int proximity::configALSthresh(uint16_t ALSint_thresh_low, uint16_t ALSint_thresh_high){
-	if (i2cWriteWordData(prox_i2c_w, PROX_ALS_THRESH_HIGH, ALSint_thresh_high) < 0){
+	if (i2cWriteWordData(prox_i2c, PROX_ALS_THRESH_HIGH, ALSint_thresh_high) < 0){
 		std::cout << "Failure to update ALS interrupt high threshold" << std::endl;
-		error = 5; //marks failure for setting ALS interrupt high threshold
+		error = 4; //marks failure for setting ALS interrupt high threshold
 		return 1;
-	}else if (i2cWriteWordData(prox_i2c_w, PROX_ALS_THRESH_LOW, ALSint_thresh_low) < 0){
+	}else if (i2cWriteWordData(prox_i2c, PROX_ALS_THRESH_LOW, ALSint_thresh_low) < 0){
 		std::cout << "Failure to update ALS interrupt low threshold" << std::endl;
-		error = 6; //marks failure for setting ALS interrupt low threshold
+		error = 5; //marks failure for setting ALS interrupt low threshold
 		return 1;
 	}
 	return 0;
@@ -107,11 +105,11 @@ int proximity::configALSthresh(uint16_t ALSint_thresh_low, uint16_t ALSint_thres
 
 
 int proximity::configPSthresh(uint16_t PSint_thresh_low, uint16_t PSint_thresh_high){
-	if (i2cWriteWordData(prox_i2c_w, PROX_PS_THRESH_HIGH, PSint_thresh_high) < 0){
+	if (i2cWriteWordData(prox_i2c, PROX_PS_THRESH_HIGH, PSint_thresh_high) < 0){
 		std::cout << "Failure to update PS interrupt high threshold" << std::endl;
 		error = 10; //marks failure for setting PS interrupt high threshold
 		return 1;
-	}else if (i2cWriteWordData(prox_i2c_w, PROX_PS_THRESH_LOW, PSint_thresh_low) < 0){
+	}else if (i2cWriteWordData(prox_i2c, PROX_PS_THRESH_LOW, PSint_thresh_low) < 0){
 		std::cout << "Failure to update PS interrupt low threshold" << std::endl;
 		error = 11; //marks failure for setting PS interrupt low threshold
 		return 1;
@@ -122,7 +120,7 @@ int proximity::configPSthresh(uint16_t PSint_thresh_low, uint16_t PSint_thresh_h
 
 int proximity::measureALS(){
 	//Function to capture and store latest value of the ALS
-	ALSval = i2cReadWordData(prox_i2c_r, PROX_ALS_DATA);
+	ALSval = i2cReadWordData(prox_i2c, PROX_ALS_DATA);
 	if (!ALSval) {
 		std::cout << "Failure to read ALS value" << std::endl;
 		error = 12; //marks failure to read ALS DATA 
@@ -134,7 +132,7 @@ int proximity::measureALS(){
 
 int proximity::measurePS(){
 	//Function to capture and store latest value of the PS
-	PSval = i2cReadWordData(prox_i2c_r, PROX_PS_DATA);
+	PSval = i2cReadWordData(prox_i2c, PROX_PS_DATA);
 	if (!PSval) {
 		std::cout << "Failure to read PS value" << std::endl;
 		error = 13; //marks failure to read PS DATA 
@@ -147,13 +145,13 @@ int proximity::measurePS(){
 int proximity::writeMSB_Prox(uint8_t reg, uint8_t MSB){
 	//method to write to MSB of a register
 	uint16_t temp;
-	if ((temp = i2cReadWordData(prox_i2c_r, reg)) < 0){
+	if ((temp = i2cReadWordData(prox_i2c, reg)) < 0){
 		error = 96;
 		return 1;
 	}
 	uint8_t LSB = temp & 0xFF;
 	temp = (MSB << 8) | LSB;
-	if (i2cWriteWordData(prox_i2c_w, reg, temp)){
+	if (i2cWriteWordData(prox_i2c, reg, temp)){
 		error = 97;
 		return 2;
 	}
@@ -163,13 +161,13 @@ int proximity::writeMSB_Prox(uint8_t reg, uint8_t MSB){
 int proximity::writeLSB_Prox(uint8_t reg, uint8_t LSB){
 	//method to write to LSB of a register
 	uint16_t temp;
-	if ((temp = i2cReadWordData(prox_i2c_r, reg)) < 0){
+	if ((temp = i2cReadWordData(prox_i2c, reg)) < 0){
 		error = 98;
 		return 1;
 	}
 	uint8_t MSB = temp >> 8;
 	temp = (MSB << 8) | LSB;
-	if (i2cWriteWordData(prox_i2c_w, reg, temp)){
+	if (i2cWriteWordData(prox_i2c, reg, temp)){
 		error = 99;
 		return 2;
 	}
@@ -180,8 +178,8 @@ int proximity::writeLSB_Prox(uint8_t reg, uint8_t LSB){
 proximity::~proximity(){
 	//Closes GPIO libary and I2C connection to proximity sensor
 	gpioTerminate();
-	if (i2cClose(prox_i2c_r)) std::cout << "Error closing i2c read connection" << std::endl;
-	if (i2cClose(prox_i2c_w)) std::cout << "Error closing i2c write connection" << std::endl;
+	if (i2cClose(prox_i2c)) std::cout << "Error closing i2c read connection" << std::endl;
+	if (i2cClose(prox_i2c)) std::cout << "Error closing i2c write connection" << std::endl;
 }
 
 
