@@ -14,8 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string>
-
 #ifndef MAPSTRUCT_H
 #define MAPSTRUCT_H
 #ifdef __cplusplus
@@ -25,11 +23,11 @@ extern "C"{
 typedef struct{
     float dx, dy;
     unsigned qr; //0 -> no QR at location, 1 -> QR is present
-    static char sound_name;
+    char sound_name[50];
 } Waypoint;
 
 typedef struct{
-	static char data;
+	char data[50];
 	float dx, dy, face;
 } qr_Code;
 
