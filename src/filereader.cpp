@@ -14,6 +14,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <fstream>
+#include <iostream>
+#include <vector>
+#include <string>
 #include <stdio.h>
 #include <stdlib.h>
 #include "mapstruct.h"
@@ -40,7 +44,7 @@ void writemap(){
 	fwrite(&num_waypoints, sizeof(num_waypoints), 1, fp);
 
 	for(i = 0; i < num_waypoints; i++){
-		printf("Enter waypoint no. %d x and y-coordinates, whether a QR code exists there or not, and the sound file to be played there:", i);
+		printf("Enter waypoint no. %d x and y-coordinates, whether a QR code exists there or not, and the path to the sound file to be played there:", i);
 		scanf("%f %f %u %c", &waypoints[i].dx, &waypoints[i].dy, &waypoints[i].qr, &waypoints[i].sound_name);
 	}
 	fwrite(waypoints, sizeof(waypoints), 1, fp); 
@@ -66,4 +70,54 @@ void read_map(){
 	}
 
 	fread(&way_in, sizeof(way_in), 1, fpt);
+}
+
+void write_csv(){
+	std::fstream fout;
+	fout.open("map.csv", ios::out | ios::app);
+	int num_waypoints = 0;
+	int i;
+	float dx, dy;
+	unsigned qr;
+	char* sound_name;
+
+	std::cout<< "Enter number of waypoints:" <<std::endl;
+	std::cin >> num_waypoints;
+
+	for (i = 0; i < num_waypoints; i++){
+		std::cout << "Enter the x-coord, y-coord, path to sound file, qr code existence(0 or 1)" << std::endl;
+		std::cin >> dx >> dy >> sound_name >> qr;
+
+		fout << i << ", "
+			 << dx << ", "
+		     << dy << ", "
+			 << sound_name << ", "
+			 << qr << "\n"; 	
+	}
+}
+
+void read_csv(Waypoint *point, int way_num){
+	std::fstream fin;
+	fin.open("map.csv", ios::in);
+
+	int read_way_num;
+	float dx, dy;
+	char *sound_name;
+	unsigned qr;
+	vector<string> row;
+	std::string line, word, temp;
+
+	while (fin >> temp) {
+		row.clear();
+		getline(fin, line);
+		stringstream s(line);
+		while (getline(s, word, ', ')) {
+			row.push_back(word);
+		}
+
+		read_way_num = stoi(row[0]);
+		if (read_way_num == way_num){
+			
+		}
+	}
 }

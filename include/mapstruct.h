@@ -23,11 +23,11 @@ extern "C"{
 typedef struct{
     float dx, dy;
     unsigned qr; //0 -> no QR at location, 1 -> QR is present
-    char sound_name[50];
+    char *sound_name;
 } Waypoint;
 
 typedef struct{
-	char data[50];
+	char *data;
 	float dx, dy, face;
 } qr_Code;
 
