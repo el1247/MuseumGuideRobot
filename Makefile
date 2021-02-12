@@ -1,27 +1,29 @@
 CC = $(TOOLCHAIN)gcc
 CXX = $(TOOLCHAIN)g++
+FC = $(TOOLCHAIN)gfortran
 
 CFLAGS ?= -g -Wall
 CFLAGS += -pthread
 CXXFLAGS ?= $(CFLAGS)
+FFLAGS ?=
 INCLUDES = -Iinclude
 LIBS = -lpigpio -lrt -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_videoio -lzbar
 
 EXE = tpee4g8mgr
 VERSION = 0.0.1
 
-SRCS = main.c imu.c MadgwickAHRS.c movement.c qr_module.cpp
+SRCS = main.c imu.c MadgwickAHRS.c movement.c qr_module.cpp quartic.f90
 
 COBJS = $(patsubst %.c,build/%.o,$(filter %.c,$(SRCS))) 
 CXXOBJS = $(patsubst %.cpp,build/%.o,$(filter %.cpp,$(SRCS))) 
-OBJS = $(COBJS) $(CXXOBJS)
+FOBJS = $(patsubst %.f90,build/%.o,$(filter %.f90,$(SRCS))) 
+OBJS = $(COBJS) $(CXXOBJS) $(FOBJS)
 
 VPATH = src:include
 
-
 all : $(EXE)
 
-$(EXE) : $(COBJS) $(CXXOBJS)
+$(EXE) : $(OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS)
 
 -include $(OBJS:.o=.d)
@@ -31,6 +33,12 @@ $(COBJS) : build/%.o : %.c
 
 $(CXXOBJS) : build/%.o : %.cpp
 	$(CXX) -MMD -MP $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+
+$(FOBJS) : build/%.o : %.f90
+	$(FC) $(FFLAGS) -o $@ -c $<
+
+include/quartic.h : src/quartic.f90
+	$(FC) -fc-prototypes -c $< > $@
 
 qr-standalone : qr_module.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(LDFLAGS) -DQR_STANDALONE -o $@ $< $(LIBS)

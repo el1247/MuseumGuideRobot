@@ -26,6 +26,7 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/videoio/videoio_c.h"
 #include "qr.hpp"
+#include "quartic.h"
 #include "zbar.h"
 
 
@@ -38,8 +39,9 @@ using namespace std;
 #define ZF 2571.2f /* Pixel distance between the image of the optical axis and the image of a line 45 degrees away.
                    * Can be caluclated as (linear resolution/(2*tan(FOV angle/2))) */
 #define OX 1296    /* X-coordinate of the image of the optical axis */
+#define OY 1296    /* Y-coordinate of the image of the optical axis XXX what is this? */
 
-static int find_perspective(int*,int*,int*,int,int,int,int,int,int,int,int,int,int);
+static int find_ranges(double*,double*,double*,double*,int,int,int,int,int,int,int,int,int,int);
 
 int decode(Mat &im, qr_Code &qrcode) {
 	ImageScanner scanner; //creating qr scanner
@@ -72,7 +74,7 @@ int decode(Mat &im, qr_Code &qrcode) {
 			//cout << "QR code corners -" << qrcode.location[i] << endl; //Can include this for debugging
 		}
 #define Q(i,j,xy) (symbol->get_location_##xy ((i<<1)+((i)^(j)))) /* indexing map 00=>0, 01=>1, 11=>2, 10=>3 */
-#ifndef SIMPLE_PERSPECTIVE
+#ifdef SIMPLE_PERSPECTIVE
 		float a0 = -1/(float)(Q(0,0,y) - Q(0,1,y));
 		float a1 = -1/(float)(Q(1,0,y) - Q(1,1,y));
  		qrcode.dx = L * ((Q(0,0,x) - OX) * a0 + (Q(1,0,x) - OX) * a1);
@@ -82,7 +84,7 @@ int decode(Mat &im, qr_Code &qrcode) {
 #else
 #define Qdot(i0,j0,i1,j1) ((Q(i0,j0,x) - OX)*(Q(i1,j1,x) - OX) + (Q(i0,j0,y) - OY)*(Q(i1,j1,y) - OY) + ZF*ZF)
 		double r00, r01, r10, r11;
-		if(find_range_ratios(&r00, &r01, &r10, &r11, Qdot(0,0,0,0), Qdot(0,0,0,1), Qdot(0,0,1,0), Qdot(0,0,1,1),
+		if(find_ranges(&r00, &r01, &r10, &r11, Qdot(0,0,0,0), Qdot(0,0,0,1), Qdot(0,0,1,0), Qdot(0,0,1,1),
 			Qdot(1,0,1,0), Qdot(0,1,0,1), Qdot(0,1,1,0), Qdot(0,1,1,1), Qdot(1,1,1,0), Qdot(1,1,1,1))) {
 			/* TODO ERROR */
 		}
@@ -95,6 +97,7 @@ int decode(Mat &im, qr_Code &qrcode) {
 	return 0;
 }
 
+#ifndef SIMPLE_PERSPECTIVE
 /* This code is a huge hack based on calculations done during 3am mania. r00, etc., are the ranges such that Pij=rij*Qij
  * where Pij is the point in real space and Qij is the point (x,1,z) where x and z are the normalised x and y pixel
  * coordinates. Solves a cubic in s01 (the ratio r01/r00) and checks which positive, real root best fits a related but
@@ -102,9 +105,10 @@ int decode(Mat &im, qr_Code &qrcode) {
  * found by fixing |P01-P00| = 2L. The input parameters q0 to q9 are the dot products between pairs of Qij. This
  * algorithm takes into account all six possible degrees of freedom for the object but I'm still not sure how much we
  * should trust it. */
-static int find_range_ratios(r00, r01, r10, r11, q0, q1, q2, q3, q4, q5, q6, q7, q8, q9) {
+static int find_ranges(double * r00, double * r01, double * r10, double * r11, int q0, int q1,  int q2, int q3, int q4,
+		int q5, int q6, int q7, int q8, int q9) {
 	double a[4], s01, s10, s11, d;
-	struct {double dr,di;} z[3];
+	__GFORTRAN_DOUBLE_COMPLEX z[3];
 	int nc4 = q1*q8, k4 = q5*q9 - q7*q7;
 	a[3] = k4 * (q3*q6*q5 + q7*q1*q1*q4 + q6*q1*q1*q8 + q6*q0*q5*q8 + q2*q1*q5*q8 - q6*q7*q1*q2)
 	    + nc4 * (q7*q7*q1*q6 - 2*q6*q5*q1*q9 - q2*q5*q5*q9 - q7*q5*q1*q8 + q7*q7*q6*q1 + q7*q7*q2*q5 + q3*q6*q5*q7);
@@ -115,17 +119,17 @@ static int find_range_ratios(r00, r01, r10, r11, q0, q1, q2, q3, q4, q5, q6, q7,
 	a[1] = k4 * (q2*q1*q3 + q7*q0*q0*q4 + 2*q3*q0*q1*q4 + q2*q0*q1*q8 - q6*q3*q0*q2 - q2*q2*q7*q0 - q2*q2*q3*q1)
 	    + nc4 * (2*q7*q3*q0*q6 + q3*q3*q1*q6 - q2*q1*q1*q9 - q7*q1*q0*q8 - q3*q5*q0*q8 - q3*q1*q1*q8 + q3*q2*q1*q7);
 	a[0] = k4 * (q2*q2*q3*q0 - q3*q0*q0*q4) + nc4 * (q3*q1*q0*q8 - q3*q3*q0*q6);
-	__polynomialroots_MOD_cubicroots(&a, &z); /* For real roots, z0 < z1 < z2. Else, z0 real; z1, z2 complex */
-	if(z[1].di != 0.0) { /* Only z[0] is real -- no need to check others */
-	       	if(z[0].dr <= 0.0) return -1; /* But z[0] must be positive; if not, something has gone wrong. */
-		s01 = z[0].dr; 
+	cubicroots(a, z); /* For real roots, z0 < z1 < z2. Else, z0 real; z1, z2 complex */
+	if(imag(z[1]) != 0.0) { /* Only z[0] is real -- no need to check others */
+	       	if(real(z[0]) <= 0.0) return -1; /* But z[0] must be positive; if not, something has gone wrong. */
+		s01 = real(z[0]); 
 	} else { /* Three real roots: z[0] <= z[1] <= z[2] -- we need to find the "proper" solution. */
-		if(z[2].dr <= 0.0) return -1; /* If z[2] is not positive, no root is; thus, something has gone wrong */
-		if((z[1].dr <= 0.0)||((z[1].dr==z[2].dr)&&((z[0].dr<=0.0)||(z[0].dr==z[1].dr)))) {
-			s01 = z[2].dr; /* Select the only positive root */
+		if(real(z[2])<=0.0) return -1;/* If z[2] is not positive, no root is; thus, something has gone wrong */
+		if((real(z[1]) <= 0.0)||(real(z[1])==real(z[2])&&((real(z[0])<=0.0)||(real(z[0])==real(z[1]))))) {
+			s01 = real(z[2]); /* Select the only positive root */
 		} else { /* At least two distinct real and positive roots exist -- find the best fit of the quartic */
 			double er, erc;
-			s01 = z[2].dr;
+			s01 = real(z[2]);
 			er = fabs((q2*q2*q3*q0 - q3*q0*q0*q4) + (q2*q1*q3 + q7*q0*q0*q4 + 2*q3*q0*q1*q4 + q2*q0*q1*q8
 					- q6*q3*q0*q2 - q2*q2*q7*q0 - q2*q2*q3*q1) * s01
 				+ (-q3*q6*q1 - q3*q2*q5 - 2*q7*q0*q1*q4 - q3*q1*q1*q4 - q6*q0*q1*q8 - q2*q1*q1*q8
@@ -133,22 +137,22 @@ static int find_range_ratios(r00, r01, r10, r11, q0, q1, q2, q3, q4, q5, q6, q7,
 				+ (q3*q6*q5 + q7*q1*q1*q4 + q6*q1*q1*q8 + q6*q0*q5*q8 + q2*q1*q5*q8 - q6*q7*q1*q2) * s01*s01*s01
 				-q1*q5*q6*q8*s01*s01*s01*s01);
 			erc = fabs((q2*q2*q3*q0 - q3*q0*q0*q4) + (q2*q1*q3 + q7*q0*q0*q4 + 2*q3*q0*q1*q4 + q2*q0*q1*q8
-					- q6*q3*q0*q2 - q2*q2*q7*q0 - q2*q2*q3*q1) * z[1].dr
+					- q6*q3*q0*q2 - q2*q2*q7*q0 - q2*q2*q3*q1) * real(z[1])
 				+ (-q3*q6*q1 - q3*q2*q5 - 2*q7*q0*q1*q4 - q3*q1*q1*q4 - q6*q0*q1*q8 - q2*q1*q1*q8
-						- q2*q0*q5*q8 + q6*q7*q0*q2 + q6*q3*q1*q2 + q2*q2*q7*q1)*z[1].dr*z[1].dr
-				+ (q3*q6*q5 + q7*q1*q1*q4 + q6*q1*q1*q8 + q6*q0*q5*q8 + q2*q1*q5*q8 - q6*q7*q1*q2)*z[1].dr*z[1].dr*z[1].dr
-				-q1*q5*q6*q8*z[1].dr*z[1].dr*z[1].dr*z[1].dr);
-			if(erc < er) { er = erc; s01 = z[1].dr; }
-			if(z[0] > 0.0) {
+						- q2*q0*q5*q8 + q6*q7*q0*q2 + q6*q3*q1*q2 + q2*q2*q7*q1)*real(z[1])*real(z[1])
+				+ (q3*q6*q5 + q7*q1*q1*q4 + q6*q1*q1*q8 + q6*q0*q5*q8 + q2*q1*q5*q8 - q6*q7*q1*q2)*real(z[1])*real(z[1])*real(z[1])
+				-q1*q5*q6*q8*real(z[1])*real(z[1])*real(z[1])*real(z[1]));
+			if(erc < er) { er = erc; s01 = real(z[1]); }
+			if(real(z[0]) > 0.0) {
 				erc = fabs((q2*q2*q3*q0 - q3*q0*q0*q4) + (q2*q1*q3 + q7*q0*q0*q4 + 2*q3*q0*q1*q4
 							+ q2*q0*q1*q8 - q6*q3*q0*q2 - q2*q2*q7*q0 - q2*q2*q3*q1)
-						* z[1].dr
+						* real(z[0])
 					+ (-q3*q6*q1 - q3*q2*q5 - 2*q7*q0*q1*q4 - q3*q1*q1*q4 - q6*q0*q1*q8
-						- q2*q1*q1*q8 - q2*q0*q5*q8 + q6*q7*q0*q2 + q6*q3*q1*q2 + q2*q2*q7*q1)*z[1].dr*z[1].dr
+						- q2*q1*q1*q8 - q2*q0*q5*q8 + q6*q7*q0*q2 + q6*q3*q1*q2 + q2*q2*q7*q1)*real(z[0])*real(z[0])
 					+ (q3*q6*q5 + q7*q1*q1*q4 + q6*q1*q1*q8 + q6*q0*q5*q8 + q2*q1*q5*q8
-						- q6*q7*q1*q2)*z[1].dr*z[1].dr*z[1].dr
-					-q1*q5*q6*q8*z[1].dr*z[1].dr*z[1].dr*z[1].dr);
-				if(erc < er) s01 = z[0].dr;
+						- q6*q7*q1*q2)*real(z[0])*real(z[0])*real(z[0])
+					-q1*q5*q6*q8*real(z[0])*real(z[0])*real(z[0])*real(z[0]));
+				if(erc < er) s01 = real(z[0]);
 			}
 		}
 	}
@@ -157,6 +161,7 @@ static int find_range_ratios(r00, r01, r10, r11, q0, q1, q2, q3, q4, q5, q6, q7,
 	*r00 = d, *r01 = d*s01, *r10 = d*s10, *r11 = d*s11;
 	return 0;	
 }
+#endif
 
 #ifdef QR_STANDALONE
 int main(int argv, char** argc){ //TESTING MAIN FUNCTION, TO BE COMMENTED OUT
