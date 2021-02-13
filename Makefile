@@ -5,7 +5,7 @@ FC = $(TOOLCHAIN)gfortran
 CFLAGS ?= -g -Wall
 CFLAGS += -pthread
 CXXFLAGS ?= $(CFLAGS)
-FFLAGS ?=
+FFLAGS ?= -g -Wall
 INCLUDES = -Iinclude
 LIBS = -lpigpio -lrt -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_videoio -lzbar
 
@@ -40,8 +40,8 @@ $(FOBJS) : build/%.o : %.f90
 include/quartic.h : src/quartic.f90
 	$(FC) -fc-prototypes -c $< > $@
 
-qr-standalone : qr_module.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) $(LDFLAGS) -DQR_STANDALONE -o $@ $< $(LIBS)
+qr-standalone : qr_module.cpp build/quartic.o
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(LDFLAGS) -DQR_STANDALONE -o $@ $^ $(LIBS)
 
 clean:
 	-rm -rf build/* $(EXE)
