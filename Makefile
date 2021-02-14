@@ -7,7 +7,7 @@ CFLAGS += -pthread
 CXXFLAGS ?= $(CFLAGS)
 FFLAGS ?= -g -Wall
 INCLUDES = -Iinclude
-LIBS = -lpigpio -lrt -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_videoio -lzbar
+LIBS = -lpigpio -lrt -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_videoio -lzbar -lgfortran
 
 EXE = tpee4g8mgr
 VERSION = 0.0.1

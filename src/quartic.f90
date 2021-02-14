@@ -82,7 +82,7 @@ SUBROUTINE LinearRoot(a, z)
 ! PURPOSE - COMPUTES THE ROOTS OF THE REAL POLYNOMIAL
 !              A(1) + A(2)*Z 
 !     AND STORES THE RESULTS IN Z. It is assumed that a(2) is non-zero.
-  REAL(C_DOUBLE),INTENT(IN),DIMENSION(:):: a
+  REAL(C_DOUBLE),INTENT(IN),DIMENSION(2):: a
   REAL(C_DOUBLE),INTENT(OUT):: z
 !----------------------------------------------------------------------------
   IF (a(2)==0.0) THEN
@@ -126,8 +126,8 @@ SUBROUTINE QuadraticRoots(a, z) BIND(C)
 !              A(1) + A(2)*Z + A(3)*Z**2
 !     AND STORES THE RESULTS IN Z.  IT IS ASSUMED THAT A(3) IS NONZERO.
 
-  REAL(C_DOUBLE),INTENT(IN),DIMENSION(:):: a
-  COMPLEX(C_DOUBLE_COMPLEX),INTENT(OUT),DIMENSION(:):: z
+  REAL(C_DOUBLE),INTENT(IN),DIMENSION(3):: a
+  COMPLEX(C_DOUBLE_COMPLEX),INTENT(OUT),DIMENSION(2):: z
 
 
   REAL(C_DOUBLE):: d, r, w, x, y
@@ -177,8 +177,8 @@ SUBROUTINE CubicRoots(a, z) BIND(C)
 !----------------------------------------------------------------------------
 ! PURPOSE - Compute the roots of the real polynomial
 !              A(1) + A(2)*Z + A(3)*Z**2 + A(4)*Z**3
-  REAL(C_DOUBLE),INTENT(IN),DIMENSION(:):: a
-  COMPLEX(C_DOUBLE_COMPLEX),INTENT(OUT),DIMENSION(:):: z
+  REAL(C_DOUBLE),INTENT(IN),DIMENSION(4):: a
+  COMPLEX(C_DOUBLE_COMPLEX),INTENT(OUT),DIMENSION(3):: z
 
   REAL(C_DOUBLE),PARAMETER:: RT3=1.7320508075689D0    ! (Sqrt(3)
   REAL (C_DOUBLE) :: aq(3), arg, c, cf, d, p, p1, q, q1
@@ -360,8 +360,8 @@ SUBROUTINE QuarticRoots(a,z) BIND(C)
 ! PURPOSE - Compute the roots of the real polynomial
 !               A(1) + A(2)*Z + ... + A(5)*Z**4
 
-  REAL(C_DOUBLE), INTENT(IN)     :: a(:)
-  COMPLEX(C_DOUBLE_COMPLEX), INTENT(OUT) :: z(:)
+  REAL(C_DOUBLE), INTENT(IN)     :: a(5)
+  COMPLEX(C_DOUBLE_COMPLEX), INTENT(OUT) :: z(4)
 
   COMPLEX(C_DOUBLE_COMPLEX) :: w
   REAL(C_DOUBLE):: b,b2, c, d, e, h, p, q, r, t
@@ -538,9 +538,9 @@ SUBROUTINE SolvePolynomial(quarticCoeff, cubicCoeff, quadraticCoeff, &
   IF (quarticCoeff /= ZERO) THEN
     CALL QuarticRoots(a,z)  
   ELSE IF (cubicCoeff /= ZERO) THEN
-    CALL CubicRoots(a,z)
+    CALL CubicRoots(a(:4),z(:3))
   ELSE IF (quadraticCoeff /= ZERO) THEN
-    CALL QuadraticRoots(a,z)
+    CALL QuadraticRoots(a(:3),z(:2))
   ELSE IF (linearCoeff /= ZERO) THEN
     z(1)=CMPLX(-constantCoeff/linearCoeff, 0, C_DOUBLE)
     outputCode=1
