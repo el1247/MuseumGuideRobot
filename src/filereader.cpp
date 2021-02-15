@@ -18,6 +18,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
 #include "mapstruct.h"
@@ -26,7 +27,7 @@
 #define FILE_ERROR "Error opening file."
 #define EMPTY_WAY "No waypoints found"
 
-void writemap(){
+/*void writemap(){
 	int num_waypoints = 0;
 	Waypoint point;
 	int i;
@@ -70,7 +71,7 @@ void read_map(){
 	}
 
 	fread(&way_in, sizeof(way_in), 1, fpt);
-}
+}*/
 
 void write_csv(){
 	std::fstream fout;
@@ -83,41 +84,92 @@ void write_csv(){
 
 	std::cout<< "Enter number of waypoints:" <<std::endl;
 	std::cin >> num_waypoints;
+	fout << num_waypoints << "\n";
 
 	for (i = 0; i < num_waypoints; i++){
 		std::cout << "Enter the x-coord, y-coord, path to sound file, qr code existence(0 or 1)" << std::endl;
 		std::cin >> dx >> dy >> sound_name >> qr;
 
-		fout << i << ", "
-			 << dx << ", "
+		fout << dx << ", "
 		     << dy << ", "
 			 << sound_name << ", "
 			 << qr << "\n"; 	
 	}
 }
 
-void read_csv(Waypoint *point, int way_num){
+/*void read_csv(Waypoint (*point)[], int way_num){
 	std::fstream fin;
 	fin.open("map.csv", ios::in);
 
+	int i = 0;
 	int read_way_num;
-	float dx, dy;
-	char *sound_name;
-	unsigned qr;
-	vector<string> row;
+	char *buffer;
+	size_t bufsize = 32;
+	std::vector<std::string> row;
 	std::string line, word, temp;
 
 	while (fin >> temp) {
 		row.clear();
 		getline(fin, line);
-		stringstream s(line);
+		std::stringstream s(line);
 		while (getline(s, word, ', ')) {
 			row.push_back(word);
 		}
 
 		read_way_num = stoi(row[0]);
-		if (read_way_num == way_num){
+		if (read_way_num == i){
 			
 		}
+	}
+}*/
+
+void read_csv(){
+	FILE* fp = fopen("map.csv", "r");
+	int struct_size;
+	if (!fp){
+		printf("Can't open file");
+	}
+	else{
+		char buffer[1024];
+
+		int row = 0;
+		int column = 0;
+		Waypoint *output;
+		
+		fgets(buffer, 1024, fp);
+		struct_size = atoi(buffer);
+		output = (Waypoint*) malloc(struct_size * sizeof(Waypoint));
+
+		while (fgets(buffer, 1024, fp)) {
+			column = 0;
+
+			if (row==0){
+				row++;
+				continue;
+			}
+
+			char* value = strtok(buffer, ", ");
+
+			while (value) {
+				if (column == 0){
+					(output+(row-1))->dx = atof(value); 
+				}
+				if (column == 1){
+					(output+(row-1))->dy = atof(value);
+				}
+				if (column == 2){
+					(output+(row-1))->sound_name = value;
+				}
+				if (column == 3){
+					(output+(row-1))->qr = atoi(value);
+				}
+
+				value = strtok(NULL, ", ");
+				column++;
+			}
+			row++;
+		}
+
+		fclose(fp);
 	}
 }
