@@ -14,20 +14,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*Current issues: 
-	verify configuration
-		cancellation levels?
-	Develop	interrupt functionality
-	Extracting distances?
-	Use for ALS?
-*/
-
 #include "proximity.h"
+#include "gpio_assign.h"
 
-
-//Proximity sensor I2C addressing
-#define PROX_I2CBUSNO 0 //I2C bus number 					///check
-#define PROX_ADDR 0x51 //7 bit slave address (lsb 0=r, 1=w)
+//Definitions
+//ALS = Ambient Light Sensor
+//PS = Proximity sensor
 
 //Proximity sensor Registers
 #define PROX_ALS_CONF 0x00 //Low
@@ -59,21 +51,22 @@
 #define ALS_MAX 1573 //based on selected integration time, check table 14 of data sheet
 
 
-proximity::proximity(uint16_t ALSint_thresh_lowini, uint16_t ALSint_thresh_highini, uint16_t PSint_thresh_lowini, uint16_t PSint_thresh_highini){
+proximity::proximity(uint8_t busnumber, uint16_t ALS_thresh_low_ini, uint16_t ALS_thresh_high_ini, uint16_t PS_thresh_low_ini, uint16_t PS_thresh_high_ini){
 	//Initialises GPIO libary and establishes I2C connection to proximity sensor
 	int temp;
+	busno = busnumber;
 	if (gpioInitialise() < 0){ ///Potentially redundant
 		std::cout << "Pigpio failed to initialise" << std::endl; //Possibile duplicate command, may already be initialised
 		error = 1; //marks failure for gpio initialisation
-	}else if ((temp = i2cOpen(PROX_I2CBUSNO, PROX_ADDR, 0)) < 0) {
+	}else if ((temp = i2cOpen(busno, I2CADDR_PROX, 0)) < 0) {
 		std::cout << "Proximity I2C read connection failed" << std::endl;
 		error = 2; //marks failure for i2c connection failing
 	}
-	prox_2c = (unsigned) temp;
+	prox_i2c = (unsigned) temp;
 	if (writeLSB_Prox(PROX_ALS_CONF, CMD_PROX_START_ALS)){
 		std::cout << "Proximity ALS config failure" << std::endl;
 		error = 3; //marks failure for i2c configuration
-	}else if (configALSthresh(ALSint_thresh_lowini, ALSint_thresh_highini)) {
+	}else if (configALSthresh(ALS_thresh_low_ini, ALS_thresh_high_ini)) {
 
 	}else if (i2cWriteWordData(prox_i2c, PROX_PS_CONF1, CMD_PROX_START_PS12)){
 		std::cout << "Proximity PS config failure 1-2" << std::endl;
@@ -84,46 +77,76 @@ proximity::proximity(uint16_t ALSint_thresh_lowini, uint16_t ALSint_thresh_highi
 	}else if (i2cWriteWordData(prox_i2c, PROX_PS_CANC, CMD_PROX_CANC)){
 		std::cout << "Proximity PS cancellation setting failure" << std::endl;
 		error = 8; //marks failure for PS cancellation settings
-	}else if (configPSthresh(PSint_thresh_lowini, PSint_thresh_highini)){
+	}else if (configPSthresh(PS_thresh_low_ini, PS_thresh_high_ini)){
 
 	}else error = 0; //marks not failure
 }
 
 
-int proximity::configALSthresh(uint16_t ALSint_thresh_low, uint16_t ALSint_thresh_high){
-	if (i2cWriteWordData(prox_i2c, PROX_ALS_THRESH_HIGH, ALSint_thresh_high) < 0){
+int proximity::configALSthresh(uint16_t ALS_thresh_low_in, uint16_t ALS_thresh_high_in){
+	//Public method for setting the interrupt low and high thresholds for the ALS. Input in units of lux.
+	if ((ALS_thresh_low_in > ALS_thresh_high_in) || (ALS_thresh_high_in > ALS_MAX)){ //Parameter checking
+		std::cout << "Invalid input values for the Ambient Light Sensor" << std::endl;
+		return 1;
+	}
+	uint16_t temp = ALS_thresh_high_in / ALS_SENS; //converting from lux to 2^16 range
+	if (i2cWriteWordData(prox_i2c, PROX_ALS_THRESH_HIGH, temp) < 0){
 		std::cout << "Failure to update ALS interrupt high threshold" << std::endl;
 		error = 4; //marks failure for setting ALS interrupt high threshold
 		return 1;
-	}else if (i2cWriteWordData(prox_i2c, PROX_ALS_THRESH_LOW, ALSint_thresh_low) < 0){
+	}
+	ALS_thresh_high = ALS_thresh_high_in; //Updating class record of upper threshold
+	temp = ALS_thresh_low_in / ALS_SENS; //converting from lux to 2^16 range
+	if (i2cWriteWordData(prox_i2c, PROX_ALS_THRESH_LOW, temp) < 0){
 		std::cout << "Failure to update ALS interrupt low threshold" << std::endl;
 		error = 5; //marks failure for setting ALS interrupt low threshold
 		return 1;
 	}
+	ALS_thresh_low = ALS_thresh_low_in; //Updating class record of lower threshold
 	return 0;
 }
 
 
-int proximity::configPSthresh(uint16_t PSint_thresh_low, uint16_t PSint_thresh_high){
-	if (i2cWriteWordData(prox_i2c, PROX_PS_THRESH_HIGH, PSint_thresh_high) < 0){
+int proximity::configPSthresh(uint16_t PS_thresh_low_in, uint16_t PS_thresh_high_in){
+	//Public method for setting the interrupt low and high thresholds for the PS.
+	if ((PS_thresh_low_in > PS_thresh_high_in) || (PS_thresh_high > 65535)) { // Parameter checking
+		std::cout << "Invalid input values for Proximity Sensor" << std::endl;
+		return 1;
+	}
+	if (i2cWriteWordData(prox_i2c, PROX_PS_THRESH_HIGH, PS_thresh_high_in) < 0){
 		std::cout << "Failure to update PS interrupt high threshold" << std::endl;
 		error = 10; //marks failure for setting PS interrupt high threshold
 		return 1;
-	}else if (i2cWriteWordData(prox_i2c, PROX_PS_THRESH_LOW, PSint_thresh_low) < 0){
+	}
+	PS_thresh_high = PS_thresh_high_in; //Updating class record of upper threshold
+	if (i2cWriteWordData(prox_i2c, PROX_PS_THRESH_LOW, PS_thresh_low_in) < 0){
 		std::cout << "Failure to update PS interrupt low threshold" << std::endl;
 		error = 11; //marks failure for setting PS interrupt low threshold
 		return 1;
 	}
+	PS_thresh_low = PS_thresh_low_in; //Updating class record of lower threshold
 	return 0;
 }
 
 
+int proximity::getbusnumber(){
+	//Method to return private variable busnumber
+	return busno;
+}
+
+
 int proximity::measureALS(){
-	//Function to capture and store latest value of the ALS
+	//Function to update class value for the ALS, in units lux
 	ALSval = i2cReadWordData(prox_i2c, PROX_ALS_DATA);
 	if (!ALSval) {
 		std::cout << "Failure to read ALS value" << std::endl;
 		error = 12; //marks failure to read ALS DATA 
+		return 1;
+	}
+	ALSval *= ALS_SENS;
+	if  (ALSval < ALS_MAX) {
+		std::cout << "ALS value exceeded stated maximum lux" << std::endl;
+		error = 13; //marks failure with ALS multiplication
 		return 1;
 	}
 	return 0;
@@ -131,11 +154,11 @@ int proximity::measureALS(){
 
 
 int proximity::measurePS(){
-	//Function to capture and store latest value of the PS
+	//Function to update class value for the PS
 	PSval = i2cReadWordData(prox_i2c, PROX_PS_DATA);
 	if (!PSval) {
 		std::cout << "Failure to read PS value" << std::endl;
-		error = 13; //marks failure to read PS DATA 
+		error = 14; //marks failure to read PS DATA 
 		return 1;
 	}
 	return 0;
@@ -146,13 +169,13 @@ int proximity::writeMSB_Prox(uint8_t reg, uint8_t MSB){
 	//method to write to MSB of a register
 	uint16_t temp;
 	if ((temp = i2cReadWordData(prox_i2c, reg)) < 0){
-		error = 96;
+		error = 65;
 		return 1;
 	}
 	uint8_t LSB = temp & 0xFF;
 	temp = (MSB << 8) | LSB;
 	if (i2cWriteWordData(prox_i2c, reg, temp)){
-		error = 97;
+		error = 66;
 		return 2;
 	}
 	return 0;
@@ -162,13 +185,13 @@ int proximity::writeLSB_Prox(uint8_t reg, uint8_t LSB){
 	//method to write to LSB of a register
 	uint16_t temp;
 	if ((temp = i2cReadWordData(prox_i2c, reg)) < 0){
-		error = 98;
+		error = 67;
 		return 1;
 	}
 	uint8_t MSB = temp >> 8;
 	temp = (MSB << 8) | LSB;
 	if (i2cWriteWordData(prox_i2c, reg, temp)){
-		error = 99;
+		error = 68;
 		return 2;
 	}
 	return 0;
@@ -181,16 +204,3 @@ proximity::~proximity(){
 	if (i2cClose(prox_i2c)) std::cout << "Error closing i2c read connection" << std::endl;
 	if (i2cClose(prox_i2c)) std::cout << "Error closing i2c write connection" << std::endl;
 }
-
-
-/*
-uint16_t proximity::read16(uint16_t comcode){ ///WRONG AS this is not 16 bit memory address
-	//Code to read 16 bits from 16 bit memory address ///https://github.com/joan2937/pigpio/issues/301
-	char buf[2];
-	buf[0] = comcode >> 8;
-	buf[1] = comcode & 0xFF;
-	i2cWriteDevice(prox_i2c_r, buf, 2); ///uses read address to write, potential issue?
-	i2cReadDevice(prox_i2c_r, buf, 2);
-	return buf[0] << 8 | buf[1];
-}
-*/

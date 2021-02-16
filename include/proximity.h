@@ -23,20 +23,22 @@
 
 class proximity{
 	private:
-		uint16_t ALSval, PSval; //ALS value and PS value
-		int distance; //Distance to object measured from proximity sensor
-		uint8_t error; //Record of any errors
 		int prox_i2c; //Stores the handle for the i2c connections
+		uint8_t busno, error; //Record of bus number and any errors
+		uint16_t ALS_thresh_low, ALS_thresh_high; //Stores the latest ALS threshold limits
+		uint16_t PS_thresh_low, PS_thresh_high; //Stores the latest PS threshold limits
 
-		proximity(uint16_t ALSint_thresh_lowini, uint16_t ALSint_thresh_highini, uint16_t PSint_thresh_lowini, uint16_t PSint_thresh_highini); //Initialiser
+		proximity(uint8_t busnumber, uint16_t ALS_thresh_low_ini, uint16_t ALS_thresh_high_ini, uint16_t PS_thresh_low_ini, uint16_t PS_thresh_high_ini); //Initialiser
 		~proximity(); //Destructor
 		int writeMSB_Prox(uint8_t reg, uint8_t MSB);
 		int writeLSB_Prox(uint8_t reg, uint8_t LSB);
-		//uint16_t read16(uint16_t comcode); //16 bit read method for 16 bit addr registers
 
 	public:
+		uint16_t ALSval, PSval; //ALS value and PS value
+
 		int configALSthresh(uint16_t ALSint_thresh_low, uint16_t ALSint_thresh_high);
 		int configPSthresh(uint16_t PSint_thresh_low, uint16_t PSint_thresh_high);
+		int getbusnumber(); //Method for returning the busnumber assigned to the class instance
 		int measureALS(); //Method for measuring ALS value
 		int measurePS(); //Method for measuring PS value
 };
