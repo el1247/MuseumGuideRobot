@@ -35,6 +35,9 @@ $(CXXOBJS) : build/%.o : %.cpp
 qr-standalone : qr_module.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(LDFLAGS) -DQR_STANDALONE -o $@ $< $(LIBS)
 
+file-standalone : filereader.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(LDFLAGS) -DFILEREADER_STANDALONE -o $@ $< $(LIBS) 
+
 clean:
 	-rm -rf build/* $(EXE)
 

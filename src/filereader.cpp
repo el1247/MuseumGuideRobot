@@ -1,4 +1,4 @@
-/* Copyright (C) 2021 Gautam Gupta, Parewa Labs Pvt. Ltd.
+/* Copyright (C) 2021 Gautam Gupta, GeeksforGeeks.org -> https://www.geeksforgeeks.org/csv-file-management-using-c/
  *  
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -123,7 +123,7 @@ void write_csv(){
 	}
 }*/
 
-void read_csv(){
+void read_csv(Waypoint *output){
 	FILE* fp = fopen("map.csv", "r");
 	int struct_size;
 	if (!fp){
@@ -134,7 +134,6 @@ void read_csv(){
 
 		int row = 0;
 		int column = 0;
-		Waypoint *output;
 		
 		fgets(buffer, 1024, fp);
 		struct_size = atoi(buffer);
@@ -173,3 +172,11 @@ void read_csv(){
 		fclose(fp);
 	}
 }
+
+#ifdef FILEREADER_STANDALONE
+int main(){
+	Waypoint *output;
+	write_csv();
+	read_csv(output);
+}
+#endif
