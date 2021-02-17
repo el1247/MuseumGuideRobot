@@ -17,7 +17,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
-#include <string>
+#include <string.h>
 #include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -73,7 +73,7 @@ void read_map(){
 	fread(&way_in, sizeof(way_in), 1, fpt);
 }*/
 
-void write_csv(){
+/*void write_csv(){
 	std::fstream fout;
 	fout.open("map.csv", ios::out | ios::app);
 	int num_waypoints = 0;
@@ -123,7 +123,7 @@ void write_csv(){
 	}
 }*/
 
-void read_csv(Waypoint *output){
+void read_csv(Waypoint **result){
 	FILE* fp = fopen("map.csv", "r");
 	int struct_size;
 	if (!fp){
@@ -137,7 +137,7 @@ void read_csv(Waypoint *output){
 		
 		fgets(buffer, 1024, fp);
 		struct_size = atoi(buffer);
-		output = (Waypoint*) malloc(struct_size * sizeof(Waypoint));
+		Waypoint *output = (Waypoint*) malloc(struct_size * sizeof(Waypoint));
 
 		while (fgets(buffer, 1024, fp)) {
 			column = 0;
@@ -168,15 +168,21 @@ void read_csv(Waypoint *output){
 			}
 			row++;
 		}
-
+		*result = output;
 		fclose(fp);
 	}
 }
 
 #ifdef FILEREADER_STANDALONE
 int main(){
-	Waypoint *output;
-	write_csv();
-	read_csv(output);
+	Waypoint *output = NULL;
+	int i = 0;
+	//write_csv();
+	read_csv(&output);
+	for(i = 0; i<5; i++){
+		printf("dx -> %f, dy -> %f,", (output+i)->dx, (output+i)->dy);
+		printf("file name ->");
+		printf((output+i)->sound_name);
+	}
 }
 #endif
