@@ -41,7 +41,7 @@ using namespace std;
 #define OX 1296    /* X-coordinate of the image of the optical axis */
 #define OY 1296    /* Y-coordinate of the image of the optical axis XXX what is this? */
 
-static int find_ranges(double*,double*,double*,double*,int,int,int,int,int,int,int,int,int,int);
+static int find_ranges(double*,double*,double*,double*,double,double,double,double,double,double,double,double,double,double);
 
 int decode(Mat &im, qr_Code &qrcode) {
 	ImageScanner scanner; //creating qr scanner
@@ -88,7 +88,7 @@ int decode(Mat &im, qr_Code &qrcode) {
 			Qdot(1,0,1,0), Qdot(0,1,0,1), Qdot(0,1,1,0), Qdot(0,1,1,1), Qdot(1,1,1,0), Qdot(1,1,1,1))) {
 			/* TODO ERROR */
 		}
-		qrcode.dx = (r00*(Q(0,0,x) - OX) + r11*(Q(1,1,x) - OX))/2;
+		qrcode.dx = (r00*(Q(0,0,x) - OX) + r11*(Q(1,1,x) - OX))/(2*ZF);
 		qrcode.dy = (r00 + r11)/2;
 		qrcode.face = asinf((r11 - r00)/(2*L));
 #endif
@@ -105,8 +105,8 @@ int decode(Mat &im, qr_Code &qrcode) {
  * found by fixing |P01-P00| = 2L. The input parameters q0 to q9 are the dot products between pairs of Qij. This
  * algorithm takes into account all six possible degrees of freedom for the object but I'm still not sure how much we
  * should trust it. */
-static int find_ranges(double * r00, double * r01, double * r10, double * r11, int q0, int q1,  int q2, int q3, int q4,
-		int q5, int q6, int q7, int q8, int q9) {
+static int find_ranges(double * r00, double * r01, double * r10, double * r11, double q0, double q1,  double q2,
+			double q3, double q4, double q5, double q6, double q7, double q8, double q9) {
 	double a[4], s01, s10, s11, d;
 	__GFORTRAN_DOUBLE_COMPLEX z[3];
 	int nc4 = q1*q8, k4 = q5*q9 - q7*q7;
@@ -157,7 +157,7 @@ static int find_ranges(double * r00, double * r01, double * r10, double * r11, i
 		}
 	}
 	s10 = (s01*q1 - q0) / (s01*q6 - q2), s11 = s01 * (s01*q5 - q1) / (s01*q7 - q3); /* Distance ratios */
-	d = (2*L) / (q0 - 2*q1*s01 + s01*s01*q5);
+	d = (2*L) * ZF / (q0 - 2*q1*s01 + s01*s01*q5);
 	*r00 = d, *r01 = d*s01, *r10 = d*s10, *r11 = d*s11;
 	return 0;	
 }
