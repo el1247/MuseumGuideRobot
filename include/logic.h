@@ -21,14 +21,18 @@
 #include <iostream>
 #include <string>
 #include "movement.h"
+#include "proximity.h"
 //#include "navigation.h"
 
 class logic {
 private:
 	bool isTour = false; //Tracks if a tour is in progress
+	proximity* proximity_logic;
 	//instance of movement class
 	//instance of navigation class
 	//instance of QR scanning class
+	logic(); //Initialiser
+	static void proxdetection(int gpio, int level, uint32_t tick);
 	
 public:
 	void callHelp();

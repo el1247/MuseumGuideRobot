@@ -56,6 +56,10 @@ proximity::proximity(uint8_t busnumber, uint8_t inputpin, uint16_t ALS_thresh_lo
 	//Initialises GPIO libary and establishes I2C connection to proximity sensor
 	int temp;
 	busno = busnumber;
+	if (inputpin <= 53){
+		interruptpin = inputpin;
+		interruptmode = 1;
+	}else interruptmode = 0;
 	if (gpioInitialise() < 0){ ///Potentially redundant
 		std::cout << "Pigpio failed to initialise" << std::endl; //Possibile duplicate command, may already be initialised
 		error = 1; //marks failure for gpio initialisation
@@ -80,13 +84,7 @@ proximity::proximity(uint8_t busnumber, uint8_t inputpin, uint16_t ALS_thresh_lo
 		error = 8; //marks failure for PS cancellation settings
 	}else if (configPSthresh(PS_thresh_low_ini, PS_thresh_high_ini)){
 
-	}else if(inputpin <= 53){ //logic error with error being unable to be assigned a value
-		interruptpin = inputpin;
-		if (gpioSetISRFunc(interruptpin,0,0, proxdetection)){ //Interrupt set for a change to low, tick of 0
-			std::cout << "Failed to set up interrupt method" << std::endl;
-		}
-	}
-	else error = 0; //marks not failure
+	}else error = 0; //marks not failure
 }
 
 
@@ -169,13 +167,6 @@ int proximity::measurePS(){
 		return 1;
 	}
 	return 0;
-}
-
-
-void proximity::proxdetection(int gpio, int level, uint32_t tick){
-	std::cout << "Object detected, stopping" << std::endl;
-	m_stop();
-	//Further stopping logic
 }
 
 

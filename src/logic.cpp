@@ -16,6 +16,27 @@
 
 #include "logic.h"
 
+
+logic::logic(){
+	//Initialiser
+	proximity_logic = new proximity(1,1,1,250,1,250); ///Sample values currently
+	if(proximity_logic->interruptmode){
+		if (gpioSetISRFunc(proximity_logic->interruptpin,0,0, proxdetection)){ //Interrupt set for a change to low, tick of 0
+			std::cout << "Failed to set up interrupt method" << std::endl;
+			proximity_logic->interruptmode = 0;
+			//code for polling proximity and ALS 
+		}
+	}
+}
+
+
+void logic::proxdetection(int gpio, int level, uint32_t tick){
+	std::cout << "Object detected, stopping" << std::endl;
+	m_stop();
+	//Further stopping logic
+}
+
+
 void logic::callHelp() {
 	//stop moving, movement module
 	//send signal to help desk
