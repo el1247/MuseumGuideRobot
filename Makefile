@@ -11,7 +11,7 @@ EXE = tpee4g8mgr
 VERSION = 0.0.1
 
 
-SRCS = main.c imu.c MadgwickAHRS.c movement.c qr_module.cpp proximity.cpp
+SRCS = main.c imu.c MadgwickAHRS.c movement.c qr_module.cpp proximity.cpp logic.cpp
 
 
 COBJS = $(patsubst %.c,build/%.o,$(filter %.c,$(SRCS))) 
