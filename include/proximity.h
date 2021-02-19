@@ -24,12 +24,13 @@
 class proximity{
 	private:
 		int prox_i2c; //Stores the handle for the i2c connections
-		uint8_t busno, error; //Record of bus number and any errors
+		uint8_t busno, interruptpin, error; //Record of bus number, interrupt gpio number  and any errors
 		uint16_t ALS_thresh_low, ALS_thresh_high; //Stores the latest ALS threshold limits
 		uint16_t PS_thresh_low, PS_thresh_high; //Stores the latest PS threshold limits
 
-		proximity(uint8_t busnumber, uint16_t ALS_thresh_low_ini, uint16_t ALS_thresh_high_ini, uint16_t PS_thresh_low_ini, uint16_t PS_thresh_high_ini); //Initialiser
+		proximity(uint8_t busnumber, uint8_t inputpin, uint16_t ALS_thresh_low_ini, uint16_t ALS_thresh_high_ini, uint16_t PS_thresh_low_ini, uint16_t PS_thresh_high_ini); //Initialiser
 		~proximity(); //Destructor
+		static void proxdetection(int gpio, int level, uint32_t tick);
 		int writeMSB_Prox(uint8_t reg, uint8_t MSB);
 		int writeLSB_Prox(uint8_t reg, uint8_t LSB);
 

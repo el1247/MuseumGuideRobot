@@ -16,6 +16,7 @@
 
 #include "proximity.h"
 #include "gpio_assign.h"
+#include "movement.h"
 
 //Definitions
 //ALS = Ambient Light Sensor
@@ -51,7 +52,7 @@
 #define ALS_MAX 1573 //based on selected integration time, check table 14 of data sheet
 
 
-proximity::proximity(uint8_t busnumber, uint16_t ALS_thresh_low_ini, uint16_t ALS_thresh_high_ini, uint16_t PS_thresh_low_ini, uint16_t PS_thresh_high_ini){
+proximity::proximity(uint8_t busnumber, uint8_t inputpin, uint16_t ALS_thresh_low_ini, uint16_t ALS_thresh_high_ini, uint16_t PS_thresh_low_ini, uint16_t PS_thresh_high_ini){
 	//Initialises GPIO libary and establishes I2C connection to proximity sensor
 	int temp;
 	busno = busnumber;
@@ -79,7 +80,13 @@ proximity::proximity(uint8_t busnumber, uint16_t ALS_thresh_low_ini, uint16_t AL
 		error = 8; //marks failure for PS cancellation settings
 	}else if (configPSthresh(PS_thresh_low_ini, PS_thresh_high_ini)){
 
-	}else error = 0; //marks not failure
+	}else if(inputpin <= 53){ //logic error with error being unable to be assigned a value
+		interruptpin = inputpin;
+		if (gpioSetISRFunc(interruptpin,0,0, proxdetection)){ //Interrupt set for a change to low, tick of 0
+			std::cout << "Failed to set up interrupt method" << std::endl;
+		}
+	}
+	else error = 0; //marks not failure
 }
 
 
@@ -162,6 +169,13 @@ int proximity::measurePS(){
 		return 1;
 	}
 	return 0;
+}
+
+
+void proximity::proxdetection(int gpio, int level, uint32_t tick){
+	std::cout << "Object detected, stopping" << std::endl;
+	m_stop();
+	//Further stopping logic
 }
 
 
