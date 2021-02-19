@@ -28,8 +28,6 @@ class proximity{
 		uint16_t ALS_thresh_low, ALS_thresh_high; //Stores the latest ALS threshold limits
 		uint16_t PS_thresh_low, PS_thresh_high; //Stores the latest PS threshold limits
 
-		proximity(uint8_t busnumber, uint8_t inputpin, uint16_t ALS_thresh_low_ini, uint16_t ALS_thresh_high_ini, uint16_t PS_thresh_low_ini, uint16_t PS_thresh_high_ini); //Initialiser
-		~proximity(); //Destructor
 		static void proxdetection(int gpio, int level, uint32_t tick);
 		int writeMSB_Prox(uint8_t reg, uint8_t MSB);
 		int writeLSB_Prox(uint8_t reg, uint8_t LSB);
@@ -37,6 +35,8 @@ class proximity{
 	public:
 		uint16_t ALSval, PSval; //ALS value and PS value
 
+		proximity(uint8_t busnumber, uint8_t inputpin, uint16_t ALS_thresh_low_ini, uint16_t ALS_thresh_high_ini, uint16_t PS_thresh_low_ini, uint16_t PS_thresh_high_ini); //Initialiser
+		~proximity(); //Destructor
 		int configALSthresh(uint16_t ALSint_thresh_low, uint16_t ALSint_thresh_high);
 		int configPSthresh(uint16_t PSint_thresh_low, uint16_t PSint_thresh_high);
 		int getbusnumber(); //Method for returning the busnumber assigned to the class instance
