@@ -137,36 +137,37 @@ void read_csv(Waypoint **result){
 		
 		fgets(buffer, 1024, fp);
 		struct_size = atoi(buffer);
-		Waypoint *output = (Waypoint*) malloc(struct_size * sizeof(Waypoint));
+		Waypoint *output = (Waypoint*) malloc(struct_size * sizeof(Waypoint)); /*NEEDS TO BE VERIFIED*/
 
 		while (fgets(buffer, 1024, fp)) {
 			column = 0;
-
-			if (row==0){
-				row++;
+			row++;
+			
+			/*To remove the top row which contains number of entries*/
+			if (row==1){
 				continue;
 			}
 
 			char* value = strtok(buffer, ", ");
-
+			
+			/*row-2 to remove the effect of skipping over the first row*/
 			while (value) {
 				if (column == 0){
-					(output+(row-1))->dx = atof(value); 
+					output[row-2].dx = atof(value); 
 				}
 				if (column == 1){
-					(output+(row-1))->dy = atof(value);
+					output[row-2].dy = atof(value);
 				}
 				if (column == 2){
-					(output+(row-1))->sound_name = value;
+					output[row-2].sound_name = value; /*NEEDS TO BE VERIFIED*/
 				}
 				if (column == 3){
-					(output+(row-1))->qr = atoi(value);
+					output[row-2].qr = atoi(value);
 				}
 
 				value = strtok(NULL, ", ");
 				column++;
 			}
-			row++;
 		}
 		*result = output;
 		fclose(fp);
@@ -180,9 +181,8 @@ int main(){
 	//write_csv();
 	read_csv(&output);
 	for(i = 0; i<5; i++){
-		printf("dx -> %f, dy -> %f,", (output+i)->dx, (output+i)->dy);
-		printf("file name ->");
-		printf((output+i)->sound_name);
+		printf("dx -> %f, dy -> %f \n", output[i].dx, output[i].dy);
 	}
 }
 #endif
+
