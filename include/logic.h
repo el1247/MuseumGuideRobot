@@ -33,8 +33,9 @@ private:
 	//instance of QR scanning class
 	logic(); //Initialiser
 	static void proxdetection(int gpio, int level, uint32_t tick);
-	
+
 public:
+	
 	void callHelp();
 	void doTour(int tourID);
 	void emergencyStop();

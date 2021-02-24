@@ -21,11 +21,10 @@ logic::logic(){
 	//Initialiser
 	proximity_logic = new proximity(1,1,1,250,1,250); ///Sample values currently
 	if(proximity_logic->interruptmode){
-		if (gpioSetISRFunc(proximity_logic->interruptpin,0,0, proxdetection)){ //Interrupt set for a change to low, tick of 0
-			std::cout << "Failed to set up interrupt method" << std::endl;
-			proximity_logic->interruptmode = 0;
-			//code for polling proximity and ALS 
-		}
+		if (proximity_logic->configinterrupt(proxdetection)) goto proxintfail;
+	}else{
+		proxintfail: std::cout << "Initiating non interruptmethod" << std::endl;
+		//System restart most or polling code
 	}
 }
 

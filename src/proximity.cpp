@@ -134,6 +134,17 @@ int proximity::configPSthresh(uint16_t PS_thresh_low_in, uint16_t PS_thresh_high
 }
 
 
+int proximity::configinterrupt(void(*methodcall)(int, int, uint32_t)){
+	//Public method to configure interrupt
+	if (gpioSetISRFunc(interruptpin, 0, 0, methodcall)){ //Interrupt set for a change to low, tick of 0
+			std::cout << "Failed to set up interrupt method" << std::endl;
+			interruptmode = 0;
+			return 1;
+	}
+	return 0;
+}
+
+
 int proximity::getbusnumber(){
 	//Method to return private variable busnumber
 	return busno;
