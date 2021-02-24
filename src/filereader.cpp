@@ -1,4 +1,4 @@
-/* Copyright (C) 2021 Gautam Gupta, GeeksforGeeks.org -> https://www.geeksforgeeks.org/csv-file-management-using-c/
+ /*Copyright (C) 2021 Gautam Gupta, GeeksforGeeks.org -> https://www.geeksforgeeks.org/csv-file-management-using-c/
  *  
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -159,7 +159,7 @@ void read_csv(Waypoint **result){
 					output[row-2].dy = atof(value);
 				}
 				if (column == 2){
-					output[row-2].sound_name = value; /*NEEDS TO BE VERIFIED*/
+					output[row-2].sound_name = strdup(value); /*NEEDS TO BE VERIFIED*/
 				}
 				if (column == 3){
 					output[row-2].qr = atoi(value);
@@ -185,4 +185,5 @@ int main(){
 	}
 }
 #endif
+
 
