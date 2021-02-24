@@ -1,4 +1,4 @@
- /*Copyright (C) 2021 Gautam Gupta, GeeksforGeeks.org -> https://www.geeksforgeeks.org/csv-file-management-using-c/
+/* Copyright (C) 2021 Gautam Gupta, GeeksforGeeks.org -> https://www.geeksforgeeks.org/csv-file-management-using-c/
  *  
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -127,7 +127,7 @@ void read_csv(Waypoint **result){
 	FILE* fp = fopen("map.csv", "r");
 	int struct_size;
 	if (!fp){
-		printf("Can't open file");
+		printf("Can't open file \n");
 	}
 	else{
 		char buffer[1024];
@@ -141,33 +141,33 @@ void read_csv(Waypoint **result){
 
 		while (fgets(buffer, 1024, fp)) {
 			column = 0;
-			row++;
-			
+			//row++;
 			/*To remove the top row which contains number of entries*/
-			if (row==1){
-				continue;
-			}
+		//	if (row==1){
+		//		continue;
+		//	}
 
 			char* value = strtok(buffer, ", ");
 			
-			/*row-2 to remove the effect of skipping over the first row*/
+			/*row-1 to remove the effect of skipping over the first row*/
 			while (value) {
 				if (column == 0){
-					output[row-2].dx = atof(value); 
+					output[row].dx = atof(value); 
 				}
 				if (column == 1){
-					output[row-2].dy = atof(value);
+					output[row].dy = atof(value);
 				}
 				if (column == 2){
-					output[row-2].sound_name = strdup(value); /*NEEDS TO BE VERIFIED*/
+					output[row].sound_name = strdup(value); /*NEEDS TO BE VERIFIED*/
 				}
 				if (column == 3){
-					output[row-2].qr = atoi(value);
+					output[row].qr = atoi(value);
 				}
 
 				value = strtok(NULL, ", ");
 				column++;
 			}
+			row++;
 		}
 		*result = output;
 		fclose(fp);
@@ -181,9 +181,7 @@ int main(){
 	//write_csv();
 	read_csv(&output);
 	for(i = 0; i<5; i++){
-		printf("dx -> %f, dy -> %f \n", output[i].dx, output[i].dy);
+		printf("dx -> %f, dy -> %f, sound file name -> %s \n", output[i].dx, output[i].dy, output[i].sound_name);
 	}
 }
 #endif
-
-
