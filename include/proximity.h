@@ -21,10 +21,30 @@
 #include <iostream>
 #include <pigpio.h>
 
+enum errorcode {
+	noerror,
+	i2cconnection_fail,
+	ALSconfig_fail,
+	PS12config_fail,
+	PS3MSconfig_fail,
+	PScanc_fail,
+	ALSthreshconfig_low_fail,
+	ALSthreshconfig_high_fail,
+	PSthreshconfig_low_fail,
+	PSthreshconfig_high_fail,
+	ALSread_fail,
+	ALSmaxvalue_exceed_fail,
+	PSread_fail,
+	MSBwrite_read_fail,
+	MSBwrite_write_fail,
+	LSBwrite_read_fail,
+	LSBwrite_write_fail
+};
+
 class proximity{
 	private:
 		int prox_i2c; //Stores the handle for the i2c connections
-		uint8_t busno, error; //Record of bus number and any errors
+		errorcode error = noerror; //Record of any errors
 		uint16_t ALS_thresh_low, ALS_thresh_high; //Stores the latest ALS threshold limits
 		uint16_t PS_thresh_low, PS_thresh_high; //Stores the latest PS threshold limits
 
@@ -35,12 +55,11 @@ class proximity{
 		uint8_t interruptpin, interruptmode; //interrupt gpio number and tracker if interrupts are enabled
 		uint16_t ALSval, PSval; //ALS value and PS value
 
-		proximity(uint8_t busnumber, uint8_t inputpin, uint16_t ALS_thresh_low_ini, uint16_t ALS_thresh_high_ini, uint16_t PS_thresh_low_ini, uint16_t PS_thresh_high_ini); //Initialiser
+		proximity(uint8_t inputpin, uint16_t ALS_thresh_low_ini, uint16_t ALS_thresh_high_ini, uint16_t PS_thresh_low_ini, uint16_t PS_thresh_high_ini); //Initialiser
 		~proximity(); //Destructor
 		int configALSthresh(uint16_t ALSint_thresh_low, uint16_t ALSint_thresh_high);
 		int configPSthresh(uint16_t PSint_thresh_low, uint16_t PSint_thresh_high);
 		int configinterrupt(void(*methodcall)(int, int, uint32_t));
-		int getbusnumber(); //Method for returning the busnumber assigned to the class instance
 		int measureALS(); //Method for measuring ALS value
 		int measurePS(); //Method for measuring PS value
 };
