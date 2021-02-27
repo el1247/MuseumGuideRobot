@@ -20,9 +20,16 @@
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
 #include "zbar.h"
+#include "mapstruct.h"
 
 #ifndef QRMODULE_H
 #define QRMODULE_H
+
+typedef struct{
+	std::string data;
+	std::vector <cv::Point> location;
+	float dx, dy, face;
+} qr_Code;
 
 int decode(cv::Mat &im, qr_Code &qrcode);
 
