@@ -26,10 +26,9 @@ typedef struct{
     char *sound_name = NULL;
 } Waypoint;
 
-typedef struct{
-	char data[100];
-	float dx, dy, face;
-} qr_Code;
+void read_csv(Waypoint **result);
+
+void write_csv();
 
 #ifdef __cplusplus
 }
