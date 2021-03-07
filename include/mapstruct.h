@@ -26,9 +26,9 @@ typedef struct{
     char *sound_name = NULL;
 } Waypoint;
 
-void read_csv(Waypoint **result);
+int read_csv(Waypoint **result);
 
-void write_csv();
+int write_csv();
 
 #ifdef __cplusplus
 }
