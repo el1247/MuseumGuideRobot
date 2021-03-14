@@ -30,6 +30,10 @@ int read_csv(Waypoint **result);
 
 int write_csv();
 
+int update_csv();
+
+int delete_csv();
+
 #ifdef __cplusplus
 }
 #endif
