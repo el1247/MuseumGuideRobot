@@ -29,15 +29,31 @@
 int read_csv(Waypoint **result){
 	/*Multiple tours can be created by creating different csv files*/
 	char tour_name[100];
-	printf("Enter tour name (Please separate words using _):\n");
-	scanf("%s", &tour_name);
+	int confirmer = 0;
+
+	while(confirmer == 0){
+		printf("Enter tour name (Please separate words using _):\n");//ADD CONFIRMER
+		scanf("%s", &tour_name);
+		if(strlen(tour_name) == 0){
+			printf("ERROR! Enter a valid tour name:\n");
+		}
+		else{
+			printf("Are you sure that the tour name is %s? Enter 1 to confirm or 0 to retry:\n", &tour_name);
+			scanf("%d", &confirmer);
+			if(confirmer != 0 && confirmer != 1){
+                                printf("Enter a valid value next time!READ\n");
+                                confirmer = 0;
+                        }
+		}
+	}
+	confirmer = 0;
 	strcat(tour_name, ".csv");
 	FILE* fp = fopen(tour_name, "r");
 
 	int struct_size;
 	if (!fp){/*Error call in case file does not open*/
 		printf(FILE_ERROR);
-		return 0;
+		return 1;
 	}
 	else{
 		char buffer[1024];
@@ -48,6 +64,7 @@ int read_csv(Waypoint **result){
 		struct_size = atoi(buffer);/*Sets the size of the struct array*/
 		if(struct_size == 0){/*Error call for catching 0 waypoints*/
 			printf(EMPTY_WAY);
+			return 1;
 		}
 
 		Waypoint *output = (Waypoint*) malloc(struct_size * sizeof(Waypoint));
@@ -82,9 +99,9 @@ int read_csv(Waypoint **result){
 			row++;
 		}
 		*result = output;
-		//free(output);
                 fclose(fp);
-		return 1;
+		printf("All values read successfully!\n");
+		return 0;
 	}
 }
 
@@ -94,6 +111,7 @@ int write_csv(){
 	int confirmer = 0;
 	float dx, dy;
 	char sound[100], tour_name[50];
+
 	/*Enables multiple tours by allowing multiple csv files to be created*/
 	while(confirmer == 0){
 		printf("Enter tour name (words separated by _):\n");
@@ -104,16 +122,19 @@ int write_csv(){
 		else {
 			printf("Are you sure that the tour name is %s? Enter 1 to confirm or 0 to retry:\n", tour_name);
 			scanf("%i", &confirmer);
-			if(confirmer == 1){
-				strcat(tour_name, ".csv");
-			}
+			if(confirmer != 0 && confirmer != 1){
+                                printf("Enter a valid value next time!WRITE\n");
+                                confirmer = 0;
+                        }
 		}
 	}
+	strcat(tour_name, ".csv");
 	confirmer = 0;
 	fp = fopen(tour_name, "w+");
+
 	if(!fp){/*Error calls in case file does not open*/
 		printf(FILE_ERROR);
-		return 0;
+		return 1;
 	}
 	else{
 		while(confirmer == 0){
@@ -160,15 +181,304 @@ int write_csv(){
 		}
 		fclose(fp);
 		printf("All the waypoints have been recorded!\n");
-		return 1;
+		return 0;
 	}
 }
 
-/*int update_csv(){
-	char tour_name[50];
-	printf("Enter the name of the tour to update:\n")
-	scanf("%s", tour_name);
-}*/
+int update_csv(){
+	int way_num, qr_update;
+	int confirmer = 0;
+	float dx_update, dy_update;
+	char sound_update[100];
+	char tour_name[100];
+
+	/*Reading the csv file to be updated into a Waypoint array*/
+	while(confirmer == 0){ /*To confirm the tour name from the user*/
+		printf("Enter tour name to be updated(Please separate words using _):\n");
+		scanf("%s", tour_name);
+		if(strlen(tour_name) == 0){
+			printf("Error!Enter a valid name for the tour!\n");
+		}
+		else{
+			printf("Are you sure that the tour name is %s? Press 1 to confirm or 0 to retry:\n", tour_name);
+			scanf("%i", &confirmer);
+			/*if(confirmer != 0 && confirmer != 1){
+				printf("Enter a valid value next time!UPDATE\n");
+				confirmer = 0;
+			}*/
+		}
+	}
+	strcat(tour_name, ".csv");
+	FILE* fp = fopen(tour_name, "r");
+	confirmer = 0;
+
+	int struct_size;
+	if (!fp){/*Error call in case file does not open*/
+		printf(FILE_ERROR);
+		return 1;
+	}
+	else{
+		char buffer[1024];
+		int row = 0;
+		int column = 0;
+
+		fgets(buffer, 1024, fp);
+		struct_size = atoi(buffer);/*Sets the size of the struct array*/
+		if(struct_size == 0){/*Error call for catching 0 waypoints*/
+			printf(EMPTY_WAY);
+			return 1;
+		}
+		/*Memory allocation on the fly*/
+		Waypoint *output = (Waypoint*) malloc(struct_size * sizeof(Waypoint));
+
+		while (fgets(buffer, 1024, fp)) {
+			column = 0;
+			char* value = strtok(buffer, ", ");
+
+			/*Looping over the various columns*/
+			while (value) {
+				if (column == 0){
+					output[row].dx = atof(value);
+				}
+				else{
+					if (column == 1){
+						output[row].dy = atof(value);
+					}
+					else{
+						if (column == 2){
+							output[row].sound_name = strdup(value);
+						}
+						else{
+							if (column == 3){
+								output[row].qr = atoi(value);
+							}
+						}
+					}
+				}
+				value = strtok(NULL, ", ");
+				column++;
+			}
+			row++;
+		}
+                fclose(fp);
+
+		/*Getting the waypoint number and values to be edited*/
+		while(confirmer == 0){
+			printf("Enter the waypoint number to be edited:\n");
+			scanf("%d", &way_num);
+			printf("Are you sure the waypoint to be updated is number %d? Press 1 to confirm or 0 to retry:\n", way_num);
+			scanf("%d", &confirmer);
+			if(confirmer != 0 || confirmer != 1){
+				printf("Enter a valid value next time!\n");
+				confirmer = 0;
+			}
+		}
+		confirmer = 0;
+		while(confirmer == 0){
+			printf("Enter the new value of dx:\n");
+			scanf("%f", &dx_update);
+			printf("Are you sure the value of dx is %f? Enter 1 to confirm or 0 to retry:\n", dx_update);
+			scanf("%d", &confirmer);
+			if(confirmer != 0 || confirmer != 1){
+                                printf("Enter a valid value next time!\n");
+                                confirmer = 0;
+                        }
+		}
+		confirmer = 0;
+		while(confirmer == 0){
+			printf("Enter the new value of dy:\n");
+			scanf("%f", &dy_update);
+			printf("Are you sure the value of dy is %f? Press 1 to confirm or 0 to retry:\n", dy_update);
+			scanf("%d", &confirmer);
+			if(confirmer != 0 || confirmer != 1){
+                                printf("Enter a valid value next time!\n");
+                                confirmer = 0;
+                        }
+		}
+		confirmer = 0;
+		while(confirmer == 0){
+			printf("Enter the new sound file name:\n");
+			scanf("%s", sound_update);
+			printf("Are you sure the sound name is %s? Press 1 to confirm or 0 to retry:\n", sound_update);
+			scanf("%d", &confirmer);
+			if(confirmer != 0 || confirmer != 1){
+                                printf("Enter a valid value next time!\n");
+                                confirmer = 0;
+                        }
+		}
+		confirmer = 0;
+		while(confirmer == 0){
+			printf("Does a QR code exist at this location?:\n");
+			scanf("%d", &qr_update);
+			printf("Are you sure? Press 1 to confirm or 0 to retry:\n");
+			scanf("%d", &confirmer);
+			if(confirmer != 0 || confirmer != 1){
+                                printf("Enter a valid value next time!\n");
+                                confirmer = 0;
+                        }
+		}
+		confirmer = 0;
+
+		/*Updating the values in the array*/
+		output[way_num - 1].dx = dx_update;
+		output[way_num - 1].dy = dy_update;
+		output[way_num - 1].sound_name = strdup(sound_update);
+		output[way_num - 1].qr = qr_update;
+
+		/*Writing the new array into a temporary file*/
+		FILE *fpw;
+		fpw = fopen("temp.csv", "w+");
+		for(int i = 0; i < struct_size; i++){
+			fprintf(fpw, "%f, %f, %s, %d\n", output[i].dx, output[i].dy, output[i].sound_name, output[i].qr);
+		}
+		printf("Successfully recorded update\n");
+
+		/*Deleting original file and renaming temp.csv*/
+		if(remove(tour_name) == 0){
+			printf("Original deleted!\n");
+		}
+		else {
+			printf("ERROR! Unable to delete original!\n");
+			return 1;
+		}
+
+		if(rename("temp.csv", tour_name) == 0){
+			printf("File renamed successfully. Update success!\n");
+			return 0;
+		}
+		else{
+			printf("Update unsuccessful. Unable to rename file.\n");
+			fclose(fpw);
+			free(output);
+			return 1;
+		}
+	}
+}
+
+int delete_csv(){ /*Function to delete an entry from array*/
+	int way_num;
+        int confirmer = 0;
+	char tour_name[100];
+
+        /*Reading the csv file to be updated into a Waypoint array*/
+        while(confirmer == 0){ /*To confirm the tour name from the user*/
+                printf("Enter tour name to be updated(Please separate words using _):\n");
+                scanf("%s", tour_name);
+                if(strlen(tour_name) == 0){
+                        printf("Error!Enter a valid name for the tour!\n");
+                }
+                else{
+                        printf("Are you sure that the tour name is %s? Press 1 to confirm or 0 to retry:\n", tour_name);
+                        scanf("%i", &confirmer);
+                        /*if(confirmer != 0 && confirmer != 1){
+                                printf("Enter a valid value next time!DELETE\n");
+                                confirmer = 0;
+                        }*/
+                }
+        }
+
+	confirmer = 0;
+	strcat(tour_name, ".csv");
+	FILE* fp = fopen(tour_name, "r");
+	int struct_size;
+
+	if (!fp){/*Error call in case file does not open*/
+		printf(FILE_ERROR);
+		return 1;
+	}
+	else{
+		char buffer[1024];
+		int row = 0;
+		int column = 0;
+
+		fgets(buffer, 1024, fp);
+		struct_size = atoi(buffer); /*Sets the size of the struct array*/
+		if(struct_size == 0){       /*Error call for catching 0 waypoints*/
+			printf(EMPTY_WAY);
+			return 1;
+		}
+
+		Waypoint *output = (Waypoint*) malloc(struct_size * sizeof(Waypoint));
+
+		while (fgets(buffer, 1024, fp)) {
+			column = 0;
+			char* value = strtok(buffer, ", ");
+
+			/*Looping over the various columns*/
+			while (value) {
+				if (column == 0){
+					output[row].dx = atof(value);
+				}
+				else{
+					if (column == 1){
+						output[row].dy = atof(value);
+					}
+					else{
+						if (column == 2){
+							output[row].sound_name = strdup(value);
+						}
+						else{
+							if (column == 3){
+								output[row].qr = atoi(value);
+							}
+						}
+					}
+				}
+				value = strtok(NULL, ", ");
+				column++;
+			}
+			row++;
+		}
+                fclose(fp);
+
+		while(confirmer == 0){
+                        printf("Enter the waypoint number to be deleted:\n");
+                        scanf("%d", &way_num);
+                        printf("Are you sure the waypoint to be deleted is number %d? Press 1 to confirm or 0 to retry:\n", way_num);
+                        scanf("%d", &confirmer);
+                        if(confirmer != 0 || confirmer != 1){
+                                printf("Enter a valid value next time!\n");
+                                confirmer = 0;
+                        }
+                }
+		confirmer = 0;
+		for(int i = (way_num - 1); i < (struct_size - 1); i++){
+			output[i].dx = output[i+1].dx;
+			output[i].dy = output[i+1].dy;
+			output[i].sound_name = strdup(output[i+1].sound_name);
+			output[i].qr = output[i+1].qr;
+		}
+		output = (Waypoint*) realloc(output, (struct_size-1)*sizeof(Waypoint)); /*Resizing the array to remove the last element*/
+
+		/*Writing the new array into a temporary file*/
+                FILE *fpw;
+                fpw = fopen("temp.csv", "w+");
+                for(int i = 0; i < struct_size; i++){
+                        fprintf(fpw, "%f, %f, %s, %d\n", output[i].dx, output[i].dy, output[i].sound_name, output[i].qr);
+                }
+                printf("Successfully recorded update\n");
+
+                /*Deleting original file and renaming temp.csv*/
+                if(remove(tour_name) == 0){
+                        printf("Original deleted!\n");
+                }
+                else {
+                        printf("ERROR! Unable to delete original!\n");
+			return 1;
+                }
+
+                if(rename("temp.csv", tour_name) == 0){
+                        printf("File renamed successfully. Update success!\n");
+                        return 0;
+                }
+                else{
+                        printf("Update unsuccessful. Unable to rename file.\n");
+                        fclose(fpw);
+                        free(output);
+                        return 1;
+                }
+	}
+}
 
 /*Test program for these functions, can be compiled separately*/
 #ifdef FILEREADER_STANDALONE
@@ -176,7 +486,17 @@ int main(){
 	Waypoint *output = NULL;
 	int i = 0;
 
-	write_csv();
+	//write_csv();
+	read_csv(&output);
+	for(i = 0; i<3; i++){
+		printf("dx -> %f, dy -> %f, sound file name -> %s \n", output[i].dx, output[i].dy, output[i].sound_name);
+	}
+	update_csv();
+	read_csv(&output);
+	for(i = 0; i<3; i++){
+		printf("dx -> %f, dy -> %f, sound file name -> %s \n", output[i].dx, output[i].dy, output[i].sound_name);
+	}
+	delete_csv();
 	read_csv(&output);
 	for(i = 0; i<3; i++){
 		printf("dx -> %f, dy -> %f, sound file name -> %s \n", output[i].dx, output[i].dy, output[i].sound_name);
