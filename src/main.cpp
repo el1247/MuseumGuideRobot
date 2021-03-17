@@ -18,8 +18,8 @@
 #include <pigpio.h>
 #include <stdlib.h>
 
-#include "movement.h"
 #include "sensors.h"
+#include "logic.h"
 
 int main(int argc, char ** argv) {
     /* Initialise pigpio library */
@@ -27,10 +27,14 @@ int main(int argc, char ** argv) {
     atexit(gpioTerminate);
     
     /* Initialise modules */
+    logic robotlogic();
     imu_init(0.0f,0.0f,0.0f,NULL); /* TODO initial position (x,y,heading) */
     m_init();
     
+
     /* TODO main loop goes here */
+    
+
 
     return 0;    
 }
