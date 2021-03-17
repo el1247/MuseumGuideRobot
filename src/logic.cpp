@@ -19,7 +19,7 @@
 
 logic::logic(){
 	//Initialiser
-	proximity_logic = new proximity(1,1,1,250,1,250); ///Sample values currently
+	proximity_logic = new proximity(1,0,250,0,250); ///Sample values currently //Input pin. ALS low threshold, ALS high threshold, PS low threshold, PS high threshold
 	if(proximity_logic->interruptmode){
 		if (proximity_logic->configinterrupt(proxdetection)) goto proxintfail;
 	}else{
