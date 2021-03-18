@@ -34,6 +34,8 @@ int update_csv();
 
 int delete_csv();
 
+int dev_read_csv(Waypoint **result, char *tour_name);
+    
 #ifdef __cplusplus
 }
 #endif
