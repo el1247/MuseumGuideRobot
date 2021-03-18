@@ -26,6 +26,65 @@
 #define FILE_ERROR "Error opening file.\n"
 #define EMPTY_WAY "No waypoints found\n"
 
+int dev_read_csv(Waypoint **result, char *tour_name){
+	FILE* fp = fopen(tour_name, "r+");
+	int struct_size;
+
+	if (!fp){/*Error call in case file does not open*/
+		printf(FILE_ERROR);
+		return 1;
+	}
+	else{
+		char buffer[1024];
+		int row = 0;
+		int column = 0;
+
+		fgets(buffer, 1024, fp);
+		struct_size = atoi(buffer);/*Sets the size of the struct array*/
+		if(struct_size == 0){/*Error call for catching 0 waypoints*/
+			printf(EMPTY_WAY);
+			return 1;
+		}
+
+		Waypoint *output = (Waypoint*) malloc(struct_size * sizeof(Waypoint));
+
+		while (fgets(buffer, 1024, fp)) {
+			column = 0;
+			char* value = strtok(buffer, ", ");
+
+			/*Looping over the various columns*/
+			while (value) {
+				if (column == 0){
+					output[row].dx = atof(value);
+				}
+				else{
+					if (column == 1){
+						output[row].dy = atof(value);
+					}
+					else{
+						if (column == 2){
+							output[row].sound_name = strdup(value);
+						}
+						else{
+							if (column == 3){
+								output[row].qr = atoi(value);
+							}
+						}
+					}
+				}
+				value = strtok(NULL, ", ");
+				column++;
+			}
+			row++;
+		}
+		*result = output;
+		//free(output);
+                fclose(fp);
+		//free(output);
+		return 0;
+	}
+}
+
 int read_csv(Waypoint **result){
 	/*Multiple tours can be created by creating different csv files*/
 	char tour_name[100];
@@ -513,21 +572,22 @@ int delete_csv(){ /*Function to delete an entry from array*/
 int main(){
 	Waypoint *output = NULL;
 	int i = 0;
+	char *tour_name = "tour.csv";
 
 	write_csv();
-	read_csv(&output);
+	dev_read_csv(&output, tour_name);
 	for(i = 0; i<3; i++){
 		printf("dx -> %f, dy -> %f, sound file name -> %s \n", output[i].dx, output[i].dy, output[i].sound_name);
 	}
 	update_csv();
 	output = NULL;
-	read_csv(&output);
+	dev_read_csv(&output, tour_name);
 	for(i = 0; i<3; i++){
 		printf("dx -> %f, dy -> %f, sound file name -> %s \n", output[i].dx, output[i].dy, output[i].sound_name);
 	}
 	delete_csv();
 	output = NULL;
-	read_csv(&output);
+	dev_read_csv(&output, tour_name);
 	for(i = 0; i<3; i++){
 		printf("dx -> %f, dy -> %f, sound file name -> %s \n", output[i].dx, output[i].dy, output[i].sound_name);
 	}
