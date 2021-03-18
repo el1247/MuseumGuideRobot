@@ -1,4 +1,4 @@
-/* Copyright (C) 2021 Duncan Lowther
+/* Copyright (C) 2021 Duncan Lowther, Elliott Lawrence
  *  
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,23 @@ int main(int argc, char ** argv) {
     
 
     /* TODO main loop goes here */
-    
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+   	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
+
+    QGuiApplication app(argc, argv);
+
+    QQmlApplicationEngine engine;
+    engine.rootContext()->setContextProperty("test",new Test);
+    const QUrl url(QStringLiteral("qrc:/main.qml"));
+    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
+                     &app, [url](QObject *obj, const QUrl &objUrl) {
+        if (!obj && url == objUrl)
+            QCoreApplication::exit(-1);
+    }, Qt::QueuedConnection);
+    engine.load(url);
+
+    return app.exec();
 
 
     return 0;    
