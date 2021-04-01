@@ -1,25 +1,17 @@
-/*
- *
- * ao_example.c
- *
- *     Written by Stan Seibert - July 2001, Modified by Gautam Gupta - March 2021
- *
- * Legal Terms:
- *
- *     This source file is released into the public domain.  It is
- *     distributed without any warranty; without even the implied
- *     warranty * of merchantability or fitness for a particular
- *     purpose.
- *
- * Function:
- *
- *     This program opens the default driver and plays a 440 Hz tone for
- *     one second.
- *
- * Compilation command line (for Linux systems):
- *
- *     gcc -o ao_example ao_example.c -lao -ldl -lm
- *
+/* Copyright (C) 2021 Gautam Gupta
+ *  
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <stdio.h>
@@ -29,7 +21,7 @@
 #include <sndfile.h>
 //#include <gsound.h> - NEED TO ADD HEADER FILE
 
-#define BUFFER_SIZE 8192
+#define BUFFER_SIZE 5000000
 
 int sound_out(char *sound_name)
 {
@@ -38,7 +30,6 @@ int sound_out(char *sound_name)
 	ao_device *device;
 	ao_sample_format format;
 	int default_driver;
-	//short *buffer;
 	char *buffer;
 	int *out;
 	int buf_size;
@@ -64,6 +55,7 @@ int sound_out(char *sound_name)
 	format.channels = inputFileInfo.channels;
 	format.rate = inputFileInfo.samplerate;
 	format.byte_format = AO_FMT_LITTLE;
+	int num_frames = inputFileInfo.frames;
 
 	/* -- Open driver -- */
 	device = ao_open_live(default_driver, &format, NULL /* no options */);
@@ -73,23 +65,24 @@ int sound_out(char *sound_name)
 	}
 
 	/* -- Play some stuff -- */
-	buf_size = format.bits/8 * format.channels * format.rate;
-	out_size = inputFileInfo.frames * inputFileInfo.channels;
-	out = (int*) calloc(out_size, sizeof(int));
+	//buf_size = format.bits/8 * format.channels * format.rate;
+	buf_size = num_frames * format.channels;
+	out = (int*) calloc(buf_size, sizeof(int));
 	buffer = (char*) calloc(buf_size, sizeof(char));
-	//buffer = calloc(BUFFER_SIZE, sizeof(short));
+	//buffer = (char*) calloc(BUFFER_SIZE, sizeof(char));
+	//out = (int*) calloc(BUFFER_SIZE, sizeof(int));
 
-	sf_readf_int(inputFile, out, inputFileInfo.frames);
+	sf_readf_int(inputFile, out, num_frames);
+	//sf_readf_int(inputFile, out, BUFFER_SIZE);
 	//int read = sf_read_short(inputFile, buffer, BUFFER_SIZE);
 
-	for (i = 0; i < format.rate; i++) {
-		//sample = (int)(0.75 * 32768.0 * sin(2 * M_PI * freq * ((float) i/format.rate)));
+	/* -- Copying the contents of the out array into buffer to get it into libao playable format --*/
+	for (i = 0; i < buf_size; i++) {
 		sprintf(&buffer[i], "%d", out[i]);
-		printf("buffer -> %s, out -> %i\n", &buffer[i], out[i]);
+		//printf("buffer -> %s, out -> %i\n", &buffer[i], out[i]);
 	}
-
-	//sf_readf_int(inputFile, buffer, inputFileInfo.frames);
-	ao_play(device, buffer, buf_size);
+	//printf("buffer size -> %i, output buffer size -> %i\n", buf_size, out_size);
+	ao_play(device, buffer, buf_size); //Actually plays the sound here
 
 	/* -- Close everything -- */
 	ao_close(device);
@@ -97,9 +90,9 @@ int sound_out(char *sound_name)
 	ao_shutdown();
 	free(buffer);
 	free(out);
-
-  return (0);
+  	return (0);
 }
+
 #ifdef SOUND_STANDALONE
 int main(){
 	char *sound = "/home/pi/Downloads/Wav_868kb.wav";
