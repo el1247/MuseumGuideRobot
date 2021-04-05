@@ -1,4 +1,4 @@
-/* Copyright (C) 2021 Duncan Lowther
+/* Copyright (C) 2021 Elliott Lawrence
  *  
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,27 +14,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GPIO_ASSIGN_H
-#define GPIO_ASSIGN_H
 
-/* Enum instead of #defines causes conflicting assignments to error at compile-time */
-enum {
-    /* Motor controllers (L and R) */
-    PIN_M_L_FWD = 22,
-    PIN_M_L_REV = 23,
-    PIN_M_L_PWM = 12,
-    PIN_M_R_FWD = 24,
-    PIN_M_R_REV = 25,
-    PIN_M_R_PWM = 13,
+#ifndef LOGIC_H
+#define LOGIC_H
+
+#include <iostream>
+#include <string>
+#include "movement.h"
+#include "proximity.h"
+//#include "navigation.h"
+
+class logic {
+private:
+	bool isTour = false; //Tracks if a tour is in progress
+	proximity* proximity_logic;
+	//instance of movement class
+	//instance of navigation class
+	//instance of QR scanning class
+	logic(); //Initialiser
+	static void proxdetection(int gpio, int level, uint32_t tick);
+
+public:
+	
+	void callHelp();
+	void doTour(int tourID);
+	void emergencyStop();
+	int giveInfo(int locationID);
+	void goHome();
+	void stopTour();
 };
-
-enum {
-    /* IMU */
-    I2CADDR_IMU = 0x68, /* Or 0x69 depending on AD0 setting */
-    I2CADDR_MAG = 0x0c,
-    I2CADDR_PROX = 0x51, //7 bit slave address (lsb 0=r, 1=w)
-};
-
 
 #endif
-
