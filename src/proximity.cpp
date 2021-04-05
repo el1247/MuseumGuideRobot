@@ -57,7 +57,7 @@
 proximity::proximity(uint8_t inputpin, uint16_t ALS_thresh_low_ini, uint16_t ALS_thresh_high_ini, uint16_t PS_thresh_low_ini, uint16_t PS_thresh_high_ini){
 	//Initialises GPIO libary and establishes I2C connection to proximity sensor
 	int temp;
-	if (inputpin <= 53){
+	if (inputpin <= 53){ //gpioSetISRFunc is limited to gpio ports 0-53
 		interruptpin = inputpin;
 		interruptmode = 1;
 	}else interruptmode = 0;
@@ -70,7 +70,7 @@ proximity::proximity(uint8_t inputpin, uint16_t ALS_thresh_low_ini, uint16_t ALS
 		std::cerr << "Proximity ALS config failure" << std::endl;
 		error = ALSconfig_fail; //marks failure for i2c configuration
 	}else if (configALSthresh(ALS_thresh_low_ini, ALS_thresh_high_ini)) {
-
+		//Error code and messages set in methods called
 	}else if (i2cWriteWordData(prox_i2c, PROX_PS_CONF1, CMD_PROX_START_PS12)){
 		std::cerr << "Proximity PS config failure 1-2" << std::endl;
 		error = PS12config_fail; //marks failure for PS configuration 1-2
@@ -81,7 +81,7 @@ proximity::proximity(uint8_t inputpin, uint16_t ALS_thresh_low_ini, uint16_t ALS
 		std::cerr << "Proximity PS cancellation setting failure" << std::endl;
 		error = PScanc_fail; //marks failure for PS cancellation settings
 	}else if (configPSthresh(PS_thresh_low_ini, PS_thresh_high_ini)){
-
+		//Error code and messages set in methods called
 	}else error = noerror; //marks not failure
 }
 
@@ -208,7 +208,6 @@ int proximity::writeLSB_Prox(uint8_t reg, uint8_t LSB){
 
 proximity::~proximity(){
 	//Closes GPIO libary and I2C connection to proximity sensor
-	gpioTerminate();
 	if (i2cClose(prox_i2c)) std::cerr << "Error closing i2c read connection" << std::endl;
 	if (i2cClose(prox_i2c)) std::cerr << "Error closing i2c write connection" << std::endl;
 }
