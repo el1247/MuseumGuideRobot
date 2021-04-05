@@ -26,6 +26,7 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/videoio/videoio_c.h"
 #include "qr.hpp"
+#include "mapstruct.h"
 #include "zbar.h"
 
 
@@ -64,11 +65,6 @@ int decode(Mat &im, qr_Code &qrcode) {
 		// Print type and data
 		cout << "Data : " << qrcode.data << endl;
 
-		// Storing the coordinates of the QR codes - LEGACY, dont need this anymore
-		for (int i = 0; i < symbol->get_location_size(); i++){
-			qrcode.location.push_back(Point(symbol->get_location_x(i), symbol->get_location_y(i)));
-			//cout << "QR code corners -" << qrcode.location[i] << endl; //Can include this for debugging
-		}
 #define Q(i,j,xy) (symbol->get_location_##xy ((i<<1)+((i)^(j)))) /* indexing map 00=>0, 01=>1, 11=>2, 10=>3 */
 		float a0 = -1/(float)(Q(0,0,y) - Q(0,1,y));
 		float a1 = -1/(float)(Q(1,0,y) - Q(1,1,y));

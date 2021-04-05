@@ -1,4 +1,4 @@
-/* Copyright (C) 2021 Gautam Gupta, Duncan Lowther
+/* Copyright (C) 2021 Gautam Gupta
  *  
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,23 +14,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string>
-#include <vector>
-#include "opencv2/core.hpp"  //These need to be modified as per ZBAR and OPENCV's installation in the system
-#include "opencv2/highgui.hpp"
-#include "opencv2/imgproc.hpp"
-#include "zbar.h"
-#include "mapstruct.h"
-
-#ifndef QRMODULE_H
-#define QRMODULE_H
+#ifndef MAPSTRUCT_H
+#define MAPSTRUCT_H
+#ifdef __cplusplus
+extern "C"{
+#endif
 
 typedef struct{
-	std::string data;
-	std::vector <cv::Point> location;
-	float dx, dy, face;
-} qr_Code;
+    float dx, dy;
+    int qr; //0 -> no QR at location, 1 -> QR is present
+    char *sound_name = NULL;
+} Waypoint;
 
-int decode(cv::Mat &im, qr_Code &qrcode);
+int read_csv(Waypoint **result);
 
+int write_csv();
+
+int update_csv();
+
+int delete_csv();
+
+int dev_read_csv(Waypoint **result, char *tour_name);
+    
+#ifdef __cplusplus
+}
+#endif
 #endif
