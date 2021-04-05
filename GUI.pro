@@ -12,7 +12,7 @@ HEADERS += \
         include/MadgwickAHRS.h \
         include/movement.h \
         include/proximity.h \
-        include/qr.h \
+        include/qr.hpp \
         include/sensors.h\
         include/test.h \
 
@@ -43,7 +43,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 INCLUDEPATH += \
-    include/
+    include/ \
+    /opt/opencv-4.1.0/include/opencv4
 
-#LIBS += \
-    #opencv?

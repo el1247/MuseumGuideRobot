@@ -14,28 +14,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
+#include <QQmlContext>
 
 #include <pigpio.h>
 #include <stdlib.h>
 
 #include "sensors.h"
 #include "logic.h"
+#include "test.h"
 
-int main(int argc, char ** argv) {
+int main(int argc, char ** argv) { //Updated from RPi05041258
     /* Initialise pigpio library */
     if(gpioInitialise() < 0) return 1;
     atexit(gpioTerminate);
     
     /* Initialise modules */
-    logic robotlogic();
+    logic robotlogic;
     imu_init(0.0f,0.0f,0.0f,NULL); /* TODO initial position (x,y,heading) */
     m_init();
     
-
     /* TODO main loop goes here */
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-   	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-#endif
+
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    #endif
 
     QGuiApplication app(argc, argv);
 
@@ -50,9 +54,6 @@ int main(int argc, char ** argv) {
     engine.load(url);
 
     return app.exec();
-
-
-    return 0;    
 }
 
 
