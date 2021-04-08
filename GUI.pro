@@ -48,5 +48,5 @@ INCLUDEPATH += \
 
 LIBS += \
     -lpigpio \
-    -lzbar
-
+    -lzbar \
+    -lrt
