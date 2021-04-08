@@ -1,6 +1,9 @@
 QT += quick
 
-CONFIG += c++11
+CONFIG += c++11 \
+        opencv4
+
+PKGCONFIG += opencv4
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -42,11 +45,14 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
+
+LIBS += \
+    #`pkg-config --cflags --libs opencv` \
+    -lpigpio \
+    -lzbar \
+    -lrt \
+    -L/opt/opencv-4.1.0/include/opencv4
+
 INCLUDEPATH += \
     include/ \
     /opt/opencv-4.1.0/include/opencv4
-
-LIBS += \
-    -lpigpio \
-    -lzbar \
-    -lrt
