@@ -46,3 +46,7 @@ INCLUDEPATH += \
     include/ \
     /opt/opencv-4.1.0/include/opencv4
 
+LIBS += \
+    -lpigpio \
+    -lzbar
+
