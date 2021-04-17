@@ -51,7 +51,11 @@ LIBS += \
     -lpigpio \
     -lzbar \
     -lrt \
-    -L/opt/opencv-4.1.0/include/opencv4
+    -L/opt/opencv-4.1.0/lib \
+    -lopencv_core \
+    -lopencv_highgui \
+    -lopencv_imgproc\
+    -lopencv_videoio
 
 INCLUDEPATH += \
     include/ \
