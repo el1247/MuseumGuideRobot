@@ -17,7 +17,7 @@ HEADERS += \
         include/proximity.h \
         include/qr.hpp \
         include/sensors.h\
-        include/test.h \
+        include/test.h
 
 SOURCES += \
         src/imu.c \
