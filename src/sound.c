@@ -19,7 +19,7 @@
 #include <ao/ao.h>
 #include <math.h>
 #include <sndfile.h>
-//#include <gsound.h> - NEED TO ADD HEADER FILE
+#include <gsound.h>
 
 #define BUFFER_SIZE 5000000
 
