@@ -1,4 +1,4 @@
-/* Copyright (C) 2021 Gautam Gupta, Duncan Lowther
+/* Copyright (C) 2021 Elliott Lawrence
  *  
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,23 +14,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+#ifndef LOGIC_H
+#define LOGIC_H
+
+#include <iostream>
 #include <string>
-#include <vector>
-#include "opencv2/core.hpp"  //These need to be modified as per ZBAR and OPENCV's installation in the system
-#include "opencv2/highgui.hpp"
-#include "opencv2/imgproc.hpp"
-#include "zbar.h"
-#include "mapstruct.h"
+#include "movement.h"
+#include "proximity.h"
+//#include "navigation.h"
 
-#ifndef QRMODULE_H
-#define QRMODULE_H
+class logic {
+private:
+	bool isTour = false; //Tracks if a tour is in progress
+	proximity* proximity_logic;
+	//instance of movement class
+	//instance of navigation class
+	//instance of QR scanning class
+	logic(); //Initialiser
+	static void proxdetection(int gpio, int level, uint32_t tick);
 
-typedef struct{
-	std::string data;
-	std::vector <cv::Point> location;
-	float dx, dy, face;
-} qr_Code;
-
-int decode(cv::Mat &im, qr_Code &qrcode);
+public:
+	
+	void callHelp();
+	void doTour(int tourID);
+	void emergencyStop();
+	int giveInfo(int locationID);
+	void goHome();
+	void stopTour();
+};
 
 #endif
