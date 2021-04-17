@@ -21,8 +21,6 @@
 #include <sndfile.h>
 #include <gsound.h>
 
-#define BUFFER_SIZE 5000000
-
 int sound_out(char *sound_name)
 {
 	SNDFILE *inputFile;
@@ -53,6 +51,7 @@ int sound_out(char *sound_name)
         memset(&format, 0, sizeof(format));
 	format.bits = 16;
 	format.channels = inputFileInfo.channels;
+	printf("Number of channels -> %i\n", format.channels);
 	format.rate = inputFileInfo.samplerate;
 	format.byte_format = AO_FMT_LITTLE;
 	int num_frames = inputFileInfo.frames;
@@ -66,7 +65,7 @@ int sound_out(char *sound_name)
 
 	/* -- Play some stuff -- */
 	//buf_size = format.bits/8 * format.channels * format.rate;
-	buf_size = num_frames * format.channels;
+	buf_size = num_frames * inputFileInfo.channels;
 	out = (int*) calloc(buf_size, sizeof(int));
 	buffer = (char*) calloc(buf_size, sizeof(char));
 	//buffer = (char*) calloc(BUFFER_SIZE, sizeof(char));
@@ -95,7 +94,8 @@ int sound_out(char *sound_name)
 
 #ifdef SOUND_STANDALONE
 int main(){
-	char *sound = "/home/pi/Downloads/Wav_868kb.wav";
+	//char *sound = "/home/pi/Downloads/Wav_868kb.wav";
+	char *sound = "/home/pi/Downloads/Soft Piano Music_16000_mono.wav";
 	sound_out(sound);
 }
 #endif
