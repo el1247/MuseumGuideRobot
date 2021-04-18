@@ -1,5 +1,5 @@
 /* Copyright (C) 2021 Gautam Gupta
- *  
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
@@ -51,13 +51,13 @@ int sound_out(char *sound_name)
         memset(&format, 0, sizeof(format));
 	format.bits = 16;
 	format.channels = inputFileInfo.channels;
-	printf("Number of channels -> %i\n", format.channels);
+	//printf("Number of channels -> %i\n", format.channels);
 	format.rate = inputFileInfo.samplerate;
 	format.byte_format = AO_FMT_LITTLE;
 	int num_frames = inputFileInfo.frames;
 
 	/* -- Open driver -- */
-	device = ao_open_live(default_driver, &format, NULL /* no options */);
+	device = ao_open_live(default_driver, &format, NULL); /* no options */
 	if (device == NULL) {
 		fprintf(stderr, "Error opening device.\n");
 		return 1;
@@ -67,7 +67,7 @@ int sound_out(char *sound_name)
 	//buf_size = format.bits/8 * format.channels * format.rate;
 	buf_size = num_frames * inputFileInfo.channels;
 	out = (int*) calloc(buf_size, sizeof(int));
-	buffer = (char*) calloc(buf_size, sizeof(char));
+	buffer = (char*) calloc(buf_size, sizeof(int));
 	//buffer = (char*) calloc(BUFFER_SIZE, sizeof(char));
 	//out = (int*) calloc(BUFFER_SIZE, sizeof(int));
 
@@ -78,7 +78,7 @@ int sound_out(char *sound_name)
 	/* -- Copying the contents of the out array into buffer to get it into libao playable format --*/
 	for (i = 0; i < buf_size; i++) {
 		sprintf(&buffer[i], "%d", out[i]);
-		//printf("buffer -> %s, out -> %i\n", &buffer[i], out[i]);
+		printf("buffer -> %s, out -> %i\n", &buffer[i], out[i]);
 	}
 	//printf("buffer size -> %i, output buffer size -> %i\n", buf_size, out_size);
 	ao_play(device, buffer, buf_size); //Actually plays the sound here
@@ -92,10 +92,19 @@ int sound_out(char *sound_name)
   	return (0);
 }
 
+int sndcon(char *sound_name){ //Uncomment and edit to make it run in the background
+	char command[] = "omxplayer "; //--no-keys ";
+	strcat(command, sound_name);
+	//strcat(command, "&");
+	system(command);
+	return (0);
+}
+
 #ifdef SOUND_STANDALONE
 int main(){
-	//char *sound = "/home/pi/Downloads/Wav_868kb.wav";
-	char *sound = "/home/pi/Downloads/Soft Piano Music_16000_mono.wav";
-	sound_out(sound);
+	char *sound = "/home/pi/Downloads/Wav_868kb.wav";
+	//char *sound = "/home/pi/Downloads/Soft Piano Music_16000_mono.wav";
+	//sound_out(sound);
+	sndcon(sound);
 }
 #endif
