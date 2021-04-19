@@ -36,6 +36,7 @@ int sound_out(char *sound_name)
 	int i;
 
 	/* -- Reading the .wav file -- */
+	inputFileInfo.format = 0;
 	inputFile = sf_open(sound_name, SFM_READ, &inputFileInfo);
 
 	/* -- Initialize ao player -- */
@@ -78,7 +79,7 @@ int sound_out(char *sound_name)
 	/* -- Copying the contents of the out array into buffer to get it into libao playable format --*/
 	for (i = 0; i < buf_size; i++) {
 		sprintf(&buffer[i], "%d", out[i]);
-		printf("buffer -> %s, out -> %i\n", &buffer[i], out[i]);
+		//printf("buffer -> %s, out -> %i\n", &buffer[i], out[i]);
 	}
 	//printf("buffer size -> %i, output buffer size -> %i\n", buf_size, out_size);
 	ao_play(device, buffer, buf_size); //Actually plays the sound here
@@ -93,7 +94,7 @@ int sound_out(char *sound_name)
 }
 
 int sndcon(char *sound_name){ //Uncomment and edit to make it run in the background
-	char command[] = "omxplayer "; //--no-keys ";
+	char command[200] = "omxplayer "; //--no-keys ";
 	strcat(command, sound_name);
 	//strcat(command, "&");
 	system(command);
