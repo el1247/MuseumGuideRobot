@@ -94,11 +94,16 @@ int sound_out(char *sound_name)
 }
 
 int sndcon(char *sound_name){ //Uncomment and edit to make it run in the background
-	char command[200] = "omxplayer "; //--no-keys ";
-	strcat(command, sound_name);
-	//strcat(command, "&");
-	system(command);
-	return (0);
+	if (strlen(sound_name) < 290){
+		char command[300] = "omxplayer "; //--no-keys ";
+		strcat(command, sound_name);
+		strcat(command, "&");
+		system(command);
+		return (0);
+	} else {
+		fprintf(stderr, "ERROR! MP3 File name too long! Please rectify and try again!");
+		return (1);
+	}
 }
 
 #ifdef SOUND_STANDALONE
