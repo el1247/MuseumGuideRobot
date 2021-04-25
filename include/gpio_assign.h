@@ -32,6 +32,7 @@ enum {
     /* IMU */
     I2CADDR_IMU = 0x68, /* Or 0x69 depending on AD0 setting */
     I2CADDR_MAG = 0x0c,
+    I2CADDR_PROX = 0x51, //7 bit slave address (lsb 0=r, 1=w)
 };
 
 

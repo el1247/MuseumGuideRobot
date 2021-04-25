@@ -26,6 +26,7 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/videoio/videoio_c.h"
 #include "qr.hpp"
+#include "mapstruct.h"
 #include "zbar.h"
 
 
@@ -35,7 +36,7 @@ using namespace std;
 
 /* CHANGEABLE ACCORDING TO CAMERA SENSOR RESOLUTION AND FOV ANGLES */
 #define L  0.035f   /* One-half the side length of the QR code in real life */
-#define ZF 2571.2f /* Pixel distance between the image of the optical axis and the image of a line 45 degrees away.
+#define ZF 2185.5f /* ORIGINAL - 2571.2 Pixel distance between the image of the optical axis and the image of a line 45 degrees away.
                    * Can be caluclated as (linear resolution/(2*tan(FOV angle/2))) */
 #define OX 1296    /* X-coordinate of the image of the optical axis */
 
@@ -64,11 +65,6 @@ int decode(Mat &im, qr_Code &qrcode) {
 		// Print type and data
 		cout << "Data : " << qrcode.data << endl;
 
-		// Storing the coordinates of the QR codes - LEGACY, dont need this anymore
-		for (int i = 0; i < symbol->get_location_size(); i++){
-			qrcode.location.push_back(Point(symbol->get_location_x(i), symbol->get_location_y(i)));
-			//cout << "QR code corners -" << qrcode.location[i] << endl; //Can include this for debugging
-		}
 #define Q(i,j,xy) (symbol->get_location_##xy ((i<<1)+((i)^(j)))) /* indexing map 00=>0, 01=>1, 11=>2, 10=>3 */
 		float a0 = -1/(float)(Q(0,0,y) - Q(0,1,y));
 		float a1 = -1/(float)(Q(1,0,y) - Q(1,1,y));
