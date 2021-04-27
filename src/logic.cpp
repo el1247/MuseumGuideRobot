@@ -15,7 +15,7 @@
  */
 
 #include "logic.h"
-
+#include "mapstruct.h"
 
 logic::logic(){
 	//Initialiser
@@ -44,8 +44,9 @@ void logic::callHelp() {
 }
 
 
-void logic::doTour(int tourID){
-	//lookup tour using tourID
+void logic::doTour(char *tourname){
+	Waypoint *tour = NULL;//lookup tour using tourID
+	dev_read_csv(&tour, tourname);//Tour coordinates in 'tour' array
 	//get/calculate route, nav module
 	while (isTour){
 		//move robot to next tour point
