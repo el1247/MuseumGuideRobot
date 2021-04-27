@@ -21,7 +21,7 @@ extern "C"{
 #endif
 
 typedef struct{
-    float dx, dy;
+    float dx, dy, dx_qr, dy_qr;
     int qr; //0 -> no QR at location, 1 -> QR is present
     char *sound_name = NULL;
 } Waypoint;

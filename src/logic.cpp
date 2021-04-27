@@ -15,7 +15,8 @@
  */
 
 #include "logic.h"
-#include "mapstruct.h"
+#include "mapstruct.h" //For the filereader
+#include "qr.hpp" //For the QR code detection
 
 logic::logic(){
 	//Initialiser
@@ -46,12 +47,45 @@ void logic::callHelp() {
 
 void logic::doTour(char *tourname){
 	Waypoint *tour = NULL;//lookup tour using tourID
-	dev_read_csv(&tour, tourname);//Tour coordinates in 'tour' array
+	int num_waypoints = dev_read_csv(&tour, tourname);//Tour coordinates in 'tour' array
+	int confirmer = 0;
+	Mat frame;
+	qr_Code qrcode;
+	VideoCapture cap(0);
+
+	if(!cap.isOpened()){//Error call in case camera does not open
+		cerr<< "ERROR! Unable to open Camera\n";
+		return -1;
+	}
+
+	cap.set(CV_CAP_PROP_FRAME_WIDTH, 2592);
+	cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1944);
+	cap.set(CV_CAP_PROP_FPS, 10);
+
 	//get/calculate route, nav module
-	while (isTour){
-		//move robot to next tour point
-		//say tour point
-		//get information for next tour point
+	//while (isTour){
+	for(int i = 0; i < num_waypoints; i++){
+		//TODO - move robot to tour point indicated by tour[i].dx and tour[i].dy
+		//TODO - wait to reach waypoint
+		cap.read(frame);
+		if (frame.empty()){//In case camera doesn't work
+			cerr<<"ERROR! Blank frame grabbed!\n";
+			break;
+		}
+
+		if(tour[i].qr == 1){//Checking the QR location
+			while(confirmer == 0){
+				decode(frame, qrcode);//Reading the image and getting the coordinates 
+				if((tour[i].dx_qr + 0.025) > qrcode.dx && qrcode.dx > (tour[i].dx_qr - 0.025)){
+					if((tour[i].dy_qr + 0.025) > qrcode.dy && qrcode.dy > (tour[i].dy_qr - 0.025)){
+						confirmer = 1;
+					}
+				}
+			}
+		}
+
+		//TODO - say tour point
+		//TODO - get information for next tour point
 		std::cout << "Moving onto next tour point" << std::endl; //Placeholder to info programmer of exection and robots intentions
 	} 
 }

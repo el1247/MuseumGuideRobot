@@ -62,9 +62,15 @@ int dev_read_csv(Waypoint **result, char *tour_name){
 						output[row].dy = atof(value);
 						break;
 					case 2:
-						output[row].sound_name = strdup(value);
+						output[row].dx_qr = atof(value);
 						break;
 					case 3:
+						output[row].dy_qr = atof(value);
+						break;
+					case 4:
+						output[row].sound_name = strdup(value);
+						break;
+					case 5:
 						output[row].qr = atoi(value);
 						break;
 				}
@@ -112,7 +118,7 @@ int write_csv(){
 	FILE *fp;
 	int i, num_way, qr;
 	int confirmer = 0;
-	float dx, dy;
+	float dx, dy, dx_qr, dy_qr;
 	char sound[100], tour_name[50];
 
 	/*Enables multiple tours by allowing multiple csv files to be created*/
@@ -158,14 +164,20 @@ int write_csv(){
 
 				printf("%d -> dy:\n", i);
 				scanf("%f", &dy);
-			
+
+				printf("%d -> dx_qr:\n", i);
+				scanf("%f", &dx_qr);
+
+				prinf("%d -> dy_qr:\n", i);
+				scanf("%f", &dy_qr);
+
 				printf("%d -> sound file name:\n", i);
 				scanf("%s", sound);
-			
+
 				printf("%d -> Does a QR code exist at this location? 1 for yes, 0 for no:\n", i);
 				scanf("%d", &qr);
-			
-				printf("Are you sure the values of dx, dy, sound file, and qr location are %f, %f, %s, %d? Press 1 to confirm or 0 to retry:\n", dx, dy, sound, qr);
+
+				printf("Are you sure the values of dx, dy, dx_qr, dy_qr, sound file, and qr location are %f, %f, %f, %f, %s, %d? Press 1 to confirm or 0 to retry:\n", dx, dy, dx_qr, dy_qr, sound, qr);
 				scanf("%d", &confirmer);
 
 				if(confirmer != 0 && confirmer != 1){
@@ -174,7 +186,7 @@ int write_csv(){
                         	}
 			}
 			confirmer = 0;
-			fprintf(fp, "%f, %f, %s, %d\n", dx, dy, sound, qr);
+			fprintf(fp, "%f, %f, %f, %f, %s, %d\n", dx, dy, dx_qr, dy_qr, sound, qr);
 		}
 		fclose(fp);
 		printf("All the waypoints have been recorded!\n");
@@ -185,7 +197,7 @@ int write_csv(){
 int update_csv(){
 	int way_num, qr_update;
 	int confirmer = 0;
-	float dx_update, dy_update;
+	float dx_update, dy_update, dx_qr_update, dy_qr_update;
 	char sound_update[100];
 	char tour_name[100];
 	Waypoint *output = NULL;
@@ -229,6 +241,12 @@ int update_csv(){
 		printf("Enter the new value of dy:\n");
 		scanf("%f", &dy_update);
 
+		printf("Enter the new value of dx_qr:\n");
+		scanf("%f", &dx_qr_update);
+
+		printf("Enter the new value of dy_qr:\n");
+		scanf("%f", &dy_qr_update);
+
 		printf("Enter the new sound file name:\n");
 		scanf("%s", sound_update);
 
@@ -248,6 +266,8 @@ int update_csv(){
 	/*Updating the values in the array*/
 	output[way_num - 1].dx = dx_update;
 	output[way_num - 1].dy = dy_update;
+	output[way_num - 1].dx_qr = dx_qr_update;
+	output[way_num - 1].dy_qr = dy_qr_update;
 	output[way_num - 1].sound_name = strdup(sound_update);
 	output[way_num - 1].qr = qr_update;
 
@@ -256,7 +276,7 @@ int update_csv(){
 	fpw = fopen("temp.csv", "w+");
 	fprintf(fpw, "%d\n", struct_size); /*Rewriting the size of the array which will be read*/
 	for(int i = 0; i < struct_size; i++){
-		fprintf(fpw, "%f, %f, %s, %d\n", output[i].dx, output[i].dy, output[i].sound_name, output[i].qr);
+		fprintf(fpw, "%f, %f, %f, %f, %s, %d\n", output[i].dx, output[i].dy, output[i].dx_qr, output[i].dy_qr, output[i].sound_name, output[i].qr);
 	}
 	printf("Successfully recorded update\n");
 	/*Deleting original file and renaming temp.csv*/
@@ -330,6 +350,8 @@ int delete_csv(){ /*Function to delete an entry from array*/
 			if(i < way_num){
 				output_mod[i].dx = output[i].dx;
 				output_mod[i].dy = output[i].dy;
+				output_mod[i].dx_qr = output[i].dx_qr;
+				output_mod[i].dy_qr = output[i].dy_qr;
 				output_mod[i].sound_name = strdup(output[i].sound_name);
 				output_mod[i].qr = output[i].qr;
 			}
@@ -337,6 +359,8 @@ int delete_csv(){ /*Function to delete an entry from array*/
 				if(i > way_num){
 					output_mod[i-1].dx = output[i].dx;
 					output_mod[i-1].dy = output[i].dy;
+					output_mod[i-1].dx_qr = output[i].dx_qr;
+					output_mod[i-1].dy_qr = output[i].dy_qr;
 					output_mod[i-1].sound_name = strdup(output[i].sound_name);
 					output_mod[i-1].qr = output[i].qr;
 				}
@@ -350,7 +374,7 @@ int delete_csv(){ /*Function to delete an entry from array*/
 	fpw = fopen("temp.csv", "w+");
 	fprintf(fpw, "%d\n", (struct_size - 1));
 	for(int i = 0; i < (struct_size-1); i++){
-		fprintf(fpw, "%f, %f, %s, %d\n", output_mod[i].dx, output_mod[i].dy, output_mod[i].sound_name, output_mod[i].qr);
+		fprintf(fpw, "%f, %f, %f, %f, %s, %d\n", output_mod[i].dx, output_mod[i].dy, output_mod[i].dx_qr, output_mod[i].dy_qr, output_mod[i].sound_name, output_mod[i].qr);
 	}
 	printf("Successfully recorded update\n");
 
@@ -388,19 +412,19 @@ int main(){
 	write_csv();
 	read_csv(&output);
 	for(i = 0; i<3; i++){
-		printf("dx -> %f, dy -> %f, sound file name -> %s \n", output[i].dx, output[i].dy, output[i].sound_name);
+		printf("dx -> %f, dy -> %f, dx_qr -> %f, dy_qr -> %f, sound file name -> %s \n", output[i].dx, output[i].dy, output[i].dx_qr, output[i].dy_qr, output[i].sound_name);
 	}
 	update_csv();
 	output = NULL;
 	dev_read_csv(&output, tour_name);
 	for(i = 0; i<3; i++){
-		printf("dx -> %f, dy -> %f, sound file name -> %s \n", output[i].dx, output[i].dy, output[i].sound_name);
+		printf("dx -> %f, dy -> %f, dx_qr -> %f, dy_qr -> %f, sound file name -> %s \n", output[i].dx, output[i].dy, output[i].dx_qr, output[i].dy_qr, output[i].sound_name);
 	}
 	delete_csv();
 	output = NULL;
 	dev_read_csv(&output, tour_name);
 	for(i = 0; i<3; i++){
-		printf("dx -> %f, dy -> %f, sound file name -> %s \n", output[i].dx, output[i].dy, output[i].sound_name);
+		printf("dx -> %f, dy -> %f, dx_qr -> %f, dy_qr -> %f, sound file name -> %s \n", output[i].dx, output[i].dy, output[i].dx_qr, output[i].dy_qr, output[i].sound_name);
 	}
 }
 #endif
