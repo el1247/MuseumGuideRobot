@@ -94,10 +94,11 @@ int sound_out(char *sound_name)
 }
 
 int sndcon(char *sound_name){ //Uncomment and edit to make it run in the background
-	if (strlen(sound_name) < 290){
-		char command[300] = "omxplayer "; //--no-keys ";
-		strcat(command, sound_name);
-		strcat(command, "&");
+	if (strlen(sound_name) < 400){
+		char command[512] = "omxplayer "; //--no-keys ";
+		strncat(command, sound_name);
+		strncat(command, "&");
+		command[511] = '\0';
 		system(command);
 		return (0);
 	} else {
