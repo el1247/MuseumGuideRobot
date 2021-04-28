@@ -15,13 +15,20 @@
  */
 
 
-#ifndef LOGIC_H
-#define LOGIC_H
+#ifndef LOGIC_HPP
+#define LOGIC_HPP
 
 #include <iostream>
 #include <string>
 #include "movement.h"
 #include "proximity.h"
+#include "mapstruct.h"
+#include "qr.hpp"
+#include "opencv2/core.hpp"
+#include "opencv2/highgui.hpp"
+#include "opencv2/imgproc.hpp"
+#include "opencv2/videoio/videoio_c.h"
+#include "zbar.h"
 //#include "navigation.h"
 
 class logic {
@@ -30,14 +37,15 @@ private:
 	proximity* proximity_logic;
 	//instance of movement class
 	//instance of navigation class
-	//instance of QR scanning class
-	logic(); //Initialiser
+	qr_Code qrcode;//instance of QR scanning class
+	Mat frame;//Instance of image object
+	Waypoint *tour;//Instance of tour array pointer
+	logic(); //Initialiser - DOES THIS NEED TO BE PUBLIC?
 	static void proxdetection(int gpio, int level, uint32_t tick);
 
 public:
-	
 	void callHelp();
-	void doTour(int tourID);
+	void doTour(char *tourname);
 	void emergencyStop();
 	int giveInfo(int locationID);
 	void goHome();

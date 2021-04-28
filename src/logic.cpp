@@ -14,9 +14,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "logic.h"
+#include "logic.hpp"
 #include "mapstruct.h" //For the filereader
 #include "qr.hpp" //For the QR code detection
+#include "gsound.h" //For sound output
 
 logic::logic(){
 	//Initialiser
@@ -27,6 +28,8 @@ logic::logic(){
 		proxintfail: std::cout << "Initiating non interruptmethod" << std::endl;
 		//System restart most or polling code
 	}
+	
+	
 }
 
 
@@ -46,18 +49,15 @@ void logic::callHelp() {
 
 
 void logic::doTour(char *tourname){
-	Waypoint *tour = NULL;//lookup tour using tourID
 	int num_waypoints = dev_read_csv(&tour, tourname);//Tour coordinates in 'tour' array
 	int confirmer = 0;
-	Mat frame;
-	qr_Code qrcode;
+	int info;
 	VideoCapture cap(0);
 
 	if(!cap.isOpened()){//Error call in case camera does not open
 		cerr<< "ERROR! Unable to open Camera\n";
 		return -1;
 	}
-
 	cap.set(CV_CAP_PROP_FRAME_WIDTH, 2592);
 	cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1944);
 	cap.set(CV_CAP_PROP_FPS, 10);
@@ -73,7 +73,7 @@ void logic::doTour(char *tourname){
 			break;
 		}
 
-		if(tour[i].qr == 1){//Checking the QR location
+		if(tour[i].qr == 1){//Checking the QR location if QR exists at the location
 			while(confirmer == 0){
 				decode(frame, qrcode);//Reading the image and getting the coordinates 
 				if((tour[i].dx_qr + 0.025) > qrcode.dx && qrcode.dx > (tour[i].dx_qr - 0.025)){
@@ -84,10 +84,10 @@ void logic::doTour(char *tourname){
 			}
 		}
 
-		//TODO - say tour point
-		//TODO - get information for next tour point
+		//say tour point
+		info = giveInfo(i);
 		std::cout << "Moving onto next tour point" << std::endl; //Placeholder to info programmer of exection and robots intentions
-	} 
+	}
 }
 
 
@@ -98,16 +98,21 @@ void logic::emergencyStop(){
 }
 
 
-int logic::giveInfo(int locationID){
+int logic::giveInfo(int locationID){//ONLY CALL THIS FROM THE doTour FUNCTION!!!THAT INITIALISES THIS!
 	std::string pointInfo; //Container for information about a display // format may need to change
 	//lookup location information with locationID
 	pointInfo = "This is information about a location"; //Temporary placeholder, will replace with lookup on in memory
 	if (pointInfo.empty()) {
 		return 0; //returns 0 to indicate there was no information to display
-	}
+	}//TODO - Remove pointInfo stuff
 	//call audio out module with this input
-	std::cout << "Giving tour information" << std::endl; //Placeholder to info programmer of exection and robots intentions
-	return 1; //returns 1 to indicate there was information to provide to user
+	if (tour[i].sound_name == "N/A"){
+		return 0; //indicates no sound file at location
+	} else {
+		sndcon(tour[i].sound_name);//TODO - check this
+		std::cout << "Giving tour information" << std::endl; //Placeholder to info programmer of exection and robots intentions
+		return 1; //returns 1 to indicate there was information to provide to user
+	}
 }
 
 

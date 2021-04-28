@@ -171,7 +171,7 @@ int write_csv(){
 				prinf("%d -> dy_qr:\n", i);
 				scanf("%f", &dy_qr);
 
-				printf("%d -> sound file name:\n", i);
+				printf("%d -> sound file name:(ENTER N/A IF NO SOUND FILE TO BE PLAYED HERE)\n", i);
 				scanf("%s", sound);
 
 				printf("%d -> Does a QR code exist at this location? 1 for yes, 0 for no:\n", i);
@@ -247,7 +247,7 @@ int update_csv(){
 		printf("Enter the new value of dy_qr:\n");
 		scanf("%f", &dy_qr_update);
 
-		printf("Enter the new sound file name:\n");
+		printf("Enter the new sound file name: ENTER N/A IF NO SOUND FILE EXISTS HERE\n");
 		scanf("%s", sound_update);
 
 		printf("Does a QR code exist at this location?:\n");
