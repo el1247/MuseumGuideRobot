@@ -21,8 +21,7 @@
 #include <sndfile.h>
 #include <gsound.h>
 
-int sound_out(char *sound_name)
-{
+int sound_out(char *sound_name){
 	SNDFILE *inputFile;
 	SF_INFO inputFileInfo;
 	ao_device *device;
@@ -96,8 +95,8 @@ int sound_out(char *sound_name)
 int sndcon(char *sound_name){ //Uncomment and edit to make it run in the background
 	if (strlen(sound_name) < 400){
 		char command[512] = "omxplayer "; //--no-keys ";
-		strncat(command, sound_name);
-		strncat(command, "&");
+		strncat(command, sound_name, strlen(sound_name));
+		strncat(command, "&", 2);
 		command[511] = '\0';
 		system(command);
 		return (0);
