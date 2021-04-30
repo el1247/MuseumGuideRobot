@@ -16,6 +16,8 @@
 
 /* g++ -std=c++0x qr_module.cpp -oqr_module -lzbar -L/opt/opencv-4.1.0/lib -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_videoio */
 //Current linker command^
+//make qr-standalone LDFLAGS=-L/opt/opencv-4.1.0/lib && ./qr-standalone
+//Current make and run command^
 //NOTE: MODIFY IT AS PER OPENCV INSTALLATION
 
 #include <cmath>
