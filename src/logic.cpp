@@ -28,8 +28,6 @@ logic::logic(){
 		proxintfail: std::cout << "Initiating non interruptmethod" << std::endl;
 		//System restart most or polling code
 	}
-	
-	
 }
 
 
