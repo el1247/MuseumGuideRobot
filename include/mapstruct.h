@@ -21,9 +21,9 @@ extern "C"{
 #endif
 
 typedef struct{
-    float dx, dy, dx_qr, dy_qr;
+    float dx, dy, dx_qr, dy_qr, face;
     int qr; //0 -> no QR at location, 1 -> QR is present
-    char *sound_name = NULL;
+    char *sound_name = NULL; //"N/A" for no sound at the location
 } Waypoint;
 
 int read_csv(Waypoint **result);
