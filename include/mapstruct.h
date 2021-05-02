@@ -22,6 +22,7 @@ extern "C"{
 
 typedef struct{
     float dx, dy, dx_qr, dy_qr, face;
+    int data; //Information contained in the QR code
     int qr; //0 -> no QR at location, 1 -> QR is present
     char *sound_name = NULL; //"N/A" for no sound at the location
 } Waypoint;

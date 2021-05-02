@@ -35,7 +35,7 @@ using namespace cv;
 using namespace std;
 
 /* CHANGEABLE ACCORDING TO CAMERA SENSOR RESOLUTION AND FOV ANGLES */
-#define L  0.035f   /* One-half the side length of the QR code in real life */
+#define L  0.0575f   /* One-half the side length of the QR code in real life */
 #define ZF 2185.5f /* ORIGINAL - 2571.2 Pixel distance between the image of the optical axis and the image of a line 45 degrees away.
                    * Can be caluclated as (linear resolution/(2*tan(FOV angle/2))) */
 #define OX 1296    /* X-coordinate of the image of the optical axis */

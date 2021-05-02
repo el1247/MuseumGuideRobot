@@ -51,7 +51,6 @@ int dev_read_csv(Waypoint **result, char *tour_name){
 		while (fgets(buffer, 1024, fp)) {
 			column = 0;
 			char* value = strtok(buffer, ", ");
-
 			/*Looping over the various columns*/
 			while (value) {
 				switch(column){
@@ -71,9 +70,12 @@ int dev_read_csv(Waypoint **result, char *tour_name){
 						output[row].face = atof(value);
 						break;
 					case 5:
-						output[row].sound_name = strdup(value);
+						output[row].data = atoi(value);
 						break;
 					case 6:
+						output[row].sound_name = strdup(value);
+						break;
+					case 7:
 						output[row].qr = atoi(value);
 						break;
 				}
@@ -83,9 +85,7 @@ int dev_read_csv(Waypoint **result, char *tour_name){
 			row++;
 		}
 		*result = output;
-		//free(output);
                 fclose(fp);
-		//free(output);
 		return struct_size; /*Easy way to find the number of elements of the output array pointer*/
 	}
 }
@@ -119,8 +119,9 @@ int read_csv(Waypoint **result){
 
 int write_csv(){
 	FILE *fp;
-	int i, num_way, qr;
+	int i, num_way, qr, data;
 	int confirmer = 0;
+	int confirmer_2 = 0;
 	float dx, dy, dx_qr, dy_qr, face;
 	char sound[100], tour_name[50];
 
@@ -168,21 +169,39 @@ int write_csv(){
 				printf("%d -> dy:\n", i);
 				scanf("%f", &dy);
 
-				printf("%d -> dx_qr:\n", i);
-				scanf("%f", &dx_qr);
-
-				prinf("%d -> dy_qr:\n", i);
-				scanf("%f", &dy_qr);
-
-				printf("%d -> face:\n", i);
-				scanf("%f", &face);
-
 				printf("%d -> sound file name:(ENTER N/A IF NO SOUND FILE TO BE PLAYED HERE)\n", i);
 				scanf("%s", sound);
 
-				printf("%d -> Does a QR code exist at this location? 1 for yes, 0 for no:\n", i);
-				scanf("%d", &qr);
+				while(confirmer_2 == 0){
+					printf("%d -> Does a QR code exist at this location? 1 for yes, 0 for no:\n", i);
+					scanf("%d", &qr);
+					if(qr==1){
+						printf("%d -> dx_qr:\n", i);
+						scanf("%f", &dx_qr);
 
+						printf("%d -> dy_qr:\n", i);
+						scanf("%f", &dy_qr);
+
+						printf("%d -> face:\n", i);
+						scanf("%f", &face);
+
+						printf("%d -> QR code's data:\n", i);
+						scanf("%d", &data);
+
+						confirmer_2 = 1;
+					}
+					else if(qr==0){//Placeholders for no QR code case
+						dx_qr = 0;
+						dy_qr = 0;
+						face = 0;
+						data = 0;
+						confirmer_2 = 1;
+					}
+					else{
+						printf("ERROR! Enter a valid value of either 1 or 0!");
+					}
+				}
+				confirmer_2 = 0;
 				printf("Are you sure the values of dx, dy, dx_qr, dy_qr, sound file, and qr location are %f, %f, %f, %f, %s, %d? Press 1 to confirm or 0 to retry:\n", dx, dy, dx_qr, dy_qr, sound, qr);
 				scanf("%d", &confirmer);
 
@@ -192,7 +211,7 @@ int write_csv(){
                         	}
 			}
 			confirmer = 0;
-			fprintf(fp, "%f, %f, %f, %f, %f, %s, %d\n", dx, dy, dx_qr, dy_qr, face, sound, qr);
+			fprintf(fp, "%f, %f, %f, %f, %f, %d, %s, %d\n", dx, dy, dx_qr, dy_qr, face, data, sound, qr);
 		}
 		fclose(fp);
 		printf("All the waypoints have been recorded!\n");
@@ -201,13 +220,14 @@ int write_csv(){
 }
 
 int update_csv(){
-	int way_num, qr_update;
+	int way_num, qr_update, data_update;
 	int confirmer = 0;
+	int confirmer_2 = 0;
 	float dx_update, dy_update, dx_qr_update, dy_qr_update, face_update;
 	char sound_update[100];
 	char tour_name[100];
 	Waypoint *output = NULL;
-	
+
 	/*Reading the csv file to be updated into a Waypoint array*/
 	while(confirmer == 0){ /*To confirm the tour name from the user*/
 		printf("Enter tour name to be updated(Please separate words using _):\n");
@@ -227,7 +247,6 @@ int update_csv(){
 	strcat(tour_name, ".csv");
 	confirmer = 0;
 	int struct_size = dev_read_csv(&output, tour_name); /*Reading the array from the csv file*/
-	
 	/*Getting the waypoint number and values to be edited*/
 	while(confirmer == 0){
 		printf("Enter the waypoint number to be edited:\n");
@@ -259,9 +278,35 @@ int update_csv(){
 		printf("Enter the new sound file name: ENTER N/A IF NO SOUND FILE EXISTS HERE\n");
 		scanf("%s", sound_update);
 
-		printf("Does a QR code exist at this location?:\n");
-		scanf("%d", &qr_update);
+		while(confirmer_2 == 0){
+			printf("Does a QR code exist at this location?:\n");
+			scanf("%d", &qr_update);
+			if(qr == 1){
+				printf("Enter the new value of dx_qr:\n");
+				scanf("%f", &dx_qr_update);
 
+				printf("Enter the new value of dy_qr:\n");
+				scanf("%f", &dy_qr_update);
+
+				printf("Enter the new value of face angle:\n");
+				scanf("%f", &face_update);
+
+				printf("Enter the new data of the QR code:\n");
+				scanf("%d", &data_update);
+				confirmer_2 = 1;
+			}
+			else if(qr == 0){//Placeholders in case there is no QR code at location
+				dx_qr_update = 0;
+				dy_qr_update = 0;
+				face_update = 0;
+				data_update = 0;
+				confirmer_2 = 1;
+			}
+			else{
+				printf("Enter a valid value of QR!");
+			}
+		}
+		confirmer_2 = 0;
 		printf("Are you sure the new values of dx, dy, sound file, and qr location are %f, %f, %s, %d? Press 1 to confirm or 0 to retry:\n", dx_update, dy_update, sound_update, qr_update);
 		scanf("%d", &confirmer);
 
@@ -278,6 +323,7 @@ int update_csv(){
 	output[way_num - 1].dx_qr = dx_qr_update;
 	output[way_num - 1].dy_qr = dy_qr_update;
 	output[way_num - 1].face = face_update;
+	output[way_num - 1].data = data_update;
 	output[way_num - 1].sound_name = strdup(sound_update);
 	output[way_num - 1].qr = qr_update;
 
@@ -286,7 +332,7 @@ int update_csv(){
 	fpw = fopen("temp.csv", "w+");
 	fprintf(fpw, "%d\n", struct_size); /*Rewriting the size of the array which will be read*/
 	for(int i = 0; i < struct_size; i++){
-		fprintf(fpw, "%f, %f, %f, %f, %f, %s, %d\n", output[i].dx, output[i].dy, output[i].dx_qr, output[i].dy_qr, output[i].face, output[i].sound_name, output[i].qr);
+		fprintf(fpw, "%f, %f, %f, %f, %f, %d, %s, %d\n", output[i].dx, output[i].dy, output[i].dx_qr, output[i].dy_qr, output[i].face, output[i].data, output[i].sound_name, output[i].qr);
 	}
 	printf("Successfully recorded update\n");
 	/*Deleting original file and renaming temp.csv*/
@@ -357,22 +403,24 @@ int delete_csv(){ /*Function to delete an entry from array*/
 			continue;
 		}
 		else{
-			if(i < way_num){
+			if(i < way_num){//All the waypoints before the deleted waypoint are unaffected
 				output_mod[i].dx = output[i].dx;
 				output_mod[i].dy = output[i].dy;
 				output_mod[i].dx_qr = output[i].dx_qr;
 				output_mod[i].dy_qr = output[i].dy_qr;
 				output_mod[i].face = output[i].face;
+				output_mod[i].data = output[i].data;
 				output_mod[i].sound_name = strdup(output[i].sound_name);
 				output_mod[i].qr = output[i].qr;
 			}
 			else{
-				if(i > way_num){
+				if(i > way_num){//All the waypoints after the deleted one are moved forward
 					output_mod[i-1].dx = output[i].dx;
 					output_mod[i-1].dy = output[i].dy;
 					output_mod[i-1].dx_qr = output[i].dx_qr;
 					output_mod[i-1].dy_qr = output[i].dy_qr;
 					output_mod[i-1].face = output[i].face;
+					output_mod[i-1].data = output[i].data;
 					output_mod[i-1].sound_name = strdup(output[i].sound_name);
 					output_mod[i-1].qr = output[i].qr;
 				}
@@ -386,7 +434,7 @@ int delete_csv(){ /*Function to delete an entry from array*/
 	fpw = fopen("temp.csv", "w+");
 	fprintf(fpw, "%d\n", (struct_size - 1));
 	for(int i = 0; i < (struct_size-1); i++){
-		fprintf(fpw, "%f, %f, %f, %f, %f, %s, %d\n", output_mod[i].dx, output_mod[i].dy, output_mod[i].dx_qr, output_mod[i].dy_qr, output_mod[i].face, output_mod[i].sound_name, output_mod[i].qr);
+		fprintf(fpw, "%f, %f, %f, %f, %f, %d, %s, %d\n", output_mod[i].dx, output_mod[i].dy, output_mod[i].dx_qr, output_mod[i].dy_qr, output_mod[i].face, output_mod[i].data, output_mod[i].sound_name, output_mod[i].qr);
 	}
 	printf("Successfully recorded update\n");
 
@@ -424,7 +472,7 @@ int main(){
 	write_csv();
 	read_csv(&output);
 	for(i = 0; i<3; i++){
-		printf("dx -> %f, dy -> %f, dx_qr -> %f, dy_qr -> %f, face angle -> %f, sound file name -> %s \n", output[i].dx, output[i].dy, output[i].dx_qr, output[i].dy_qr, output[i].face, output[i].sound_name);
+		printf("dx -> %f, dy -> %f, dx_qr -> %f, dy_qr -> %f, face angle -> %f, data -> %d, sound file name -> %s \n", output[i].dx, output[i].dy, output[i].dx_qr, output[i].dy_qr, output[i].face, output[i].data, output[i].sound_name);
 	}
 	update_csv();
 	output = NULL;

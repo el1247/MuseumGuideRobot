@@ -49,7 +49,9 @@ void logic::callHelp() {
 void logic::doTour(char *tourname){
 	int num_waypoints = dev_read_csv(&tour, tourname);//Tour coordinates in 'tour' array
 	int confirmer = 0;
-	int info;
+	int info, qr_data;
+	float error_x, error_y;
+
 	VideoCapture cap(0);
 
 	if(!cap.isOpened()){//Error call in case camera does not open
@@ -74,9 +76,15 @@ void logic::doTour(char *tourname){
 		if(tour[i].qr == 1){//Checking the QR location if QR exists at the location
 			while(confirmer == 0){
 				decode(frame, qrcode);//Reading the image and getting the coordinates 
-				if((tour[i].dx_qr + 0.025) > qrcode.dx && qrcode.dx > (tour[i].dx_qr - 0.025)){
-					if((tour[i].dy_qr + 0.025) > qrcode.dy && qrcode.dy > (tour[i].dy_qr - 0.025)){
-						confirmer = 1;
+				error_x = 0.1*tour[i].dx_qr;
+				error_y = 0.1*tour[i].dy_qr;
+				qr_data = stoi(qrcode.data);
+				if(qr_data == tour[i].data){
+					if((tour[i].dx_qr + error_x) > qrcode.dx && qrcode.dx > (tour[i].dx_qr - error_x)){
+						if((tour[i].dy_qr + error_y) > qrcode.dy && qrcode.dy > (tour[i].dy_qr - error_y)){
+							confirmer = 1;//Destination reached
+							//TODO - Add stopping mechanisms
+						}
 					}
 				}
 			}
