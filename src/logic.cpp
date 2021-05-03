@@ -63,7 +63,6 @@ void logic::doTour(char *tourname){
 	cap.set(CV_CAP_PROP_FPS, 10);
 
 	//get/calculate route, nav module
-	//while (isTour){
 	for(int i = 0; i < num_waypoints; i++){
 		//TODO - move robot to tour point indicated by tour[i].dx and tour[i].dy
 		//TODO - wait to reach waypoint
@@ -104,13 +103,7 @@ void logic::emergencyStop(){
 }
 
 
-int logic::giveInfo(int locationID){//ONLY CALL THIS FROM THE doTour FUNCTION!!!THAT INITIALISES THIS!
-	std::string pointInfo; //Container for information about a display // format may need to change
-	//lookup location information with locationID
-	pointInfo = "This is information about a location"; //Temporary placeholder, will replace with lookup on in memory
-	if (pointInfo.empty()) {
-		return 0; //returns 0 to indicate there was no information to display
-	}//TODO - Remove pointInfo stuff
+int logic::giveInfo(int locationID){//TODO - Need to fix this
 	//call audio out module with this input
 	if (tour[i].sound_name == "N/A"){
 		return 0; //indicates no sound file at location
