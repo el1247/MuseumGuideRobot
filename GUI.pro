@@ -47,7 +47,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 
 LIBS += \
-    #`pkg-config --cflags --libs opencv` \
+    `pkg-config --cflags --libs opencv` \
     -lpigpio \
     -lzbar \
     -lrt \
