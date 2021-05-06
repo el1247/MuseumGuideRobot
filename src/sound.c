@@ -21,6 +21,7 @@
 #include <sndfile.h>
 #include <gsound.h>
 
+#if 0
 int sound_out(char *sound_name){
 	SNDFILE *inputFile;
 	SF_INFO inputFileInfo;
@@ -91,6 +92,7 @@ int sound_out(char *sound_name){
 	free(out);
   	return (0);
 }
+#endif
 
 int sndcon(char *sound_name){ //Uncomment and edit to make it run in the background
 	if (strlen(sound_name) < 400){
