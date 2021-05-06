@@ -44,6 +44,8 @@ private:
 	static void proxdetection(int gpio, int level, uint32_t tick);
 
 public:
+    	logic(); //Initialiser
+    	static void proxdetection(int gpio, int level, uint32_t tick);
 	void callHelp();
 	void doTour(char *tourname);
 	void emergencyStop();

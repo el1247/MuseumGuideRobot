@@ -16,6 +16,8 @@
 
 /* g++ -std=c++0x qr_module.cpp -oqr_module -lzbar -L/opt/opencv-4.1.0/lib -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_videoio */
 //Current linker command^
+//make qr-standalone LDFLAGS=-L/opt/opencv-4.1.0/lib && ./qr-standalone
+//Current make and run command^
 //NOTE: MODIFY IT AS PER OPENCV INSTALLATION
 
 #include <cmath>
@@ -44,7 +46,7 @@ int decode(Mat &im, qr_Code &qrcode) {
 	ImageScanner scanner; //creating qr scanner
 	scanner.set_config(ZBAR_NONE, ZBAR_CFG_ENABLE, 0);
 	scanner.set_config(ZBAR_QRCODE, ZBAR_CFG_ENABLE, 1); //configuring the scanner
-	
+
 	// Converting image to grayscale
 	Mat imGray;
 	cvtColor(im, imGray, COLOR_RGB2GRAY);
@@ -56,10 +58,7 @@ int decode(Mat &im, qr_Code &qrcode) {
 	int n = scanner.scan(image);
 
 	for (Image::SymbolIterator symbol = image.symbol_begin(); symbol != image.symbol_end(); ++symbol){
-		// QR code class initialisation
-		//qr_Code qrcode;
-
-		// Storing 
+		// Storing data
 		qrcode.data = symbol->get_data();
 
 		// Print type and data
@@ -71,7 +70,6 @@ int decode(Mat &im, qr_Code &qrcode) {
  		qrcode.dx = L * ((Q(0,0,x) - OX) * a0 + (Q(1,0,x) - OX) * a1);
 		qrcode.dy = L * ZF * (a0 + a1);
 		qrcode.face = asinf(ZF * (a1 - a0));
-		//qr_Codes.push_back(qrcode);
 	}
 
 	return 0;

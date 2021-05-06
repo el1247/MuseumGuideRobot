@@ -175,7 +175,7 @@ int proximity::measurePS(){
 
 int proximity::writeMSB_Prox(uint8_t reg, uint8_t MSB){
 	//method to write to MSB of a register
-	uint16_t temp;
+	int16_t temp;
 	if ((temp = i2cReadWordData(prox_i2c, reg)) < 0){
 		error = MSBwrite_read_fail;
 		return 1;
@@ -191,7 +191,7 @@ int proximity::writeMSB_Prox(uint8_t reg, uint8_t MSB){
 
 int proximity::writeLSB_Prox(uint8_t reg, uint8_t LSB){
 	//method to write to LSB of a register
-	uint16_t temp;
+	int16_t temp;
 	if ((temp = i2cReadWordData(prox_i2c, reg)) < 0){
 		error = LSBwrite_read_fail;
 		return 1;
