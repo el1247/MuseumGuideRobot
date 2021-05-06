@@ -87,10 +87,9 @@ void logic::doTour(char *tourname){
 					}
 				}
 			}
+			//Provide information about the tour point if it exists
+			info = giveInfo(i);//This will be 1 if there is info to be given out here, and 0 if no info
 		}
-
-		//say tour point
-		info = giveInfo(i);
 		std::cout << "Moving onto next tour point" << std::endl; //Placeholder to info programmer of exection and robots intentions
 	}
 }
@@ -103,7 +102,7 @@ void logic::emergencyStop(){
 }
 
 
-int logic::giveInfo(int locationID){//TODO - Need to fix this
+int logic::giveInfo(int locationID){//TODO - Need to fix/test this
 	//call audio out module with this input
 	if (tour[i].sound_name == "N/A"){
 		return 0; //indicates no sound file at location
