@@ -47,7 +47,7 @@ void logic::callHelp() {
 
 
 void logic::doTour(char *tourname){
-	int num_waypoints = dev_read_csv(&tour, tourname);//Tour coordinates in 'tour' array
+	num_waypoints = dev_read_csv(&tour, tourname);//Tour coordinates in 'tour' array
 	int confirmer = 0;
 	int info, qr_data;
 	float error_x, error_y;
@@ -75,11 +75,11 @@ void logic::doTour(char *tourname){
 		if(tour[i].qr == 1){//Checking the QR location if QR exists at the location
 			while(confirmer == 0){
 				decode(frame, qrcode);//Reading the image and getting the coordinates 
-				error_x = 0.1*tour[i].dx_qr;
+				error_x = 0.1*tour[i].dx_qr;//Permissable errors in the x and y deviations
 				error_y = 0.1*tour[i].dy_qr;
 				qr_data = stoi(qrcode.data);
-				if(qr_data == tour[i].data){
-					if((tour[i].dx_qr + error_x) > qrcode.dx && qrcode.dx > (tour[i].dx_qr - error_x)){
+				if(qr_data == tour[i].data){//Checking if the QR code is correct and at correct coordinates
+					if((tour[i].dx_qr + error_x) > qrcode.dx && qrcode.dx > (tour[i].dx_qr - error_x)){//TODO - make a robot move a bit if not at correct coordinates
 						if((tour[i].dy_qr + error_y) > qrcode.dy && qrcode.dy > (tour[i].dy_qr - error_y)){
 							confirmer = 1;//Destination reached
 							//TODO - Add stopping mechanisms
@@ -104,21 +104,89 @@ void logic::emergencyStop(){
 
 int logic::giveInfo(int locationID){//TODO - Need to fix/test this
 	//call audio out module with this input
-	if (tour[i].sound_name == "N/A"){
+	if (tour[locationID].sound_name == "N/A"){
 		return 0; //indicates no sound file at location
 	} else {
-		sndcon(tour[i].sound_name);//TODO - check this
+		sndcon(tour[locationID].sound_name);//TODO - check this
 		std::cout << "Giving tour information" << std::endl; //Placeholder to info programmer of exection and robots intentions
 		return 1; //returns 1 to indicate there was information to provide to user
 	}
 }
 
 
-void logic::goHome(){
-	//calcualte route to go home, nav module
-	//UI display of going home
-	//execute movement of robot to go home, movement module
-	std::cout << "Going home" << std::endl; //Placeholder to info programmer of exection and robots intentions
+void logic::goHome(int locationID){
+	//calculate route to go home, nav module
+	int confirmer = 0;
+	int info, qr_data;
+	float error_x, error_y;
+
+	VideoCapture cap(0);
+
+	if(!cap.isOpened()){//Error call in case camera does not open
+		cerr<< "ERROR! Unable to open Camera\n";
+		return -1;
+	}
+	cap.set(CV_CAP_PROP_FRAME_WIDTH, 2592);
+	cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1944);
+	cap.set(CV_CAP_PROP_FPS, 10);
+
+	//get/calculate route, nav module
+	if(locationID > num_waypoints/2){
+		for(int i = locationID; i < num_waypoints; i++){
+			//TODO - move robot to tour point indicated by tour[i].dx and tour[i].dy
+			//TODO - wait to reach waypoint
+			cap.read(frame);
+			if (frame.empty()){//In case camera doesn't work
+				cerr<<"ERROR! Blank frame grabbed!\n";
+				break;
+			}
+
+			if(tour[i].qr == 1){//Checking the QR location if QR exists at the location
+				while(confirmer == 0){
+					decode(frame, qrcode);//Reading the image and getting the coordinates 
+					error_x = 0.1*tour[i].dx_qr;//Permissible errors for the x and y coordinates
+					error_y = 0.1*tour[i].dy_qr;
+					qr_data = stoi(qrcode.data);
+					if(qr_data == tour[i].data){//Checking whether QR code data is correct
+						if((tour[i].dx_qr + error_x) > qrcode.dx && qrcode.dx > (tour[i].dx_qr - error_x)){
+							if((tour[i].dy_qr + error_y) > qrcode.dy && qrcode.dy > (tour[i].dy_qr - error_y)){
+								confirmer = 1;//Destination reached
+								//TODO - Add stopping mechanisms
+							}
+						}
+					}
+				}
+			}
+		}
+	} else {
+		for(int i = locationID; i >= 0; --i){
+			//TODO - move robot to tour point indicated by tour[i].dx and tour[i].dy
+			//TODO - wait to reach waypoint
+			cap.read(frame);
+			if (frame.empty()){//In case camera doesn't work
+				cerr<<"ERROR! Blank frame grabbed!\n";
+				break;
+			}
+
+			if(tour[i].qr == 1){//Checking the QR location if QR exists at the location
+				while(confirmer == 0){
+					decode(frame, qrcode);//Reading the image and getting the coordinates 
+					error_x = 0.1*tour[i].dx_qr;
+					error_y = 0.1*tour[i].dy_qr;
+					qr_data = stoi(qrcode.data);
+					if(qr_data == tour[i].data){
+						if((tour[i].dx_qr + error_x) > qrcode.dx && qrcode.dx > (tour[i].dx_qr - error_x)){
+							if((tour[i].dy_qr + error_y) > qrcode.dy && qrcode.dy > (tour[i].dy_qr - error_y)){
+								confirmer = 1;//Destination reached
+								//TODO - Add stopping mechanisms
+							}
+						}
+					}
+				}
+			}
+		std::cout << "Moving onto next tour point" << std::endl; //Placeholder to info programmer of exection and robots intentions
+		}
+	}
 }
 
 

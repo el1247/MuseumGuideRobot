@@ -16,7 +16,8 @@ HEADERS += \
         include/movement.h \
         include/proximity.h \
         include/qr.hpp \
-        include/sensors.h\
+        include/sensors.h \
+	include/gsound.h \
         include/test.h
 
 SOURCES += \
@@ -27,6 +28,7 @@ SOURCES += \
         src/movement.c \
         src/proximity.cpp \
         src/qr_module.cpp \
+	src/sound.c \
         src/test.cpp
 
 RESOURCES += src/qml.qrc
@@ -54,7 +56,9 @@ LIBS += \
     -L/opt/opencv-4.1.0/lib \
     -lopencv_core \
     -lopencv_highgui \
-    -lopencv_imgproc\
+    -lopencv_imgproc \
+    #-lsndfile \
+    #-lao \
     -lopencv_videoio
 
 INCLUDEPATH += \

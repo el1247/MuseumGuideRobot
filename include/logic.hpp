@@ -40,6 +40,7 @@ private:
 	qr_Code qrcode;//instance of QR scanning class
 	Mat frame;//Instance of image object
 	Waypoint *tour;//Instance of tour array pointer
+	int num_waypoints;//Number of waypoints that are in a specific tour
 	logic(); //Initialiser - DOES THIS NEED TO BE PUBLIC?
 	static void proxdetection(int gpio, int level, uint32_t tick);
 
