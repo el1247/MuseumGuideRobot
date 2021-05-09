@@ -251,11 +251,15 @@ int update_csv(){
 	while(confirmer == 0){
 		printf("Enter the waypoint number to be edited:\n");
 		scanf("%d", &way_num);
-		printf("Are you sure the waypoint to be updated is number %d? Press 1 to confirm or 0 to retry:\n", way_num);
-		scanf("%d", &confirmer);
-		if(confirmer != 0 && confirmer != 1){
-			printf("Enter a valid value next time!\n");
-			confirmer = 0;
+		if(way_num < struct_size){
+			printf("Are you sure the waypoint to be updated is number %d? Press 1 to confirm or 0 to retry:\n", way_num);
+			scanf("%d", &confirmer);
+			if(confirmer != 0 && confirmer != 1){
+				printf("Enter a valid value next time!\n");
+				confirmer = 0;
+			}
+		} else {
+			printf("Error! Enter a valid waypoint, this one does not exist!\n");
 		}
 	}
 	confirmer = 0;
@@ -389,11 +393,15 @@ int delete_csv(){ /*Function to delete an entry from array*/
 	while(confirmer == 0){
 		printf("Enter the waypoint number to be deleted:\n");
 		scanf("%d", &way_num);
-		printf("Are you sure the waypoint to be deleted is number %d? Press 1 to confirm or 0 to retry:\n", way_num);
-		scanf("%d", &confirmer);
-		if(confirmer != 0 && confirmer != 1){
-			printf("Enter a valid value next time!\n");
-			confirmer = 0;
+		if(way_num < struct_size){
+			printf("Are you sure the waypoint to be deleted is number %d? Press 1 to confirm or 0 to retry:\n", way_num);
+			scanf("%d", &confirmer);
+			if(confirmer != 0 && confirmer != 1){
+				printf("Enter a valid value next time!\n");
+				confirmer = 0;
+			}
+		} else {
+			printf("Error! Enter a valid value for the waypoint! This one does not exist!\n");
 		}
 	}
 	way_num = way_num - 1;
