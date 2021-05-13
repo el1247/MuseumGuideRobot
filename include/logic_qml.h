@@ -19,46 +19,51 @@
 #define LOGIC_QML_H
 
 #include <QObject>
+#include <QTextStream>
 
 #include <iostream>
 #include <string>
-#include "gpio_assign.h"
-#include "gsound.h"
-#include "movement.h"
-#include "proximity.h"
-#include "mapstruct.h"
-#include "qr.hpp"
-#include "opencv2/core.hpp"
-#include "opencv2/highgui.hpp"
-#include "opencv2/imgproc.hpp"
-#include "opencv2/videoio/videoio_c.h"
-#include "zbar.h"
+//#include "gpio_assign.h"
+//#include "gsound.h"
+//#include "movement.h"
+//#include "proximity.h"
+//#include "mapstruct.h"
+//#include "qr.hpp"
+//#include "opencv2/core.hpp"
+//#include "opencv2/highgui.hpp"
+//#include "opencv2/imgproc.hpp"
+//#include "opencv2/videoio/videoio_c.h"
+//#include "zbar.h"
 //#include "navigation.h"
 
+#include<QDebug>
+
 class logic_qml : public QObject{
-    Q_OBJECT {
+    Q_OBJECT
+    private:
+        bool isTour = false; //Tracks if a tour is in progress
+        //Commented out for frontend testings
+        //proximity* proximity_logic;
+        //instance of movement class
+        //instance of navigation class
+        //qr_Code qrcode;//instance of QR scanning class
+        //Mat frame;//Instance of image object
+        //Waypoint *tour;//Instance of tour array pointer
+        int num_waypoints;//Number of waypoints that are in a specific tour
 
-private:
-	bool isTour = false; //Tracks if a tour is in progress 
-	//Commented out for frontend testings
-	//proximity* proximity_logic;
-	//instance of movement class
-	//instance of navigation class
-	//qr_Code qrcode;//instance of QR scanning class
-	//Mat frame;//Instance of image object
-	//Waypoint *tour;//Instance of tour array pointer
-	int num_waypoints;//Number of waypoints that are in a specific tour
-
-public:
-    logic(); //Initialiser
-    static void proxdetection(int gpio, int level, uint32_t tick);
-	Q_INVOKABLE void callHelp();
-	Q_INVOKABLE void doTour(char *tourname);
-	Q_INVOKABLE void emergencyStop();
-	Q_INVOKABLE int giveInfo(int locationID);
-	Q_INVOKABLE void goHome();
-	Q_INVOKABLE void stopTour();
-	Q_INVOKABLE QString speak();
+    public:
+        char* mystring = strdup("abc");
+        logic_qml(); //Initialiser
+        static void proxdetection(int gpio, int level, uint32_t tick);
+        Q_INVOKABLE void callHelp();
+        Q_INVOKABLE void doTour(int tourID);
+        Q_INVOKABLE void emergencyStop();
+        Q_INVOKABLE void giveInfo();
+        Q_INVOKABLE void goHome(int locationID);
+        Q_INVOKABLE void goNextTourPoint();
+        Q_INVOKABLE void stopTour();
+        Q_INVOKABLE QString speak();
+        Q_INVOKABLE QString getTourName(int tourID);
 };
 
 #endif

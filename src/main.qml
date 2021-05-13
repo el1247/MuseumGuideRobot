@@ -23,6 +23,8 @@ Window {
     property int bannerfontsize : 13
     property int mode : 0 //Tracks which frame is currently visible
     property string message : ""
+    property var tournames: [logic_qml.getTourName(1), logic_qml.getTourName(2), logic_qml.getTourName(3)]
+    property bool isadmin :false
 
     Rectangle {
         id: logorectangle
@@ -64,8 +66,7 @@ Window {
     }
 
     Rectangle {
-        id: admindbadgerectangle
-        property bool isadmin :false
+        id: adminbadgerectangle
         width: 80
         height: 30
         color: "#f6fe30"
@@ -76,7 +77,7 @@ Window {
         visible: isadmin ? true : false
         anchors.topMargin: 15
         Text {
-            id: admindbadgetext
+            id: adminbadgetext
             x: 248
             y: 219
             anchors.fill:parent
@@ -89,12 +90,53 @@ Window {
         }
 
         MouseArea {
-            id: admindbadgeArea
+            id: adminbadgeArea
             x: 5
             y: 8
             anchors.fill: parent
             onClicked:{
-                admindbadgerectangle.isadmin = false;
+                window.message = textdisplaytext.text;
+                textdisplaytext.text = qsTr("Welcome admin");
+                hideall();
+                adminbuttonsrectangle.visible = true;
+            }
+        }
+    }
+
+    Rectangle {
+        id: userbadgerectangle
+        width: 80
+        height: 30
+        color: "#1ad1ff"
+        radius: 10
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.rightMargin: 120
+        visible: isadmin ? false : true
+        anchors.topMargin: 15
+        Text {
+            id: userbadgetext
+            x: 248
+            y: 219
+            anchors.fill:parent
+            text: qsTr("User")
+            anchors.verticalCenter: parent.verticalCenter
+            font.pixelSize: window.bannerfontsize
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+        }
+
+        MouseArea {
+            id: userbadgeArea
+            x: 5
+            y: 8
+            anchors.fill: parent
+            onClicked:{
+                window.message = textdisplaytext.text;
+                textdisplaytext.text = qsTr("Please enter admin password.");
+                hideall();
+                adminlogonrectangle.visible = true;
             }
         }
     }
@@ -103,7 +145,7 @@ Window {
         id: statusrectangle
         property bool intour: false
         property bool error: false
-        property int tourno: 1
+        property int tourno: 0
         width: 125
         height: 30
         color: error ? "#ff0000" : intour ? "#ff6600" : "#50f10e"
@@ -116,7 +158,7 @@ Window {
             id: statustext
             height: parent.height
             width: parent.width
-            text: statusrectangle.error ? qsTr("Calling Help") : statusrectangle.intour ? qsTr("Tour ")+statusrectangle.tourno : qsTr("Available")
+            text: statusrectangle.error ? qsTr("Calling Help") : statusrectangle.intour ? qsTr(tournames[statusrectangle.tourno]): qsTr("Available")
             elide: Text.ElideRight
             anchors.verticalCenter: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter
@@ -140,12 +182,13 @@ Window {
         anchors.top: parent.top
         anchors.rightMargin: 15
         anchors.topMargin: 15
+
         Text {
             id: powerbuttontext
             x: 65
             y: 34
             anchors.fill: parent
-            text: qsTr("Shut Down")
+            text: isadmin ? qsTr("Shut Down") : qsTr("Call Help")
             anchors.verticalCenter: parent.verticalCenter
             font.pixelSize: window.bannerfontsize
             horizontalAlignment: Text.AlignHCenter
@@ -157,16 +200,14 @@ Window {
             id: powerbuttonmouseArea
             anchors.fill: parent
             onClicked:{
-                if (admindbadgerectangle.isadmin == true){
+                if (isadmin == true){
                     Qt.quit()
                 }else{
-                    console.log("Logout method failed, not an admin");
-                    //Insert admin logon method here
+                    callhelpdesk();
                 }
             }
         }
     }
-
 
     Rectangle {
         id: mainrectangle
@@ -209,7 +250,6 @@ Window {
                 anchors.horizontalCenter: parent.horizontalCenter
             }
         }
-
 
         Rectangle {
             id: mainbuttonsrectangle
@@ -309,7 +349,7 @@ Window {
                     id: ccountbuttontext
                     x: 65
                     y: 34
-                    text: qsTr("Add Count C++")
+                    text: qsTr("More information")
                     anchors.verticalCenter: parent.verticalCenter
                     font.pixelSize: window.buttonfontsize
                     horizontalAlignment: Text.AlignHCenter
@@ -321,9 +361,8 @@ Window {
                     id: ccountmouseArea
                     anchors.fill: parent
                     onClicked:{
-                        test.onclick();
-                        //textdisplaytext.text = test.getclick();
-                        textdisplaytext.text = test.speak();
+                        ///More information for user?
+                        textdisplaytext.text = logic_qml.speak();
                     }
                 }
             }
@@ -344,7 +383,7 @@ Window {
                     id: cresetbuttontext
                     x: 65
                     y: 34
-                    text: qsTr("Reset Count C++")
+                    text: qsTr("Emergency Stop")
                     anchors.verticalCenter: parent.verticalCenter
                     font.pixelSize: window.buttonfontsize
                     horizontalAlignment: Text.AlignHCenter
@@ -356,13 +395,11 @@ Window {
                     id: cresetmouseArea
                     anchors.fill: parent
                     onClicked:{
-                        test.resetclick();
-                        textdisplaytext.text = test.getclick();
+                        logic_qml.emergencyStop();
+                        textdisplaytext.text = logic_qml.speak();
                     }
                 }
             }
-
-
         }
 
         Rectangle {
@@ -389,7 +426,7 @@ Window {
                     id: tour1buttontext
                     x: 65
                     y: 34
-                    text: qsTr("Tour 1")
+                    text: qsTr(tournames[0])
                     anchors.verticalCenter: parent.verticalCenter
                     font.pixelSize: window.buttonfontsize
                     horizontalAlignment: Text.AlignHCenter
@@ -401,12 +438,13 @@ Window {
                     id: tour1mouseArea
                     anchors.fill: parent
                     onClicked:{
-                        textdisplaytext.text = qsTr("Starting tour 1");
+                        textdisplaytext.text = qsTr("Starting " + tournames[0]);
                         intourbuttonsrectangle.visible = true;
                         starttourbuttonsrectangle.visible = false;
                         statusrectangle.intour = true;
-                        statusrectangle.tourno = 1;
+                        statusrectangle.tourno = 0;
                         window.mode = 2;
+                        logic_qml.doTour(statusrectangle.tourno);
                     }
                 }
             }
@@ -443,8 +481,9 @@ Window {
                         intourbuttonsrectangle.visible = true;
                         starttourbuttonsrectangle.visible = false;
                         statusrectangle.intour = true;
-                        statusrectangle.tourno = 2;
+                        statusrectangle.tourno = 1;
                         window.mode = 2;
+                        logic_qml.doTour(statusrectangle.tourno);
                     }
                 }
             }
@@ -481,8 +520,9 @@ Window {
                         intourbuttonsrectangle.visible = true;
                         starttourbuttonsrectangle.visible = false;
                         statusrectangle.intour = true;
-                        statusrectangle.tourno = 3;
+                        statusrectangle.tourno = 2;
                         window.mode = 2;
+                        logic_qml.doTour(statusrectangle.tourno);
                     }
                 }
             }
@@ -540,6 +580,7 @@ Window {
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 0
             anchors.horizontalCenter: parent.horizontalCenter
+
             Rectangle {
                 id: moreinfobuttonrectangle
                 property bool givingmoreinfo : false //Status if more information is being given, prevents constant repress of button
@@ -572,12 +613,11 @@ Window {
                     onClicked:{
                         moreinfobuttonrectangle.givingmoreinfo = true; //disables button from being pressed again
                         textdisplaytext.text = qsTr("Here is some more information");
-                        //Stop movement commands
+                        logic_qml.giveInfo();
                         moreinfobuttonrectangle.givingmoreinfo = false; //enables button being pressed again
                     }
                 }
             }
-
 
             Rectangle {
                 id: callhelpbuttonrectangletour
@@ -611,6 +651,7 @@ Window {
                     }
                 }
             }
+
             Rectangle {
                 id: nexttourpointbuttonrectangle
                 x: 86
@@ -640,7 +681,7 @@ Window {
                     anchors.fill: parent
                     onClicked: {
                         textdisplaytext.text = qsTr("Moving to next tour point.");
-                        //command to move to next tour point
+                        logic_qml.goNextTourPoint();
                     }
                 }
             }
@@ -657,7 +698,7 @@ Window {
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: window.buttonspacingb
                 anchors.rightMargin: window.buttonspacingh
-                visible: admindbadgerectangle.isadmin ? true : false
+                visible: adminbadgerectangle.isadmin ? true : false
                 Text {
                     id: stoptourbuttontext
                     x: 65
@@ -801,6 +842,7 @@ Window {
                         id: cancellogonmouseArea
                         anchors.fill: parent
                         onClicked:{
+                            adminlogonPasswordtextInput.text = "";
                             adminlogonrectangle.visible = false;
                             unhide();
                             statusrectangle.error = false;
@@ -822,6 +864,7 @@ Window {
             anchors.bottom: parent.bottom
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottomMargin: 0
+
             Rectangle {
                 id: writemapbuttonrectangle
                 x: 80
@@ -854,37 +897,6 @@ Window {
             }
 
             Rectangle {
-                id: adminbackbuttonrectanglemain
-                x: 80
-                y: 144
-                width: window.buttonwidth
-                height: window.buttonheight
-                color: window.buttoncolourback
-                radius: window.buttonrad
-                anchors.left: parent.left
-                anchors.bottom: parent.bottom
-                anchors.leftMargin: window.buttonspacingh
-                anchors.bottomMargin: window.buttonspacingb
-                Text {
-                    id: callhelpbuttontextmain1
-                    x: 65
-                    y: 34
-                    text: qsTr("Go Back")
-                    anchors.verticalCenter: parent.verticalCenter
-                    font.pixelSize: window.buttonfontsize
-                    horizontalAlignment: Text.AlignHCenter
-                    font.family: window.buttonfontfam
-                    anchors.horizontalCenter: parent.horizontalCenter
-                }
-
-                MouseArea {
-                    id: adminbackbuttonmouseAreamain
-                    anchors.fill: parent
-                    onClicked: {}
-                }
-            }
-
-            Rectangle {
                 id: adminlogoutbuttonrectangle
                 x: 77
                 width: window.buttonwidth
@@ -899,7 +911,7 @@ Window {
                     id: ccountbuttontext1
                     x: 65
                     y: 34
-                    text: qsTr("Admin Logout")
+                    text: qsTr("Logout")
                     anchors.verticalCenter: parent.verticalCenter
                     font.pixelSize: window.buttonfontsize
                     horizontalAlignment: Text.AlignHCenter
@@ -910,7 +922,11 @@ Window {
                 MouseArea {
                     id: adminlogoutmouseArea
                     anchors.fill: parent
-                    onClicked: {}
+                    onClicked: {
+                        isadmin = false;
+                        adminbuttonsrectangle.visible = false;
+                        unhide();
+                    }
                 }
             }
 
@@ -922,9 +938,9 @@ Window {
                 height: window.buttonheight
                 color: window.buttoncolourbase
                 radius: window.buttonrad
-                anchors.right: parent.right
+                anchors.left: parent.left
                 anchors.bottom: parent.bottom
-                anchors.rightMargin: window.buttonspacingh
+                anchors.leftMargin: window.buttonspacingh
                 anchors.bottomMargin: window.buttonspacingb
                 Text {
                     id: adminshutdownbuttontext
@@ -944,11 +960,47 @@ Window {
                     onClicked: {}
                 }
             }
+
+            Rectangle {
+                id: adminbackbuttonrectanglemain
+                x: 80
+                y: 144
+                width: window.buttonwidth
+                height: window.buttonheight
+                color: window.buttoncolourback
+                radius: window.buttonrad
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                anchors.rightMargin: window.buttonspacingh
+                anchors.bottomMargin: window.buttonspacingb
+                Text {
+                    id: callhelpbuttontextmain1
+                    x: 65
+                    y: 34
+                    text: qsTr("Go Back")
+                    anchors.verticalCenter: parent.verticalCenter
+                    font.pixelSize: window.buttonfontsize
+                    horizontalAlignment: Text.AlignHCenter
+                    font.family: window.buttonfontfam
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+
+                MouseArea {
+                    id: adminbackbuttonmouseAreamain
+                    anchors.fill: parent
+                    onClicked: {
+                        adminbuttonsrectangle.visible = false;
+                        unhide();
+                    }
+                }
+            }
+
         }
     }
 
 
     function stoptour(){
+        logic_qml.stopTour();
         statusrectangle.intour = false;
         intourbuttonsrectangle.visible = false;
         mainbuttonsrectangle.visible = true;
@@ -956,8 +1008,9 @@ Window {
 
 
     function callhelpdesk(){
-        window.message = textdisplaytext.text
-        textdisplaytext.text = qsTr("Caling Help desk, please hold");
+        logic_qml.callHelp();
+        window.message = textdisplaytext.text;
+        textdisplaytext.text = qsTr(logic_qml.speak());
         statusrectangle.error = true;
         hideall();
         adminlogonrectangle.visible = true;
@@ -995,7 +1048,7 @@ Window {
         if (adminlogonPasswordtextInput.text == "hi"){
             console.log("Password accepted");
             adminlogonPasswordtextInput.text = "";
-            admindbadgerectangle.isadmin = true;
+            isadmin = true;
             adminlogonrectangle.visible = false;
             unhide();
             statusrectangle.error = false;

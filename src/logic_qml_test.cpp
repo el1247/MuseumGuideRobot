@@ -14,46 +14,65 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "logic.hpp"
-#include "mapstruct.h" //For the filereader
-#include "qr.hpp" //For the QR code detection
-#include "gsound.h" //For sound output
+#include "logic_qml.h"
 
-logic::logic(){
 
+logic_qml::logic_qml(){
+    qInfo("Initialiser");
 }
 
 
-void logic::proxdetection(int gpio, int level, uint32_t tick){
-
+void logic_qml::proxdetection(int gpio, int level, uint32_t tick){
+    qInfo("");
 }
 
 
-void logic::callHelp() {
-
+void logic_qml::callHelp() {
+    mystring = strdup("Calling help desk function called");
+    qInfo("Calling helpdesk called");
 }
 
 
-void logic::doTour(char *tourname){
-	
+void logic_qml::doTour(int tourID){
+    qInfo("Do tour called");
 }
 
 
-void logic::emergencyStop(){
-	
+void logic_qml::emergencyStop(){
+    qInfo("Emergency stop called");
 }
 
 
-int logic::giveInfo(int locationID){//TODO - Need to fix/test this
-	
+void logic_qml::giveInfo(){//TODO - Need to fix/test this
+    //Checks current location internally
+    qInfo("Give info called");
+    mystring = strdup("Information stored");
 }
 
 
-void logic::goHome(int locationID){
-	
+void logic_qml::goHome(int locationID){ //Possibly delete and append to stoptour
+    qInfo("Go home called");
 }
 
 
-void logic::stopTour(){
-	
+void logic_qml::goNextTourPoint(){
+    qInfo("Next tour point called");
+}
+
+void logic_qml::stopTour(){ //Stops the tour
+   qInfo("Stoptour called");
+}
+
+QString logic_qml::speak(){
+    QString wordy;
+    wordy = mystring;
+    return wordy;
+}
+
+QString logic_qml::getTourName(int tourID){ //Method to get names of tours
+    qInfo("Getting tour name");
+    QString tourname;
+    //get tourname
+    tourname = QString("Tour %1").arg(tourID);
+    return tourname;
 }
