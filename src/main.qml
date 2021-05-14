@@ -23,7 +23,7 @@ Window {
     property int bannerfontsize : 13
     property int mode : 0 //Tracks which frame is currently visible
     property string message : ""
-    property var tournames: [logic_qml.getTourName(1), logic_qml.getTourName(2), logic_qml.getTourName(3)]
+    property var tournames: [logic_qml.getTourName(0), logic_qml.getTourName(1), logic_qml.getTourName(2)]
     property bool isadmin :false
 
     Rectangle {
@@ -465,7 +465,7 @@ Window {
                     id: tour2buttontext
                     x: 65
                     y: 34
-                    text: qsTr("Tour 2")
+                    text: qsTr(tournames[1])
                     anchors.verticalCenter: parent.verticalCenter
                     font.pixelSize: window.buttonfontsize
                     horizontalAlignment: Text.AlignHCenter
@@ -477,7 +477,7 @@ Window {
                     id: tour2buttonmouseArea
                     anchors.fill: parent
                     onClicked:{
-                        textdisplaytext.text = qsTr("Starting tour 2");
+                        textdisplaytext.text = qsTr("Starting " + tournames[1]);
                         intourbuttonsrectangle.visible = true;
                         starttourbuttonsrectangle.visible = false;
                         statusrectangle.intour = true;
@@ -504,7 +504,7 @@ Window {
                     id: tour3buttontext
                     x: 65
                     y: 34
-                    text: qsTr("Tour 3")
+                    text: qsTr(tournames[2])
                     anchors.verticalCenter: parent.verticalCenter
                     font.pixelSize: window.buttonfontsize
                     horizontalAlignment: Text.AlignHCenter
@@ -516,7 +516,7 @@ Window {
                     id: tour3buttonmouseArea
                     anchors.fill: parent
                     onClicked:{
-                        textdisplaytext.text = qsTr("Starting tour 3");
+                        textdisplaytext.text = qsTr("Starting " + tournames[2]);
                         intourbuttonsrectangle.visible = true;
                         starttourbuttonsrectangle.visible = false;
                         statusrectangle.intour = true;
@@ -612,8 +612,8 @@ Window {
                     visible: moreinfobuttonrectangle.givingmoreinfo ? false : true
                     onClicked:{
                         moreinfobuttonrectangle.givingmoreinfo = true; //disables button from being pressed again
-                        textdisplaytext.text = qsTr("Here is some more information");
-                        logic_qml.giveInfo();
+                        logic_qml.giveInfo(logic_qml.getlocation());
+                        textdisplaytext.text = qsTr(logic_qml.speak());
                         moreinfobuttonrectangle.givingmoreinfo = false; //enables button being pressed again
                     }
                 }
@@ -698,7 +698,7 @@ Window {
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: window.buttonspacingb
                 anchors.rightMargin: window.buttonspacingh
-                visible: adminbadgerectangle.isadmin ? true : false
+                visible: isadmin ? true : false
                 Text {
                     id: stoptourbuttontext
                     x: 65
