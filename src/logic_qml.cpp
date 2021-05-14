@@ -223,6 +223,11 @@ int logic_qml::getlocation(){
 }
 
 
+int logic_qml::getTotalTourCount(){
+    return totalTourCount;
+}
+
+
 QString logic_qml::speak(){
     QString wordy;
     wordy = mystring;

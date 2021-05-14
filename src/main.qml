@@ -25,6 +25,7 @@ Window {
     property string message : ""
     property var tournames: [logic_qml.getTourName(0), logic_qml.getTourName(1), logic_qml.getTourName(2)]
     property bool isadmin :false
+    property int totalTourCount : logic_qml.getTotalTourCount()
 
     Rectangle {
         id: logorectangle
@@ -293,7 +294,10 @@ Window {
                     anchors.fill: parent
                     onClicked:{
                         textdisplaytext.text = qsTr("Select a tour.");
-                        mainbuttonsrectangle.visible = false;
+                        if (totalTourCount < 1) {
+                            textdisplaytext.text = qsTr("I'm sorry, there are no tours currently available.");
+                        }
+                        hideall();
                         starttourbuttonsrectangle.visible = true;
                         window.mode = 1;
                     }
@@ -422,6 +426,7 @@ Window {
                 anchors.top: parent.top
                 anchors.topMargin: window.buttonspacingt
                 anchors.leftMargin: window.buttonspacingh
+                visible: totalTourCount >= 1 ? true : false
                 Text {
                     id: tour1buttontext
                     x: 65
@@ -461,6 +466,7 @@ Window {
                 anchors.top: parent.top
                 anchors.topMargin: window.buttonspacingt
                 anchors.rightMargin: window.buttonspacingh
+                visible: totalTourCount >= 2 ? true : false
                 Text {
                     id: tour2buttontext
                     x: 65
@@ -500,6 +506,7 @@ Window {
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: window.buttonspacingb
                 anchors.leftMargin: window.buttonspacingh
+                visible: totalTourCount >= 3 ? true : false
                 Text {
                     id: tour3buttontext
                     x: 65

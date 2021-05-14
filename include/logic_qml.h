@@ -70,6 +70,7 @@ class logic_qml : public QObject{
         Q_INVOKABLE void goNextTourPoint();
         Q_INVOKABLE void stopTour();
         Q_INVOKABLE int getlocation();
+        Q_INVOKABLE int getTotalTourCount();
         Q_INVOKABLE QString speak();
         Q_INVOKABLE QString getTourName(int tourID);
 };
