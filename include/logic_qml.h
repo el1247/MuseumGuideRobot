@@ -23,6 +23,10 @@
 
 #include <iostream>
 #include <string>
+#include <filesystem>
+#include <string.h>
+#include "dirent.h"
+
 //#include "gpio_assign.h"
 //#include "gsound.h"
 //#include "movement.h"
@@ -49,7 +53,10 @@ class logic_qml : public QObject{
         //qr_Code qrcode;//instance of QR scanning class
         //Mat frame;//Instance of image object
         //Waypoint *tour;//Instance of tour array pointer
+        int current_location = 7; //set to 7 for test purposes, set to zero
         int num_waypoints;//Number of waypoints that are in a specific tour
+        char *mapList[3]; //List of maps/tours 
+        int totalTourCount = 0; //Count of total tours
 
     public:
         char* mystring = strdup("abc");
@@ -62,6 +69,7 @@ class logic_qml : public QObject{
         Q_INVOKABLE void goHome(int locationID);
         Q_INVOKABLE void goNextTourPoint();
         Q_INVOKABLE void stopTour();
+        Q_INVOKABLE int getlocation();
         Q_INVOKABLE QString speak();
         Q_INVOKABLE QString getTourName(int tourID);
 };

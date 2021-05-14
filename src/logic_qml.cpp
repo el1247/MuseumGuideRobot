@@ -26,6 +26,23 @@ logic_qml::logic_qml(){
         proxintfail: std::cout << "Initiating non interruptmethod" << std::endl;
         //System restart most or polling code
     }
+
+    DIR *dr; //Section scans directory for tours
+    struct dirent *en;
+    dr = opendir("."); //open all or present directory
+    if (dr) {
+        while ((en = readdir(dr)) != NULL) {
+            if (!strcmp(en->d_name, "*.csv")){ //literal string match, no wildcards, does not work
+                qInfo("CSV file found");
+            }
+            if (strstr(en->d_name, ".csv") != NULL){ //search for .csv in file name
+                mapList[totalTourCount] = new char[260];
+                strcpy(mapList[totalTourCount], en->d_name); //places name of found map in mapList
+                totalTourCount++;
+            }
+        }
+        closedir(dr); //close all directory
+    }
 }
 
 
@@ -194,10 +211,17 @@ void logic_qml::goNextTourPoint(){
     qInfo("Next tour point called");
 }
 
+
 void logic_qml::stopTour(){ //Stops the tour
     isTour = false;
     std::cout << "Stopping tour" << std::endl; //Placeholder to info programmer of exection and robots intentions
 }
+
+
+int logic_qml::getlocation(){
+    return current_location;
+}
+
 
 QString logic_qml::speak(){
     QString wordy;
@@ -205,10 +229,14 @@ QString logic_qml::speak(){
     return wordy;
 }
 
+
 QString logic_qml::getTourName(int tourID){ //Method to get names of tours
     qInfo("Getting tour name");
     QString tourname;
-    //get tourname
-    tourname = QString("Tour %1").arg(tourID);
+    if (tourID < totalTourCount){
+        tourname = mapList[tourID];
+    }else{
+        tourname = QString("Tour %1").arg(tourID);
+    }
     return tourname;
 }
