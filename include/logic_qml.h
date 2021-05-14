@@ -58,7 +58,7 @@ class logic_qml : public QObject{
         Q_INVOKABLE void callHelp();
         Q_INVOKABLE void doTour(int tourID);
         Q_INVOKABLE void emergencyStop();
-        Q_INVOKABLE void giveInfo();
+        Q_INVOKABLE void giveInfo(int locationID);
         Q_INVOKABLE void goHome(int locationID);
         Q_INVOKABLE void goNextTourPoint();
         Q_INVOKABLE void stopTour();

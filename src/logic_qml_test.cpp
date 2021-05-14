@@ -43,7 +43,7 @@ void logic_qml::emergencyStop(){
 }
 
 
-void logic_qml::giveInfo(){//TODO - Need to fix/test this
+void logic_qml::giveInfo(int locationID){//TODO - Need to fix/test this
     //Checks current location internally
     qInfo("Give info called");
     mystring = strdup("Information stored");
