@@ -29,8 +29,9 @@ logic_qml::logic_qml(){
             }
             if (strstr(en->d_name, ".csv") != NULL){ //search for .csv in file name
                 mapList[totalTourCount] = new char[260];
-                strcpy(mapList[totalTourCount], en->d_name); //places name of found map in mapList
+                strncpy(mapList[totalTourCount], en->d_name, strlen(en->d_name)-4); //places name of found map in mapList
                 totalTourCount++;
+                qInfo(mapList[totalTourCount - 1]);
             }
         }
         closedir(dr); //close all directory
