@@ -51,9 +51,11 @@ void logic_qml::proxdetection(int gpio, int level, uint32_t tick){ ///TODO - tes
 
 void logic_qml::callHelp() { ///TODO - write
     stringOut = strdup("Kindly go fetch a member of staff from the help desk. I will be waiting here."); //configures string to be printed to GUI
-    //stop moving, movement module
+    nav_cancel();
 }
 
+static int waiting = 0;
+static void wait_cb(void) { waiting = 0; }
 
 void logic_qml::doTour(int tourID){ ///need to find a way to get tourname, currently using tourID <- redundant method if startTour and goNextTourPoint work
     num_waypoints = dev_read_csv(&tour, tourname); //Tour coordinates in 'tour' array
@@ -73,8 +75,10 @@ void logic_qml::doTour(int tourID){ ///need to find a way to get tourname, curre
 
     //get/calculate route, nav module
     for(int i = 0; i < num_waypoints; i++){
-        //TODO - move robot to tour point indicated by tour[i].dx and tour[i].dy
-        //TODO - wait to reach waypoint
+	waiting = 1;
+	nav_set_travel(tour[i].dx, tour[i].dy, &wait_cb);
+	while(waiting) sleep(1);
+
         cap.read(frame);
         if (frame.empty()){//In case camera doesn't work
             cerr<<"ERROR! Blank frame grabbed!\n";
