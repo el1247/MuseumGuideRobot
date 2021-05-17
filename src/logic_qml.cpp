@@ -54,7 +54,7 @@ void logic_qml::proxdetection(int gpio, int level, uint32_t tick){
 
 
 void logic_qml::callHelp() {
-    mystring = strdup("Calling help desk function called"); //configures string to be printed to GUI
+    stringOut = strdup("Calling help desk function called"); //configures string to be printed to GUI
     //stop moving, movement module
     //send signal to help desk
     //bring 
@@ -88,6 +88,8 @@ void logic_qml::doTour(int tourID){ ///need to find a way to get tourname, curre
             break;
         }
 
+        current_location = i; //Updates internally stored location in tour point
+
         if(tour[i].qr == 1){//Checking the QR location if QR exists at the location
             while(confirmer == 0){
                 decode(frame, qrcode);//Reading the image and getting the coordinates 
@@ -118,7 +120,7 @@ void logic_qml::emergencyStop(){
 }
 
 
-void logic_qml::giveInfo(int locationID){//TODO - Need to fix/test this ///Need to add location ID parameter and check this with logic_qml_test
+void logic_qml::giveInfo(int locationID){//TODO - Need to fix/test this ///locationID necessary, or can be exchanged for current_location
     //Checks current location internally
     //call audio out module with this input
     if (tour[locationID].sound_name == "N/A"){
@@ -128,11 +130,18 @@ void logic_qml::giveInfo(int locationID){//TODO - Need to fix/test this ///Need 
         std::cout << "Giving tour information" << std::endl; //Placeholder to info programmer of exection and robots intentions
         return 1; //returns 1 to indicate there was information to provide to user
     }
-    mystring = strdup("Information stored");
+    stringOut = strdup("Information stored");
 }
 
 
-void logic_qml::goHome(int locationID){ //Possibly delete and append to stoptour
+void logic_qml::goNextTourPoint(){
+    qInfo("Next tour point called");
+}
+
+
+void logic_qml::stopTour(int locationID){ //Stops the tour ///locationID necessary, or can be exchanged for current_location
+    isTour = false;
+    std::cout << "Stopping tour" << std::endl; //Placeholder to info programmer of exection and robots intentions
     //calculate route to go home, nav module
     int confirmer = 0;
     int info, qr_data;
@@ -204,38 +213,28 @@ void logic_qml::goHome(int locationID){ //Possibly delete and append to stoptour
             }
         std::cout << "Moving onto next tour point" << std::endl; //Placeholder to info programmer of exection and robots intentions
         }
+    }
 }
 
 
-void logic_qml::goNextTourPoint(){
-    qInfo("Next tour point called");
-}
-
-
-void logic_qml::stopTour(){ //Stops the tour
-    isTour = false;
-    std::cout << "Stopping tour" << std::endl; //Placeholder to info programmer of exection and robots intentions
-}
-
-
-int logic_qml::getlocation(){
+int logic_qml::getlocation(){ //Returns the current location of the robot in tour index point
     return current_location;
 }
 
 
-int logic_qml::getTotalTourCount(){
+int logic_qml::getTotalTourCount(){ //Returns the total number of unique tours identified upon initialisation
     return totalTourCount;
 }
 
 
-QString logic_qml::speak(){
+QString logic_qml::speak(){ //Converts stringOut value to Qstring for GUI  to call
     QString wordy;
-    wordy = mystring;
+    wordy = stringOut;
     return wordy;
 }
 
 
-QString logic_qml::getTourName(int tourID){ //Method to get names of tours
+QString logic_qml::getTourName(int tourID){ //Gets name of indexed tour
     qInfo("Getting tour name");
     QString tourname;
     if (tourID < totalTourCount){

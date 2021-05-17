@@ -63,13 +63,8 @@ void logic_qml::emergencyStop(){
 void logic_qml::giveInfo(int locationID){//TODO - Need to fix/test this
     //Checks current location internally
     qInfo("Give info called");
-    sprintf(mystring, "Information stored in location %d", locationID);
+    sprintf(stringOut, "Information stored in location %d", locationID);
     //mystring = strdup("Information stored " + locationID);
-}
-
-
-void logic_qml::goHome(int locationID){ //Possibly delete and append to stoptour
-    qInfo("Go home called");
 }
 
 
@@ -78,7 +73,7 @@ void logic_qml::goNextTourPoint(){
 }
 
 
-void logic_qml::stopTour(){ //Stops the tour
+void logic_qml::stopTour(int locationID){ //Stops the tour
    qInfo("Stoptour called");
 }
 
@@ -95,7 +90,7 @@ int logic_qml::getTotalTourCount(){
 
 QString logic_qml::speak(){
     QString wordy;
-    wordy = mystring;
+    wordy = stringOut;
     return wordy;
 }
 

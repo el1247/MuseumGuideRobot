@@ -45,30 +45,27 @@
 class logic_qml : public QObject{
     Q_OBJECT
     private:
+        //proximity* proximity_logic; ///Commented out for frontend testings
+        //qr_Code qrcode;//instance of QR scanning class ///Commented out for frontend testings
+        //Mat frame;//Instance of image object ///Commented out for frontend testings
+        //Waypoint *tour;//Instance of tour array pointer ///Commented out for frontend testings
         bool isTour = false; //Tracks if a tour is in progress
-        //Commented out for frontend testings
-        //proximity* proximity_logic;
-        //instance of movement class
-        //instance of navigation class
-        //qr_Code qrcode;//instance of QR scanning class
-        //Mat frame;//Instance of image object
-        //Waypoint *tour;//Instance of tour array pointer
-        int current_location = 7; //set to 7 for test purposes, set to zero
+        char *mapList[3]; //List of maps/tours
+        int current_location = 7; //Current point in the tour ///set to 7 for test purposes, set to zero
         int num_waypoints;//Number of waypoints that are in a specific tour
-        char *mapList[3]; //List of maps/tours 
         int totalTourCount = 0; //Count of total tours
 
     public:
-        char* mystring = strdup("abc");
+        char* stringOut = strdup("Hello. I am your museum guide robot."); //String storage to be output on the GUI
+
         logic_qml(); //Initialiser
         static void proxdetection(int gpio, int level, uint32_t tick);
         Q_INVOKABLE void callHelp();
         Q_INVOKABLE void doTour(int tourID);
         Q_INVOKABLE void emergencyStop();
         Q_INVOKABLE void giveInfo(int locationID);
-        Q_INVOKABLE void goHome(int locationID);
         Q_INVOKABLE void goNextTourPoint();
-        Q_INVOKABLE void stopTour();
+        Q_INVOKABLE void stopTour(int locationID);
         Q_INVOKABLE int getlocation();
         Q_INVOKABLE int getTotalTourCount();
         Q_INVOKABLE QString speak();
