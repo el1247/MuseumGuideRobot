@@ -450,7 +450,7 @@ Window {
                         statusrectangle.intour = true;
                         statusrectangle.tourno = 0;
                         window.mode = 2;
-                        logic_qml.doTour(statusrectangle.tourno);
+                        logic_qml.startTour(statusrectangle.tourno);
                     }
                 }
             }
@@ -490,7 +490,7 @@ Window {
                         statusrectangle.intour = true;
                         statusrectangle.tourno = 1;
                         window.mode = 2;
-                        logic_qml.doTour(statusrectangle.tourno);
+                        logic_qml.startTour(statusrectangle.tourno);
                     }
                 }
             }
@@ -530,7 +530,7 @@ Window {
                         statusrectangle.intour = true;
                         statusrectangle.tourno = 2;
                         window.mode = 2;
-                        logic_qml.doTour(statusrectangle.tourno);
+                        logic_qml.startTour(statusrectangle.tourno);
                     }
                 }
             }
