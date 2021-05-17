@@ -10,7 +10,7 @@ LIBS = -lpigpio -lrt -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_vi
 EXE = tpee4g8mgr
 VERSION = 0.0.1
 
-SRCS = main.cpp imu.c MadgwickAHRS.c movement.c proximity.cpp logic.cpp qr_module.cpp sound.c
+SRCS = main.cpp imu.c MadgwickAHRS.c movement.c nav.c proximity.cpp logic.cpp qr_module.cpp sound.c
 
 COBJS = $(patsubst %.c,build/%.o,$(filter %.c,$(SRCS))) 
 CXXOBJS = $(patsubst %.cpp,build/%.o,$(filter %.cpp,$(SRCS))) 
