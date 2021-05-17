@@ -28,10 +28,10 @@ logic_qml::logic_qml(){
                 qInfo("CSV file found");
             }
             if (strstr(en->d_name, ".csv") != NULL){ //search for .csv in file name
-                mapList[totalTourCount] = new char[260];
-                strncpy(mapList[totalTourCount], en->d_name, strlen(en->d_name)-4); //places name of found map in mapList
+                tourList[totalTourCount] = new char[260];
+                strncpy(tourList[totalTourCount], en->d_name, strlen(en->d_name)-4); //places name of found map in tourList
                 totalTourCount++;
-                qInfo(mapList[totalTourCount - 1]);
+                qInfo(tourList[totalTourCount - 1]);
             }
         }
         closedir(dr); //close all directory
@@ -60,7 +60,7 @@ void logic_qml::emergencyStop(){
 }
 
 
-void logic_qml::giveInfo(int locationID){//TODO - Need to fix/test this
+void logic_qml::giveInfo(){//TODO - Need to fix/test this
     //Checks current location internally
     qInfo("Give info called");
     sprintf(stringOut, "Information stored in location %d", locationID);
@@ -73,7 +73,7 @@ void logic_qml::goNextTourPoint(){
 }
 
 
-void logic_qml::stopTour(int locationID){ //Stops the tour
+void logic_qml::stopTour(){ //Stops the tour
    qInfo("Stoptour called");
 }
 
@@ -98,7 +98,7 @@ QString logic_qml::getTourName(int tourID){ //Method to get names of tours
     qInfo("Getting tour name");
     QString tourname;
     if (tourID < totalTourCount){
-        tourname = mapList[tourID];
+        tourname = tourList[tourID];
     }else{
         tourname = QString("Tour %1").arg(tourID);
     }
