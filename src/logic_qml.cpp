@@ -50,11 +50,8 @@ void logic_qml::proxdetection(int gpio, int level, uint32_t tick){ ///TODO - tes
 
 
 void logic_qml::callHelp() { ///TODO - write
-    stringOut = strdup("Calling help desk"); //configures string to be printed to GUI
+    stringOut = strdup("Kindly go fetch a member of staff from the help desk. I will be waiting here."); //configures string to be printed to GUI
     //stop moving, movement module
-    //send signal to help desk
-    //bring 
-    std::cout << "Calling helpdesk" << std::endl;
 }
 
 
@@ -137,10 +134,7 @@ void logic_qml::goNextTourPoint(){ //Moves the robot to the next tour point
     float error_x, error_y;
 
     //TODO - move robot to tour point indicated by tour[current_location].dx and tour[current_location].dy
-    //TODO - wait to reach waypoint
-
-    current_location++; //Updates current_location
-
+    //TODO - stop at waypoint
     cap.read(frame);
     if (frame.empty()){//In case camera doesn't work
         cerr<<"ERROR! Blank frame grabbed!\n";
@@ -165,7 +159,8 @@ void logic_qml::goNextTourPoint(){ //Moves the robot to the next tour point
         //Provide information about the tour point if it exists
         info = giveInfo(current_location);//This will be 1 if there is info to be given out here, and 0 if no info
     }
-    std::cout << "Moving onto next tour point" << std::endl; //Placeholder to info programmer of exection and robots intentions
+
+    current_location++; //Updates current_location
 }
 
 
@@ -266,12 +261,12 @@ void logic_qml::stopTour(){ //Stops the tour and returns the robot home
 }
 
 
-void logic_qml::tourUpdate(){
+void logic_qml::tourUpdate(){ ///TODO: Links to write_csv() in filereader.c, frontend support needed
     qInfo("Tour Update called");
 }
 
 
-void logic_qml::tourWrite(){
+void logic_qml::tourWrite(){ ///TODO: Links to update_csv() in filereader.c, frontend support needed
     qInfo("Tour Write called");
 }
 
