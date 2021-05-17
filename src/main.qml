@@ -190,7 +190,7 @@ Window {
             x: 65
             y: 34
             anchors.fill: parent
-            text: isadmin ? qsTr("Shut Down") : qsTr("Call Help")
+            text: isadmin ? qsTr("Shut Down") : qsTr("Report error")
             anchors.verticalCenter: parent.verticalCenter
             font.pixelSize: window.bannerfontsize
             horizontalAlignment: Text.AlignHCenter
@@ -282,7 +282,7 @@ Window {
                     id: starttourbuttontext
                     x: 65
                     y: 34
-                    text: qsTr("Start Tour")
+                    text: qsTr("Start tours")
                     anchors.verticalCenter: parent.verticalCenter
                     font.pixelSize: window.buttonfontsize
                     horizontalAlignment: Text.AlignHCenter
@@ -322,7 +322,7 @@ Window {
                     id: callhelpbuttontextmain
                     x: 65
                     y: 34
-                    text: qsTr("Call Help Desk")
+                    text: qsTr("Report error")
                     anchors.verticalCenter: parent.verticalCenter
                     font.pixelSize: window.buttonfontsize
                     horizontalAlignment: Text.AlignHCenter
@@ -643,7 +643,7 @@ Window {
                     id: callhelpbuttontexttour
                     x: 65
                     y: 34
-                    text: qsTr("Call Help Desk")
+                    text: qsTr("Report error")
                     anchors.verticalCenter: parent.verticalCenter
                     font.pixelSize: window.buttonfontsize
                     horizontalAlignment: Text.AlignHCenter
@@ -1126,7 +1126,7 @@ Window {
                     id: admintourlistmouseArea
                     anchors.fill: parent
                     onClicked: {
-                        textdisplaytext.text = qsTr(tournames); ///
+                        textdisplaytext.text = qsTr(tournames[0] + ", " + tournames[1] + ", " + tournames[2]); ///
                     }
                 }
             }

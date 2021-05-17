@@ -50,7 +50,7 @@ void logic_qml::proxdetection(int gpio, int level, uint32_t tick){ ///TODO - tes
 
 
 void logic_qml::callHelp() { ///TODO - write
-    stringOut = strdup("Calling help desk function called"); //configures string to be printed to GUI
+    stringOut = strdup("Calling help desk"); //configures string to be printed to GUI
     //stop moving, movement module
     //send signal to help desk
     //bring 
@@ -120,13 +120,13 @@ void logic_qml::giveInfo(){///TODO - Need to fix/test this
     //Checks current location internally
     //call audio out module with this input
     if (tour[current_location].sound_name == "N/A"){
+        stringOut = strdup("No information available for this point"); ///Better output available? This will be printed to GUI
         return 0; //indicates no sound file at location
     } else {
         sndcon(tour[current_location].sound_name);///TODO - check this
-        std::cout << "Giving tour information" << std::endl; //Placeholder to info programmer of exection and robots intentions
+        stringOut = strdup("Giving information"); ///Better output available? This will be printed to GUI
         return 1; //returns 1 to indicate there was information to provide to user
     }
-    stringOut = strdup("Information stored"); ///Better output available? This will be printed to GUI
 }
 
 
