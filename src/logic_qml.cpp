@@ -111,7 +111,8 @@ void logic_qml::doTour(int tourID){ ///need to find a way to get tourname, curre
 
 
 void logic_qml::emergencyStop(){///TODO - write
-    //call movement stopping method
+    nav_cancel();
+    m_stop();
     //await UI confirmation ///Investigate UI confirmation, how to trigger?
     std::cout << "Executing emergency stop" << std::endl; //Placeholder to info programmer of exection and robots intentions
 }
@@ -137,8 +138,9 @@ void logic_qml::goNextTourPoint(){ //Moves the robot to the next tour point
     int qr_data;
     float error_x, error_y;
 
-    //TODO - move robot to tour point indicated by tour[current_location].dx and tour[current_location].dy
-    //TODO - stop at waypoint
+    waiting = 1;
+    nav_set_travel(tour[current_location].dx, tour[current_location.dy], &wait_cb);
+    while(waiting) sleep(1);
     cap.read(frame);
     if (frame.empty()){//In case camera doesn't work
         cerr<<"ERROR! Blank frame grabbed!\n";
