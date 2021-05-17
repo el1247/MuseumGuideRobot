@@ -19,13 +19,12 @@
 
 #include "movement.h"
 #include "sensors.h"
+#include "nav.h"
 
 #define PID_DECLS(id) static float id##_err, id##_sum; float id##_last
 #define PID(id,ecalc,kp,ki,kd) (id##_last = id##_err, id##_sum += (id##_err = (ecalc)), \
                                     (kp)*id##_err + (ki)*id##_sum + (kd)*(id##_err-id##_last))
-#define PI ((float)M_PI)
-#define TWOPI ((float)(2*M_PI))
-#define THREEPI ((float)(3*M_PI))
+
 
 static enum {
     NAV_STOP, NAV_TURN, NAV_TRAVEL
@@ -34,50 +33,72 @@ static enum {
 static float sx, sy, tx, ty, course;
 static volatile int en = 0;
 static void (*on_complete)(void);
+static void (*nxt_cbk)(void);
 
 void nav_init(void) {
     atexit(nav_fini);
 }
 
-void nav_set(float x, float y, void (*callback)(void)) {
+void nav_set_turn(float hdg, void (*callback)(void)) {
     state = NAV_STOP;
-    tx = x, ty = y;
-    get_current_position(&sx,&sy);
-    course = atan2f(ty - sy, tx - sx);
+    course = hdg;
     on_complete = callback;
     state = NAV_TURN;
 }
 
+static void resume(void) {
+    on_complete = nxt_cbk;
+    state = NAV_TRAVEL;
+}
+
 /* XXX TODO determine */
-#define HTOL (M_PI/8.0)
+#define HTOLW (M_PI/4.0)
+#define HTOLN (M_PI/16.0)
 #define DSQTOL 0.1
 #define MOV_SPD 1.0
 #define PATH_KP 0.0
 #define PATH_KI 0.0
 #define PATH_KD 0.0
 
-void nav_tick() {
+
+
+void nav_set_travel(float x, float y, void (*callback)(void)) {
+    state = NAV_STOP;
+    tx = x, ty = y;
+    get_current_position(&sx,&sy);
+    course = atan2f(ty - sy, tx - sx);
+    if(fabs(get_current_heading() - course) > HTOLW) {
+	on_complete = &resume;
+        nxt_cbk = callback;
+	state = NAV_TURN;
+    } else {
+        on_complete = callback;
+        state = NAV_TRAVEL;
+    }
+}
+
+void nav_tick(void) {
     PID_DECLS(path);
+    float x, y, ex, ey, esq, off_angle, correction;
     switch(state) {
       case NAV_TURN:
-        if(fabsf(getcurrent_heading() - course) < HTOL) {
-            m_stop();
+        if(fabsf(get_current_heading() - course) < HTOLN) {
 	    state = NAV_STOP;
+            m_stop();
 	    on_complete();
 	} else m_drive(0.0, course);
 	return;
       case NAV_TRAVEL:
-        float x, y, ex, ey, esq, off_angle, correction;
         get_current_position(&x,&y);
 	ex = tx - x, ey = ty - y;
 	esq = ex*ex + ey*ey;
 	if(esq < DSQTOL) {
-	    m_stop();
 	    state = NAV_STOP;
+	    m_stop();
 	    on_complete();
 	} else {
 	    off_angle = sqrtf(ex*ex + ey*ey) * sinf(atan2f(ey,ex) - course);
-	    correction = PID(path,off_angle,kp,ki,kd);
+	    correction = PID(path,off_angle,PATH_KP,PATH_KI,PATH_KD);
 	    m_drive(MOV_SPD, course + correction);
 	}
 	return;
@@ -86,11 +107,12 @@ void nav_tick() {
     }
 }
 
-void nav_stop(void) {
-    gpioWrite_Bits_0_31_Set(MASK_MOTOR_ALL);
+void nav_cancel(void) {
+    state = NAV_STOP;
+    m_stop();
 }
 
 void nav_fini(void) {
-    gpioWrite_Bits_0_31_Clear(MASK_MOTOR_ALL);
+    nav_cancel();
 }
 
