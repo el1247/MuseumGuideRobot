@@ -25,6 +25,7 @@ Window {
     property string message : ""
     property var tournames: [logic_qml.getTourName(0), logic_qml.getTourName(1), logic_qml.getTourName(2)]
     property bool isadmin :false
+    property bool logout : false
     property int totalTourCount : logic_qml.getTotalTourCount()
 
     Rectangle {
@@ -135,7 +136,7 @@ Window {
             anchors.fill: parent
             onClicked:{
                 window.message = textdisplaytext.text;
-                textdisplaytext.text = qsTr("Please enter admin password.");
+                textdisplaytext.text = qsTr("Please enter administrator password.");
                 hideall();
                 adminlogonrectangle.visible = true;
             }
@@ -202,7 +203,7 @@ Window {
             anchors.fill: parent
             onClicked:{
                 if (isadmin == true){
-                    Qt.quit()
+                    shutdown();
                 }else{
                     callhelpdesk();
                 }
@@ -562,9 +563,9 @@ Window {
                     id: toursbackbuttonmouseArea
                     anchors.fill: parent
                     onClicked:{
-                        starttourbuttonsrectangle.visible = false;
+                        hideall();
                         mainbuttonsrectangle.visible = true;
-                        textdisplaytext.text = qsTr("Hello there, I am your museum guide robot. Please click one of my buttons so I may help you")
+                        textdisplaytext.text = qsTr("Hello there, I am your museum guide robot. Please click one of my buttons so I may help you.")
                         window.mode = 0;
                     }
                 }
@@ -642,7 +643,7 @@ Window {
                     id: callhelpbuttontexttour
                     x: 65
                     y: 34
-                    text: qsTr("Call Help Desk.")
+                    text: qsTr("Call Help Desk")
                     anchors.verticalCenter: parent.verticalCenter
                     font.pixelSize: window.buttonfontsize
                     horizontalAlignment: Text.AlignHCenter
@@ -687,8 +688,18 @@ Window {
                     id: nexttourpointmouseArea
                     anchors.fill: parent
                     onClicked: {
-                        textdisplaytext.text = qsTr("Moving to next tour point.");
-                        logic_qml.goNextTourPoint();
+                        if (logic_qml.getlocation() < 255){
+                            textdisplaytext.text = qsTr("Moving to next tour point.");
+                            logic_qml.goNextTourPoint();
+                            if (logic_qml.getlocation() === 255) {
+                                nexttourpointbuttontext.text =  qsTr("Finish tour");
+                                nexttourpointbuttonrectangle.color = window.buttoncolourback;
+                            }
+                        } else {
+                            textdisplaytext.text = qsTr("Finishing tour, thank you for visiting us today!")
+                            stoptour();
+                        }
+
                     }
                 }
             }
@@ -724,7 +735,6 @@ Window {
                     onClicked:{
                         textdisplaytext.text = qsTr("Closing tour, come again soon.");
                         stoptour();
-                        window.mode = 0;
                     }
                 }
             }
@@ -850,9 +860,10 @@ Window {
                         anchors.fill: parent
                         onClicked:{
                             adminlogonPasswordtextInput.text = "";
+                            window.logout = false;
+                            statusrectangle.error = false;
                             adminlogonrectangle.visible = false;
                             unhide();
-                            statusrectangle.error = false;
                         }
                     }
                 }
@@ -873,7 +884,7 @@ Window {
             anchors.bottomMargin: 0
 
             Rectangle {
-                id: writemapbuttonrectangle
+                id: tourlistbuttonrectangle
                 x: 80
                 y: 15
                 width: window.buttonwidth
@@ -885,10 +896,10 @@ Window {
                 anchors.topMargin: window.buttonspacingt
                 anchors.leftMargin: window.buttonspacingh
                 Text {
-                    id: writemapbuttontext
+                    id: tourlistbuttontext
                     x: 65
                     y: 34
-                    text: qsTr("Write map")
+                    text: qsTr("Tours Info")
                     anchors.verticalCenter: parent.verticalCenter
                     font.pixelSize: window.buttonfontsize
                     horizontalAlignment: Text.AlignHCenter
@@ -897,9 +908,12 @@ Window {
                 }
 
                 MouseArea {
-                    id: writemapmouseArea
+                    id: tourlistmouseArea
                     anchors.fill: parent
-                    onClicked: {}
+                    onClicked: {
+                        adminbuttonsrectangle.visible = false;
+                        admintourbuttonsrectangle.visible = true;
+                    }
                 }
             }
 
@@ -964,7 +978,9 @@ Window {
                 MouseArea {
                     id: adminshutdownmouseArea
                     anchors.fill: parent
-                    onClicked: {}
+                    onClicked: {
+                        shutdown();
+                    }
                 }
             }
 
@@ -1001,7 +1017,153 @@ Window {
                     }
                 }
             }
+        }
 
+        Rectangle {
+            id: admintourbuttonsrectangle
+            x: 0
+            y: 140
+            width: parent.width
+            height: 280
+            visible: false
+            color: window.backgroundcolour
+            border.width: 0
+            anchors.bottom: parent.bottom
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottomMargin: 0
+
+            Rectangle {
+                id: writetourbuttonrectangle
+                x: 80
+                y: 15
+                width: window.buttonwidth
+                height: window.buttonheight
+                color: window.buttoncolourbase
+                radius: window.buttonrad
+                anchors.left: parent.left
+                anchors.top: parent.top
+                anchors.topMargin: window.buttonspacingt
+                anchors.leftMargin: window.buttonspacingh
+                Text {
+                    id: writetourbuttontext
+                    x: 65
+                    y: 34
+                    text: qsTr("Write tour")
+                    anchors.verticalCenter: parent.verticalCenter
+                    font.pixelSize: window.buttonfontsize
+                    horizontalAlignment: Text.AlignHCenter
+                    font.family: window.buttonfontfam
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+
+                MouseArea {
+                    id: writetourmouseArea
+                    anchors.fill: parent
+                    onClicked: {
+                        logic_qml.tourWrite(); ///Implement code for writing tour
+                    }
+                }
+            }
+
+            Rectangle {
+                id: updatetourbuttonrectangle
+                x: 80
+                y: 15
+                width: window.buttonwidth
+                height: window.buttonheight
+                color: window.buttoncolourbase
+                radius: window.buttonrad
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.topMargin: window.buttonspacingt
+                anchors.rightMargin: window.buttonspacingh
+                Text {
+                    id: updatetourbuttontext
+                    x: 65
+                    y: 34
+                    text: qsTr("Update tour")
+                    anchors.verticalCenter: parent.verticalCenter
+                    font.pixelSize: window.buttonfontsize
+                    horizontalAlignment: Text.AlignHCenter
+                    font.family: window.buttonfontfam
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+
+                MouseArea {
+                    id: updatetourmouseArea
+                    anchors.fill: parent
+                    onClicked: {
+                        logic_qml.tourUpdate(); ///Implement code for tour updating
+                    }
+                }
+            }
+
+            Rectangle {
+                id: admintourlistbuttonrectangle
+                x: 81
+                y: 20
+                width: window.buttonwidth
+                height: window.buttonheight
+                color: window.buttoncolourbase
+                radius: window.buttonrad
+                anchors.left: parent.left
+                anchors.bottom: parent.bottom
+                anchors.leftMargin: window.buttonspacingh
+                anchors.bottomMargin: window.buttonspacingb
+                Text {
+                    id: admintourlistbuttontext
+                    x: 65
+                    y: 34
+                    text: qsTr("Tour list")
+                    anchors.verticalCenter: parent.verticalCenter
+                    font.pixelSize: window.buttonfontsize
+                    horizontalAlignment: Text.AlignHCenter
+                    font.family: window.buttonfontfam
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+
+                MouseArea {
+                    id: admintourlistmouseArea
+                    anchors.fill: parent
+                    onClicked: {
+                        textdisplaytext.text = qsTr(tournames); ///
+                    }
+                }
+            }
+
+            Rectangle {
+                id: admintourbackbuttonrectanglemain
+                x: 80
+                y: 144
+                width: window.buttonwidth
+                height: window.buttonheight
+                color: window.buttoncolourback
+                radius: window.buttonrad
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                anchors.rightMargin: window.buttonspacingh
+                anchors.bottomMargin: window.buttonspacingb
+                Text {
+                    id: admintourbackbuttontextmain
+                    x: 65
+                    y: 34
+                    text: qsTr("Go Back")
+                    anchors.verticalCenter: parent.verticalCenter
+                    font.pixelSize: window.buttonfontsize
+                    horizontalAlignment: Text.AlignHCenter
+                    font.family: window.buttonfontfam
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+
+                MouseArea {
+                    id: admintourbackbuttonmouseAreamain
+                    anchors.fill: parent
+                    onClicked: {
+                        admintourbuttonsrectangle.visible = false;
+                        adminbuttonsrectangle.visible = true;
+                    }
+                }
+            }
         }
     }
 
@@ -1009,8 +1171,9 @@ Window {
     function stoptour(){
         logic_qml.stopTour();
         statusrectangle.intour = false;
-        intourbuttonsrectangle.visible = false;
+        hideall();
         mainbuttonsrectangle.visible = true;
+        window.mode = 0;
     }
 
 
@@ -1028,6 +1191,8 @@ Window {
         mainbuttonsrectangle.visible = false;
         starttourbuttonsrectangle.visible = false;
         intourbuttonsrectangle.visible = false
+        adminbuttonsrectangle.visible = false;
+        admintourbuttonsrectangle.visible = false;
     }
 
 
@@ -1045,23 +1210,41 @@ Window {
             break;
         default:
             textdisplaytext.text = qsTr("Unable to identify current mode");
+            mainbuttons.rectangle.visible = true;
+            window.mode = 0;
             break;
         }
     }
 
 
     function logon(){
-        console.log("checking password")
         if (adminlogonPasswordtextInput.text == "hi"){
-            console.log("Password accepted");
-            adminlogonPasswordtextInput.text = "";
-            isadmin = true;
-            adminlogonrectangle.visible = false;
-            unhide();
-            statusrectangle.error = false;
+            if (window.logout){
+                Qt.quit();
+            }else{
+                adminlogonPasswordtextInput.text = "";
+                isadmin = true;
+                adminlogonrectangle.visible = false;
+                unhide();
+                statusrectangle.error = false;
+            }
         }else{
             adminlogonPasswordtextInput.text = "";
+            if (window.logout) {
+                textdisplaytext.text = "Confirm administrator password to shutdown. Wrong password entered."
+            }else{
+                textdisplayrectangle.text = "Please enter administrator password. Wrong password entered";
+            }
         }
+    }
+
+
+    function shutdown(){
+        window.message = textdisplaytext.text;
+        textdisplaytext.text = "Confirm administrator password to shutdown.";
+        window.logout = true;
+        hideall();
+        adminlogonrectangle.visible = true;
     }
 
 }

@@ -45,7 +45,7 @@ void logic_qml::proxdetection(int gpio, int level, uint32_t tick){
 
 
 void logic_qml::callHelp() {
-    mystring = strdup("Calling help desk function called");
+    stringOut = strdup("Calling help desk function called");
     qInfo("Calling helpdesk called");
 }
 
@@ -63,12 +63,13 @@ void logic_qml::emergencyStop(){
 void logic_qml::giveInfo(){//TODO - Need to fix/test this
     //Checks current location internally
     qInfo("Give info called");
-    sprintf(stringOut, "Information stored in location %d", locationID);
+    sprintf(stringOut, "Information stored in location %d", current_location);
     //mystring = strdup("Information stored " + locationID);
 }
 
 
 void logic_qml::goNextTourPoint(){
+    current_location++;
     qInfo("Next tour point called");
 }
 
@@ -78,8 +79,22 @@ void logic_qml::stopTour(){ //Stops the tour
 }
 
 
+void logic_qml::tourUpdate(){
+    qInfo("Tour Update called");
+}
+
+
+void logic_qml::tourWrite(){
+    qInfo("Tour Write called");
+}
+
+
 int logic_qml::getlocation(){
-    return current_location;
+    if (current_location < num_waypoints) {
+        return current_location;
+    } else {
+        return 255; //Indicates that the robot is on the last tour point
+    }
 }
 
 

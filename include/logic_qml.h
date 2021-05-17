@@ -51,8 +51,8 @@ class logic_qml : public QObject{
         //Waypoint *tour;//Instance of tour array pointer ///Commented out for frontend testings
         bool isTour = false; //Tracks if a tour is in progress
         char *tourList[3]; //List of tours
-        int current_location = 7; //Current point in the tour ///set to 7 for test purposes, set to zero
-        int num_waypoints; //Number of waypoints that are in the loaded tour
+        int current_location = 7; //Current point in the tour ///set to 7 for test purposes, set to 0
+        int num_waypoints = 10; //Number of waypoints that are in the loaded tour  ///set to 10 for test purposes, set to 0
         int totalTourCount = 0; //Count of total tours
 
     public:
@@ -66,6 +66,8 @@ class logic_qml : public QObject{
         Q_INVOKABLE void giveInfo();
         Q_INVOKABLE void goNextTourPoint();
         Q_INVOKABLE void stopTour();
+        Q_INVOKABLE void tourUpdate();
+        Q_INVOKABLE void tourWrite();
         Q_INVOKABLE int getlocation();
         Q_INVOKABLE int getTotalTourCount();
         Q_INVOKABLE QString speak();

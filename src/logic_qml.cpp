@@ -57,25 +57,8 @@ void logic_qml::callHelp() { ///TODO - write
     std::cout << "Calling helpdesk" << std::endl;
 }
 
-void logic_qml::startTour(int tourID){ //Loads tour data, opens camera
-    num_waypoints = dev_read_csv(&tour, tourList[tourID]); //Tour coordinates in 'tour' array
 
-    VideoCapture cap(0);
-
-    if(!cap.isOpened()){//Error call in case camera does not open
-        cerr<< "ERROR! Unable to open Camera\n";
-        return -1;
-    }
-    cap.set(CV_CAP_PROP_FRAME_WIDTH, 2592);
-    cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1944);
-    cap.set(CV_CAP_PROP_FPS, 10);
-
-    current_location = 0; //Ensures current location is set to start of tour
-
-    goNextTourPoint(); //Moves the robot to the first tour point
-}
-
-void logic_qml::doTour(int tourID){ ///need to find a way to get tourname, currently using tourID
+void logic_qml::doTour(int tourID){ ///need to find a way to get tourname, currently using tourID <- redundant method if startTour and goNextTourPoint work
     num_waypoints = dev_read_csv(&tour, tourname); //Tour coordinates in 'tour' array
     int confirmer = 0;
     int info, qr_data;
@@ -186,6 +169,25 @@ void logic_qml::goNextTourPoint(){ //Moves the robot to the next tour point
 }
 
 
+void logic_qml::startTour(int tourID){ //Loads tour data, opens camera
+    num_waypoints = dev_read_csv(&tour, tourList[tourID]); //Tour coordinates in 'tour' array
+
+    VideoCapture cap(0);
+
+    if(!cap.isOpened()){//Error call in case camera does not open
+        cerr<< "ERROR! Unable to open Camera\n";
+        return -1;
+    }
+    cap.set(CV_CAP_PROP_FRAME_WIDTH, 2592);
+    cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1944);
+    cap.set(CV_CAP_PROP_FPS, 10);
+
+    current_location = 0; //Ensures current location is set to start of tour
+
+    goNextTourPoint(); //Moves the robot to the first tour point
+}
+
+
 void logic_qml::stopTour(){ //Stops the tour and returns the robot home
     isTour = false;
     std::cout << "Stopping tour" << std::endl; //Placeholder to info programmer of exection and robots intentions
@@ -264,8 +266,22 @@ void logic_qml::stopTour(){ //Stops the tour and returns the robot home
 }
 
 
-int logic_qml::getlocation(){ //Returns the current location of the robot in tour index point
-    return current_location;
+void logic_qml::tourUpdate(){
+    qInfo("Tour Update called");
+}
+
+
+void logic_qml::tourWrite(){
+    qInfo("Tour Write called");
+}
+
+
+int logic_qml::getlocation(){ //Returns the current location of the robot in tour index point. If the robot is on the last point of the tour 255 is returned
+    if (current_location < num_waypoints) {
+        return current_location;
+    } else {
+        return 255; //Indicates that the robot is on the last tour point
+    }
 }
 
 
