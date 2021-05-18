@@ -51,14 +51,14 @@ void logic_qml::proxdetection(int gpio, int level, uint32_t tick){ ///TODO - tes
 
 void logic_qml::callHelp() { ///TODO - write
     stringOut = strdup("Kindly go fetch a member of staff from the help desk. I will be waiting here."); //configures string to be printed to GUI
-    nav_cancel();
+    nav_cancel(); ///Cancel or pause? should call help pause the robot from moving?
 }
 
 static int waiting = 0;
 static void wait_cb(void) { waiting = 0; }
 
-void logic_qml::doTour(int tourID){ ///need to find a way to get tourname, currently using tourID <- redundant method if startTour and goNextTourPoint work
-    num_waypoints = dev_read_csv(&tour, tourname); //Tour coordinates in 'tour' array
+void logic_qml::doTour(int tourID){ //Legacy code, starts and loops through tour points
+    num_waypoints = dev_read_csv(&tour, tourList[tourID]); //Tour coordinates in 'tour' array
     int confirmer = 0;
     int info, qr_data;
     float error_x, error_y;
@@ -110,11 +110,9 @@ void logic_qml::doTour(int tourID){ ///need to find a way to get tourname, curre
 }
 
 
-void logic_qml::emergencyStop(){///TODO - write
-    nav_cancel();
+void logic_qml::emergencyStop(){ //Stops robot from moving. Awaits robot to continue moving via UI prompt calling resumeMoving
+    nav_cancel(); ///Cancel or pause?
     m_stop();
-    //await UI confirmation ///Investigate UI confirmation, how to trigger?
-    std::cout << "Executing emergency stop" << std::endl; //Placeholder to info programmer of exection and robots intentions
 }
 
 
@@ -132,6 +130,13 @@ void logic_qml::giveInfo(){///TODO - Need to fix/test this
 }
 
 
+void logic_qml::giveInfoAbout(){
+    stringOut = strdup("To start a tour please press the start tours button and then choose a tour.\n"
+                    " I will guide you to a point in the tour.\nTo move to the next tour point, select next tour point.\n"
+                    "We hope you enjoy your visit.");
+}
+
+
 void logic_qml::goNextTourPoint(){ //Moves the robot to the next tour point
     int confirmer = 0; //Stores if QR adjust has been executed
     int info = 0; //Stores if there is information for this tour point to be given
@@ -141,6 +146,9 @@ void logic_qml::goNextTourPoint(){ //Moves the robot to the next tour point
     waiting = 1;
     nav_set_travel(tour[current_location].dx, tour[current_location.dy], &wait_cb);
     while(waiting) sleep(1);
+
+    current_location++; //Updates current_location
+
     cap.read(frame);
     if (frame.empty()){//In case camera doesn't work
         cerr<<"ERROR! Blank frame grabbed!\n";
@@ -165,8 +173,11 @@ void logic_qml::goNextTourPoint(){ //Moves the robot to the next tour point
         //Provide information about the tour point if it exists
         info = giveInfo(current_location);//This will be 1 if there is info to be given out here, and 0 if no info
     }
+}
 
-    current_location++; //Updates current_location
+
+void logic_qml::resumeMoving(){ //Resumes the movement of the robot after emergencyStop is called
+    ///TODO - Movement code to continue moving the robot
 }
 
 
