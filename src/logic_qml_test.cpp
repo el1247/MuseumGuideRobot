@@ -45,7 +45,7 @@ void logic_qml::proxdetection(int gpio, int level, uint32_t tick){
 
 
 void logic_qml::callHelp() {
-    stringOut = strdup("Calling help desk function called");
+    stringOut = strdup("Please go fetch a member of staff from the front desk.");
     qInfo("Calling helpdesk called");
 }
 
@@ -56,6 +56,7 @@ void logic_qml::doTour(int tourID){
 
 
 void logic_qml::emergencyStop(){
+    stringOut = strdup("Stopping robot.");
     qInfo("Emergency stop called");
 }
 
@@ -64,13 +65,25 @@ void logic_qml::giveInfo(){//TODO - Need to fix/test this
     //Checks current location internally
     qInfo("Give info called");
     sprintf(stringOut, "Information stored in location %d", current_location);
-    //mystring = strdup("Information stored " + locationID);
+    //stringOut = strdup("Information stored " + locationID);
+}
+
+
+void logic_qml::giveInfoAbout(){
+    stringOut = strdup("To start a tour please press the start tours button and then choose a tour.\n"
+                    " I will guide you to a point in the tour.\nTo move to the next tour point, select next tour point.\n"
+                    "We hope you enjoy your visit.");
 }
 
 
 void logic_qml::goNextTourPoint(){
     current_location++;
     qInfo("Next tour point called");
+}
+
+
+void logic_qml::resumeMoving(){ //Resumes the movement of the robot
+    qInfo("ResumeMoving called");
 }
 
 

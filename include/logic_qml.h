@@ -64,7 +64,9 @@ class logic_qml : public QObject{
         Q_INVOKABLE void doTour(int tourID);
         Q_INVOKABLE void emergencyStop();
         Q_INVOKABLE void giveInfo();
+        Q_INVOKABLE void giveInfoAbout();
         Q_INVOKABLE void goNextTourPoint();
+        Q_INVOKABLE void resumeMoving();
         Q_INVOKABLE void stopTour();
         Q_INVOKABLE void tourUpdate();
         Q_INVOKABLE void tourWrite();

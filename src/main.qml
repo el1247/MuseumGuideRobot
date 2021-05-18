@@ -6,7 +6,7 @@ Window {
     width: 800
     height: 480
     visible: true
-    color: "#000000"
+    color: "#52473b" //Previously "#000000"
     title: qsTr("Museum Guide Robot GUI")
 
     property int buttonspacingh : 120 //Horizontal spacing of buttons 120
@@ -17,9 +17,10 @@ Window {
     property int buttonheight : 90
     property double buttonfontsize : 13.5
     property string buttonfontfam : "Arial"
-    property string buttoncolourbase : "#fbc3c3"
-    property string buttoncolourback : "#fb4848"
-    property string backgroundcolour : "#de6e2e"
+    property string buttoncolourbase : "#006bc3" //"#005398" //Previously "#fbc3c3"
+    property string buttoncolourback : "#004780" //"#003865" //Previously "#fb4848"
+    property string buttonemstopcolour : "#ff9090"
+    property string backgroundcolour : "#f5f5f5" //Previously "#de6e2e"
     property int bannerfontsize : 13
     property int mode : 0 //Tracks which frame is currently visible
     property string message : ""
@@ -97,6 +98,7 @@ Window {
             y: 8
             anchors.fill: parent
             onClicked:{
+                ///Cancel tour edits
                 window.message = textdisplaytext.text;
                 textdisplaytext.text = qsTr("Welcome admin");
                 hideall();
@@ -109,7 +111,7 @@ Window {
         id: userbadgerectangle
         width: 80
         height: 30
-        color: "#1ad1ff"
+        color: "#ffffff"
         radius: 10
         anchors.right: parent.right
         anchors.top: parent.top
@@ -147,11 +149,12 @@ Window {
         id: statusrectangle
         property bool intour: false
         property bool error: false
+        property bool stopped : false
         property int tourno: 0
         width: 125
         height: 30
-        color: error ? "#ff0000" : intour ? "#ff6600" : "#50f10e"
-        radius: 3
+        color: error || stopped ? "#ff0000" : intour ? "#ffffff" : "#6ce43a" //Old intour colour "#0080e8"
+        radius: 7
         anchors.top: parent.top
         anchors.horizontalCenterOffset: 0
         anchors.topMargin: 15
@@ -160,7 +163,7 @@ Window {
             id: statustext
             height: parent.height
             width: parent.width
-            text: statusrectangle.error ? qsTr("Calling Help") : statusrectangle.intour ? qsTr(tournames[statusrectangle.tourno]): qsTr("Available")
+            text: statusrectangle.error ? qsTr("Fetch Admin") : statusrectangle.stopped ? qsTr("Stopped") : statusrectangle.intour ? qsTr(tournames[statusrectangle.tourno]): qsTr("Available")
             elide: Text.ElideRight
             anchors.verticalCenter: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter
@@ -202,6 +205,7 @@ Window {
             id: powerbuttonmouseArea
             anchors.fill: parent
             onClicked:{
+                ///Cancel tour edits
                 if (isadmin == true){
                     shutdown();
                 }else{
@@ -340,7 +344,7 @@ Window {
             }
 
             Rectangle {
-                id: ccountbuttonrectangle
+                id: giveinfoaboutbuttonrectangle
                 x: 77
                 width: window.buttonwidth
                 height: window.buttonheight
@@ -351,7 +355,7 @@ Window {
                 anchors.topMargin: window.buttonspacingt
                 anchors.rightMargin: window.buttonspacingh
                 Text {
-                    id: ccountbuttontext
+                    id: giveinfoaboutbuttontext
                     x: 65
                     y: 34
                     text: qsTr("More information")
@@ -363,29 +367,29 @@ Window {
                 }
 
                 MouseArea {
-                    id: ccountmouseArea
+                    id: giveinfoaboutmouseArea
                     anchors.fill: parent
                     onClicked:{
-                        ///More information for user?
+                        logic_qml.giveInfoAbout();
                         textdisplaytext.text = logic_qml.speak();
                     }
                 }
             }
 
             Rectangle {
-                id: cresetbuttonrectangle
+                id: emstopbuttonrectangle
                 x: 81
                 y: 20
                 width: window.buttonwidth
                 height: window.buttonheight
-                color: window.buttoncolourbase
+                color: window.buttonemstopcolour
                 radius: window.buttonrad
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: window.buttonspacingb
                 anchors.rightMargin: window.buttonspacingh
                 Text {
-                    id: cresetbuttontext
+                    id: emstopbuttontext
                     x: 65
                     y: 34
                     text: qsTr("Emergency Stop")
@@ -397,11 +401,15 @@ Window {
                 }
 
                 MouseArea {
-                    id: cresetmouseArea
+                    id: emstopmouseArea
                     anchors.fill: parent
                     onClicked:{
                         logic_qml.emergencyStop();
+                        statusrectangle.stopped = true;
+                        window.message = textdisplaytext.text;
                         textdisplaytext.text = logic_qml.speak();
+                        hideall();
+                        resumemovingrectangle.visible = true;
                     }
                 }
             }
@@ -450,7 +458,7 @@ Window {
                         statusrectangle.intour = true;
                         statusrectangle.tourno = 0;
                         window.mode = 2;
-                        logic_qml.startTour(statusrectangle.tourno);
+                        logic_qml.doTour(statusrectangle.tourno);
                     }
                 }
             }
@@ -490,7 +498,7 @@ Window {
                         statusrectangle.intour = true;
                         statusrectangle.tourno = 1;
                         window.mode = 2;
-                        logic_qml.startTour(statusrectangle.tourno);
+                        logic_qml.doTour(statusrectangle.tourno);
                     }
                 }
             }
@@ -530,7 +538,7 @@ Window {
                         statusrectangle.intour = true;
                         statusrectangle.tourno = 2;
                         window.mode = 2;
-                        logic_qml.startTour(statusrectangle.tourno);
+                        logic_qml.doTour(statusrectangle.tourno);
                     }
                 }
             }
@@ -704,6 +712,47 @@ Window {
                 }
             }
 
+
+            Rectangle {
+                id: emstoptourbuttonrectangle
+                x: 81
+                y: 20
+                width: window.buttonwidth
+                height: window.buttonheight
+                color: window.buttonemstopcolour
+                radius: window.buttonrad
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: window.buttonspacingb
+                anchors.rightMargin: window.buttonspacingh
+                visible: isadmin ? false : true
+                Text {
+                    id: emstoptourbuttontext
+                    x: 65
+                    y: 34
+                    text: qsTr("Emergency Stop")
+                    anchors.verticalCenter: parent.verticalCenter
+                    font.pixelSize: window.buttonfontsize
+                    horizontalAlignment: Text.AlignHCenter
+                    font.family: window.buttonfontfam
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+
+                MouseArea {
+                    id: emstoptourmouseArea
+                    anchors.fill: parent
+                    onClicked:{
+                        logic_qml.emergencyStop();
+                        statusrectangle.stopped = true;
+                        window.message = textdisplaytext.text;
+                        textdisplaytext.text = logic_qml.speak();
+                        hideall();
+                        resumemovingrectangle.visible = true;
+                    }
+                }
+            }
+
+
             Rectangle {
                 id: stoptourbuttonrectangle
                 x: 395
@@ -740,6 +789,201 @@ Window {
             }
 
         }
+
+
+        Rectangle {
+            id: resumemovingrectangle
+            x: 0
+            y: 140
+            width: parent.width
+            height: 280
+            visible: false
+            color: window.backgroundcolour
+            border.width: 0
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 0
+            anchors.horizontalCenter: parent.horizontalCenter
+
+            Rectangle {
+                id: resumemovingarearectangle
+                x: 0
+                width: 320
+                height: 140
+                color: "#000000"
+                radius: 3
+                border.width: 0
+                anchors.top: parent.top
+                anchors.topMargin: 0
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                Rectangle {
+                    id: resumemovingbuttonrectangle
+                    x: 80
+                    y: 72
+                    width: 200
+                    height: 75
+                    color: window.buttoncolourbase
+                    radius: 7
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                    Text {
+                        id: resumemovingbuttontext
+                        x: 65
+                        y: 34
+                        text: qsTr("Resume Moving")
+                        anchors.verticalCenter: parent.verticalCenter
+                        font.pixelSize: 14
+                        horizontalAlignment: Text.AlignHCenter
+                        font.family: window.buttonfontfam
+                        anchors.horizontalCenter: parent.horizontalCenter
+                    }
+
+                    MouseArea {
+                        id: resumemovingmouseArea
+                        anchors.fill: parent
+                        onClicked:{
+                            logic_qml.resumeMoving();
+                            statusrectangle.stopped = false;
+                            resumemovingrectangle.visible = false;
+                            unhide();
+                            textdisplaytext.text = window.message;
+                        }
+                    }
+                }
+            }
+        }
+
+
+        Rectangle {
+            id: tourdesignrectangle
+            x: 0
+            y: 140
+            width: parent.width
+            height: 280
+            visible: false
+            color: window.backgroundcolour
+            border.width: 0
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 0
+            anchors.horizontalCenter: parent.horizontalCenter
+
+            Rectangle {
+                id: tourdesignarearectangle
+                x: 0
+                width: 420
+                height: 140
+                color: "#000000"
+                radius: 3
+                border.width: 0
+                anchors.top: parent.top
+                anchors.topMargin: 0
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                Rectangle {
+                    id: tourdesigninputrectangle
+                    x: 238
+                    width: 350
+                    height: 30
+                    color: "#ffffff"
+                    radius: 3
+                    anchors.top: parent.top
+                    anchors.topMargin: 25
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    TextInput {
+                        id: tourdesigntextInput
+                        x: 4
+                        y: -2
+                        text: qsTr("")
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.fill: parent
+                        font.pixelSize: 12
+                        verticalAlignment: Text.AlignVCenter
+                        font.family: window.buttonfontfam
+                        selectByMouse: true
+                        overwriteMode: true
+                        maximumLength: 32
+                        echoMode: TextInput.Password
+                        anchors.rightMargin: 5
+                        anchors.leftMargin: 5
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        passwordMaskDelay: 500
+                    }
+                }
+
+                Rectangle {
+                    id: submittourdesignbuttonrectangle
+                    x: 80
+                    y: 72
+                    width: 129
+                    height: 44
+                    color: window.buttoncolourbase
+                    radius: 7
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    anchors.rightMargin: 60
+                    anchors.bottomMargin: 25
+                    Text {
+                        id: submittourdesignbuttontext
+                        x: 65
+                        y: 34
+                        text: qsTr("Submit")
+                        anchors.verticalCenter: parent.verticalCenter
+                        font.pixelSize: 12
+                        horizontalAlignment: Text.AlignHCenter
+                        font.family: window.buttonfontfam
+                        anchors.horizontalCenter: parent.horizontalCenter
+                    }
+
+                    MouseArea {
+                        id: submittourdesignmouseArea
+                        anchors.fill: parent
+                        onClicked:{
+                            ///logic_qml method to submit
+                            ///Submit data to method
+                            textdisplaytext.text = logic_qml.speak();
+                        }
+                    }
+                }
+
+                Rectangle {
+                    id: canceltourdesignbuttonrectangle
+                    y: 68
+                    width: 129
+                    height: 44
+                    color: window.buttoncolourback
+                    radius: 7
+                    anchors.left: parent.left
+                    anchors.bottom: parent.bottom
+                    anchors.leftMargin: 60
+                    anchors.bottomMargin: 25
+                    Text {
+                        id: canceltourdesignbuttontext
+                        x: 65
+                        y: 34
+                        text: qsTr("Cancel")
+                        anchors.verticalCenter: parent.verticalCenter
+                        font.pixelSize: 12
+                        horizontalAlignment: Text.AlignHCenter
+                        font.family: window.buttonfontfam
+                        anchors.horizontalCenter: parent.horizontalCenter
+                    }
+
+                    MouseArea {
+                        id: canceltourdesignmouseArea
+                        anchors.fill: parent
+                        onClicked:{
+                            tourdesigntextInput.text = "";
+                            admintourbuttonsrectangle.visible = true;
+                            tourdesignrectangle.visible = false;
+                            textdisplaytext.text = qsTr("Welcome admin");
+                            ///send signal to logic to cancel tour edit
+                        }
+                    }
+                }
+            }
+        }
+
 
         Rectangle {
             id: adminlogonrectangle
@@ -1061,6 +1305,9 @@ Window {
                     anchors.fill: parent
                     onClicked: {
                         logic_qml.tourWrite(); ///Implement code for writing tour
+                        admintourbuttonsrectangle.visible = false;
+                        tourdesignrectangle.visible = true;
+                        textdisplaytext.text = qsTr("Writing tour. Please enter new tour name.");
                     }
                 }
             }
@@ -1094,6 +1341,9 @@ Window {
                     anchors.fill: parent
                     onClicked: {
                         logic_qml.tourUpdate(); ///Implement code for tour updating
+                        admintourbuttonsrectangle.visible = false;
+                        tourdesignrectangle.visible = true;
+                        textdisplaytext.text = qsTr("Writing tour. Please enter the name of the tour to be updated.");
                     }
                 }
             }
@@ -1126,7 +1376,7 @@ Window {
                     id: admintourlistmouseArea
                     anchors.fill: parent
                     onClicked: {
-                        textdisplaytext.text = qsTr(tournames[0] + ", " + tournames[1] + ", " + tournames[2]); ///
+                        textdisplaytext.text = qsTr("The stored tours are : " + tournames[0] + ", " + tournames[1] + ", " + tournames[2]);
                     }
                 }
             }
