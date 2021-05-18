@@ -43,9 +43,15 @@ logic_qml::logic_qml(){ //Initialiser
 
 
 void logic_qml::proxdetection(int gpio, int level, uint32_t tick){ ///TODO - test and decide upon further logic
-    std::cout << "Object detected, stopping" << std::endl;
+    ///Nav pause?
     m_stop();
     //Further stopping logic
+    //Reverse robot slightly?
+    //Check sensors until it is safe, or wait a certain time period
+    //If robot has steered too near an object 
+    //resumeMoving(); //Commented for testing
+    stringOut = "Object detected, stopping movement";
+    //UI alertable?
 }
 
 
