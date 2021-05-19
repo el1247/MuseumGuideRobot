@@ -26,6 +26,8 @@
 #include <filesystem>
 #include <string.h>
 #include "dirent.h"
+#include <pthread.h>
+#include <unistd.h> 
 
 //#include "gpio_assign.h"
 //#include "gsound.h"
@@ -49,11 +51,22 @@ class logic_qml : public QObject{
         //qr_Code qrcode;//instance of QR scanning class ///Commented out for frontend testings
         //Mat frame;//Instance of image object ///Commented out for frontend testings
         //Waypoint *tour;//Instance of tour array pointer ///Commented out for frontend testings
+
+        struct tourUpdateDataStruct{
+            volatile int tourConfirms; //Marker for UI update when modifying tours
+            char *message;
+        };
+        struct tourDataStruct{
+            char *tourList[3]; //List of tours
+            int current_location; //Current point in the tour ///set to 7 for test purposes, set to 0
+            int currentTourID; //TourID passed from GUI
+            int num_waypoints; //Number of waypoints that are in the loaded tour  ///set to 10 for test purposes, set to 0
+            int totalTourCount; //Count of total tours
+        };
+
+        tourUpdateDataStruct tourUpdateData;
+        tourDataStruct tourData;
         bool isTour = false; //Tracks if a tour is in progress
-        char *tourList[3]; //List of tours
-        int current_location = 7; //Current point in the tour ///set to 7 for test purposes, set to 0
-        int num_waypoints = 10; //Number of waypoints that are in the loaded tour  ///set to 10 for test purposes, set to 0
-        int totalTourCount = 0; //Count of total tours
 
     public:
         char* stringOut = strdup("Hello. I am your museum guide robot."); //String storage to be output on the GUI
@@ -67,13 +80,21 @@ class logic_qml : public QObject{
         Q_INVOKABLE void giveInfoAbout();
         Q_INVOKABLE void goNextTourPoint();
         Q_INVOKABLE void resumeMoving();
+        Q_INVOKABLE void startTour(int tourID);
         Q_INVOKABLE void stopTour();
+        Q_INVOKABLE void tourConfirmGUI();
         Q_INVOKABLE void tourUpdate();
         Q_INVOKABLE void tourWrite();
         Q_INVOKABLE int getlocation();
         Q_INVOKABLE int getTotalTourCount();
         Q_INVOKABLE QString speak();
+        Q_INVOKABLE QString speakTour();
         Q_INVOKABLE QString getTourName(int tourID);
+
+        static void *doTourWork(void *tourDataIn);
+        static void *goNextTourPointWork(void *tourDataIn);
+        static void *stopTourWork(void *tourDataIn);
+        static void *tourUpdateWork(void *tourUpdateDataIn);
 };
 
 #endif

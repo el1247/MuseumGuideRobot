@@ -18,6 +18,14 @@
 
 
 logic_qml::logic_qml(){ //Initialiser
+    tourUpdateData.tourConfirms = 1;
+    //sprintf(tourUpdateData.message, "Message");
+
+    tourData.current_location = 0;
+    tourData.num_waypoints = 0;
+    tourData.totalTourCount = 0;
+    tourData.currentTourID = 0;
+
     proximity_logic = new proximity(1,0,250,0,250); ///Sample values currently //Input pin. ALS low threshold, ALS high threshold, PS low threshold, PS high threshold
     if(proximity_logic->interruptmode){
         if (proximity_logic->configinterrupt(proxdetection)) goto proxintfail;
@@ -63,8 +71,18 @@ void logic_qml::callHelp() { ///TODO - write
 static int waiting = 0;
 static void wait_cb(void) { waiting = 0; }
 
-void logic_qml::doTour(int tourID){ //Legacy code, starts and loops through tour points
-    num_waypoints = dev_read_csv(&tour, tourList[tourID]); //Tour coordinates in 'tour' array
+void logic_qml::doTour(int tourID){ 
+    tourData.currentTourID = tourID;
+    pthread_t dotourThread;
+    pthread_create(&dotourThread,NULL,doTourWork,(void *)&tourData);
+}
+
+
+void *logic_qml::doTourWork(void *tourDataIn){ //Legacy code, starts and loops through tour points
+    struct tourDataStruct *tourDataStore;
+    tourDataStore = (struct tourDataStruct *) tourDataIn;
+
+    num_waypoints = dev_read_csv(&tour, tourList[tourDataStore.currentTourID]); //Tour coordinates in 'tour' array
     int confirmer = 0;
     int info, qr_data;
     float error_x, error_y;
@@ -91,7 +109,7 @@ void logic_qml::doTour(int tourID){ //Legacy code, starts and loops through tour
             break;
         }
 
-        current_location = i; //Updates internally stored location in tour point
+        tourDataStore.current_location = i; //Updates internally stored location in tour point
 
         if(tour[i].qr == 1){//Checking the QR location if QR exists at the location
             while(confirmer == 0){
@@ -113,6 +131,7 @@ void logic_qml::doTour(int tourID){ //Legacy code, starts and loops through tour
         }
         std::cout << "Moving onto next tour point" << std::endl; //Placeholder to info programmer of exection and robots intentions
     }
+    pthread_exit(NULL);
 }
 
 
@@ -143,17 +162,26 @@ void logic_qml::giveInfoAbout(){
 }
 
 
-void logic_qml::goNextTourPoint(){ //Moves the robot to the next tour point
+void logic_qml::goNextTourPoint(){ 
+    pthread_t tourThread;
+    pthread_create(&tourThread,NULL,goNextTourPointWork,(void *)&tourData);
+}
+
+
+void *logic_qml::goNextTourPointWork(void *tourDataIn){ //Moves the robot to the next tour point
+    struct tourDataStruct *tourDataStore;
+    tourDataStore = (struct tourDataStruct *) tourDataIn;
+
     int confirmer = 0; //Stores if QR adjust has been executed
     int info = 0; //Stores if there is information for this tour point to be given
     int qr_data;
     float error_x, error_y;
 
     waiting = 1;
-    nav_set_travel(tour[current_location].dx, tour[current_location.dy], &wait_cb);
+    nav_set_travel(tour[tourDataStore.current_location].dx, tour[tourDataStore.current_location.dy], &wait_cb);
     while(waiting) sleep(1);
 
-    current_location++; //Updates current_location
+    tourDataStore.current_location++; //Updates current_location
 
     cap.read(frame);
     if (frame.empty()){//In case camera doesn't work
@@ -164,12 +192,12 @@ void logic_qml::goNextTourPoint(){ //Moves the robot to the next tour point
     if(tour[current_location].qr == 1){//Checking the QR location if QR exists at the location
         while(confirmer == 0){
             decode(frame, qrcode);//Reading the image and getting the coordinates 
-            error_x = 0.1*tour[current_location].dx_qr;//Permissable errors in the x and y deviations
-            error_y = 0.1*tour[current_location].dy_qr;
+            error_x = 0.1*tour[tourDataStore.current_location].dx_qr;//Permissable errors in the x and y deviations
+            error_y = 0.1*tour[tourDataStore.current_location].dy_qr;
             qr_data = stoi(qrcode.data);
-            if(qr_data == tour[current_location].data){//Checking if the QR code is correct and at correct coordinates
-                if((tour[current_location].dx_qr + error_x) > qrcode.dx && qrcode.dx > (tour[current_location].dx_qr - error_x)){//TODO - make a robot move a bit if not at correct coordinates
-                    if((tour[current_location].dy_qr + error_y) > qrcode.dy && qrcode.dy > (tour[current_location].dy_qr - error_y)){
+            if(qr_data == tour[tourDataStore.current_location].data){//Checking if the QR code is correct and at correct coordinates
+                if((tour[tourDataStore.current_location].dx_qr + error_x) > qrcode.dx && qrcode.dx > (tour[tourDataStore.current_location].dx_qr - error_x)){//TODO - make a robot move a bit if not at correct coordinates
+                    if((tour[tourDataStore.current_location].dy_qr + error_y) > qrcode.dy && qrcode.dy > (tour[tourDataStore.current_location].dy_qr - error_y)){
                         confirmer = 1;//Destination reached
                         //TODO - Add stopping mechanisms
                     }
@@ -177,8 +205,9 @@ void logic_qml::goNextTourPoint(){ //Moves the robot to the next tour point
             }
         }
         //Provide information about the tour point if it exists
-        info = giveInfo(current_location);//This will be 1 if there is info to be given out here, and 0 if no info
+        info = giveInfo(tourDataStore.current_location);//This will be 1 if there is info to be given out here, and 0 if no info
     }
+    pthread_exit(NULL);
 }
 
 
@@ -188,6 +217,7 @@ void logic_qml::resumeMoving(){ //Resumes the movement of the robot after emerge
 
 
 void logic_qml::startTour(int tourID){ //Loads tour data, opens camera
+    tourData.currentTourID = tourID;
     num_waypoints = dev_read_csv(&tour, tourList[tourID]); //Tour coordinates in 'tour' array
 
     VideoCapture cap(0);
@@ -200,15 +230,23 @@ void logic_qml::startTour(int tourID){ //Loads tour data, opens camera
     cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1944);
     cap.set(CV_CAP_PROP_FPS, 10);
 
-    current_location = 0; //Ensures current location is set to start of tour
+    tourData.current_location = 0; //Ensures current location is set to start of tour
 
     goNextTourPoint(); //Moves the robot to the first tour point
 }
 
 
-void logic_qml::stopTour(){ //Stops the tour and returns the robot home
-    isTour = false;
-    std::cout << "Stopping tour" << std::endl; //Placeholder to info programmer of exection and robots intentions
+void logic_qml::stopTour(){ 
+    pthread_t stopTourThread;
+    pthread_create(&stopTourThread,NULL,stopTourWork,(void *)&tourData);
+}
+
+void *logic_qml::stopTourWork(void *tourDataIn){ //Stops the tour and returns the robot home
+    struct tourDataStruct *tourDataStore;
+    tourDataStore = (struct tourDataStruct *) tourDataIn;
+
+    tourDataStore.isTour = false;
+
     //calculate route to go home, nav module
     int confirmer = 0;
     int info, qr_data;
@@ -225,8 +263,8 @@ void logic_qml::stopTour(){ //Stops the tour and returns the robot home
     cap.set(CV_CAP_PROP_FPS, 10);
 
     //get/calculate route, nav module
-    if(current_location > num_waypoints/2){
-        for(int i = current_location; i < num_waypoints; i++){
+    if(tourDataStore.current_location > tourDataStore.num_waypoints/2){
+        for(int i = tourDataStore.current_location; i < tourDataStore.num_waypoints; i++){
             //TODO - move robot to tour point indicated by tour[i].dx and tour[i].dy
             //TODO - wait to reach waypoint
             cap.read(frame);
@@ -253,7 +291,7 @@ void logic_qml::stopTour(){ //Stops the tour and returns the robot home
             }
         }
     } else {
-        for(int i = current_location; i >= 0; --i){
+        for(int i = tourDataStore.current_location; i >= 0; --i){
             //TODO - move robot to tour point indicated by tour[i].dx and tour[i].dy
             //TODO - wait to reach waypoint
             cap.read(frame);
@@ -281,13 +319,29 @@ void logic_qml::stopTour(){ //Stops the tour and returns the robot home
         std::cout << "Moving onto next tour point" << std::endl; //Placeholder to info programmer of exection and robots intentions
         }
     }
+    pthread_exit(NULL);
 }
 
 
-void logic_qml::tourUpdate(){ ///TODO: Links to write_csv() in filereader.c, frontend support needed
-    qInfo("Tour Update called");
+void logic_qml::tourConfirmGUI(){///TODO take GUI input and store
+    tourUpdateData.tourConfirms = 0;
 }
 
+
+void logic_qml::tourUpdate(){
+    pthread_t tourUpdateThread;
+    tourUpdateData.tourConfirms = 1;
+    pthread_create(&tourUpdateThread,NULL,tourUpdateWork,(void *)&tourUpdateData);
+}
+
+
+void *logic_qml::tourUpdateWork(void *tourUpdateDataIn){ ///TODO: Convert code from write_csv() into here, confirm frontend connection
+    struct tourUpdateDataStruct *tourUpdateDataStore;
+    tourUpdateDataStore = (struct tourUpdateDataStruct *) tourUpdateDataIn;
+    while(tourUpdateDataStore->tourConfirms) usleep(50000);
+    //sprintf(tourUpdateDataStore->message, "JJJJJJ");
+    pthread_exit(NULL);
+}
 
 void logic_qml::tourWrite(){ ///TODO: Links to update_csv() in filereader.c, frontend support needed
     qInfo("Tour Write called");
@@ -295,8 +349,8 @@ void logic_qml::tourWrite(){ ///TODO: Links to update_csv() in filereader.c, fro
 
 
 int logic_qml::getlocation(){ //Returns the current location of the robot in tour index point. If the robot is on the last point of the tour 255 is returned
-    if (current_location < num_waypoints) {
-        return current_location;
+    if (tourData.current_location < tourData.num_waypoints) {
+        return tourData.current_location;
     } else {
         return 255; //Indicates that the robot is on the last tour point
     }
@@ -304,13 +358,20 @@ int logic_qml::getlocation(){ //Returns the current location of the robot in tou
 
 
 int logic_qml::getTotalTourCount(){ //Returns the total number of unique tours identified upon initialisation
-    return totalTourCount;
+    return tourData.totalTourCount;
 }
 
 
 QString logic_qml::speak(){ //Converts stringOut value to Qstring for GUI  to call
     QString wordy;
     wordy = stringOut;
+    return wordy;
+}
+
+
+QString logic_qml::speakTour(){
+    QString wordy;
+    wordy = tourUpdateData.message;
     return wordy;
 }
 

@@ -458,7 +458,7 @@ Window {
                         statusrectangle.intour = true;
                         statusrectangle.tourno = 0;
                         window.mode = 2;
-                        logic_qml.doTour(statusrectangle.tourno);
+                        logic_qml.startTour(statusrectangle.tourno);
                     }
                 }
             }
@@ -498,7 +498,7 @@ Window {
                         statusrectangle.intour = true;
                         statusrectangle.tourno = 1;
                         window.mode = 2;
-                        logic_qml.doTour(statusrectangle.tourno);
+                        logic_qml.startTour(statusrectangle.tourno);
                     }
                 }
             }
@@ -538,7 +538,7 @@ Window {
                         statusrectangle.intour = true;
                         statusrectangle.tourno = 2;
                         window.mode = 2;
-                        logic_qml.doTour(statusrectangle.tourno);
+                        logic_qml.startTour(statusrectangle.tourno);
                     }
                 }
             }
@@ -699,7 +699,7 @@ Window {
                         if (logic_qml.getlocation() < 255){
                             textdisplaytext.text = qsTr("Moving to next tour point.");
                             logic_qml.goNextTourPoint();
-                            if (logic_qml.getlocation() === 255) {
+                            if (logic_qml.getlocation() >= 255) {///GUI checks tour point before it has been reached, button won't update to finished state
                                 nexttourpointbuttontext.text =  qsTr("Finish tour");
                                 nexttourpointbuttonrectangle.color = window.buttoncolourback;
                             }
@@ -941,7 +941,8 @@ Window {
                         onClicked:{
                             ///logic_qml method to submit
                             ///Submit data to method
-                            textdisplaytext.text = logic_qml.speak();
+                            logic_qml.tourConfirmGUI();
+                            textdisplaytext.text = logic_qml.speakTour();
                         }
                     }
                 }
@@ -1340,6 +1341,8 @@ Window {
                     id: updatetourmouseArea
                     anchors.fill: parent
                     onClicked: {
+                        //QtConcurrent::run(QThreadPool::globalInstance(), logic_qml.tourUpdate());
+                        //QFuture<void> t1 = QtConcurrent::run(logic_qml::tourupdate);
                         logic_qml.tourUpdate(); ///Implement code for tour updating
                         admintourbuttonsrectangle.visible = false;
                         tourdesignrectangle.visible = true;
@@ -1483,7 +1486,7 @@ Window {
             if (window.logout) {
                 textdisplaytext.text = "Confirm administrator password to shutdown. Wrong password entered."
             }else{
-                textdisplayrectangle.text = "Please enter administrator password. Wrong password entered";
+                textdisplaytext.text = "Please enter administrator password. Wrong password entered";
             }
         }
     }
