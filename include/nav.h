@@ -23,7 +23,6 @@ extern "C" {
 extern void nav_init(void);
 extern void nav_set_turn(float hdg, void (*callback)(void));
 extern void nav_set_travel(float x, float y, void (*callback)(void));
-extern void nav_tick(void);
 extern void nav_fini(void);
 
 #ifdef __cplusplus

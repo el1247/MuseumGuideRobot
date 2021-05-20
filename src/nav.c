@@ -16,15 +16,25 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <signal.h>
+#include <unistd.h>
+#include <time.h>
 
 #include "movement.h"
 #include "sensors.h"
 #include "nav.h"
+#include "MadgwickAHRS.h"
 
 #define PID_DECLS(id) static float id##_err, id##_sum; float id##_last
 #define PID(id,ecalc,kp,ki,kd) (id##_last = id##_err, id##_sum += (id##_err = (ecalc)), \
                                     (kp)*id##_err + (ki)*id##_sum + (kd)*(id##_err-id##_last))
 
+
+static timer_t ticker;
+struct sigevent tickevt;
+struct itimerspec tickspec = { .it_interval = { .tv_sec = 0, .tv_nsec = SAMPLE_TIME_NS },
+                               .it_value = { .tv_sec = 0, .tv_nsec = 500000000 }};
 
 static enum {
     NAV_STOP, NAV_TURN, NAV_TRAVEL
@@ -34,8 +44,17 @@ static float sx, sy, tx, ty, course;
 static volatile int en = 0;
 static void (*on_complete)(void);
 static void (*nxt_cbk)(void);
+void nav_tick(sigval_t);
 
 void nav_init(void) {
+    tickevt.sigev_notify = SIGEV_THREAD;
+    tickevt.sigev_notify_function = &nav_tick;
+    tickevt.sigev_notify_attributes = NULL; /* XXX Possibly increase priority? */
+
+    if(timer_create(CLOCK_MONOTONIC, &tickevt, &ticker)
+        || timer_settime(ticker, 0, &tickspec, NULL)) {
+        perror("Error starting nav update timer: ");
+    }
     atexit(nav_fini);
 }
 
@@ -77,7 +96,7 @@ void nav_set_travel(float x, float y, void (*callback)(void)) {
     }
 }
 
-void nav_tick(void) {
+void nav_tick(sigval_t _) {
     PID_DECLS(path);
     float x, y, ex, ey, esq, off_angle, correction;
     switch(state) {
@@ -113,6 +132,7 @@ void nav_cancel(void) {
 }
 
 void nav_fini(void) {
+    timer_delete(ticker);
     nav_cancel();
 }
 
