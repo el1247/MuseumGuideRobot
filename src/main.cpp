@@ -22,8 +22,7 @@
 #include <stdlib.h>
 
 #include "sensors.h"
-#include "logic.h"
-#include "test.h"
+#include "logic_qml.h"
 
 int main(int argc, char ** argv) { //Updated from RPi05041258
     /* Initialise pigpio library */
@@ -31,7 +30,6 @@ int main(int argc, char ** argv) { //Updated from RPi05041258
     atexit(gpioTerminate);
     
     /* Initialise modules */
-    logic robotlogic;
     imu_init(0.0f,0.0f,0.0f,NULL); /* TODO initial position (x,y,heading) */
     m_init();
     
@@ -44,7 +42,7 @@ int main(int argc, char ** argv) { //Updated from RPi05041258
     QGuiApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
-    engine.rootContext()->setContextProperty("test",new Test);
+    engine.rootContext()->setContextProperty("loigc_qml",new logic_qml);
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {

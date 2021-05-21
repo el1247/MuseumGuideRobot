@@ -11,25 +11,27 @@ PKGCONFIG += opencv4
 
 HEADERS += \
         include/gpio_assign.h \
-        include/logic.h \
+        #include/logic.hpp \
+        include/logic_qml.h \
         include/MadgwickAHRS.h \
         include/movement.h \
+        include/nav.h \
         include/proximity.h \
         include/qr.hpp \
         include/sensors.h \
-	include/gsound.h \
-        include/test.h
+        include/gsound.h
 
 SOURCES += \
         src/imu.c \
-        src/logic.cpp \
+        #src/logic.cpp \
+        src/logic_qml.cpp \
         src/MadgwickAHRS.c \
         src/main.cpp \
+        src/nav.c \
         src/movement.c \
         src/proximity.cpp \
         src/qr_module.cpp \
-	src/sound.c \
-        src/test.cpp
+        src/sound.c
 
 RESOURCES += src/qml.qrc
 

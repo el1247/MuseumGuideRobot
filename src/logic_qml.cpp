@@ -15,6 +15,7 @@
  */
 
 #include "logic_qml.h"
+#include "nav.h"
 
 
 logic_qml::logic_qml(){ //Initialiser
@@ -40,9 +41,9 @@ logic_qml::logic_qml(){ //Initialiser
     if (dr) {
         while ((en = readdir(dr)) != NULL) {
             if (strstr(en->d_name, ".csv") != NULL){ //search for .csv in file name
-                tourList[totalTourCount] = new char[260];
-                strncpy(tourList[totalTourCount], en->d_name, strlen(en->d_name)-4); //places name of found map in tourList, removes last 4 characters (.csv)
-                totalTourCount++;
+                tourData.tourList[tourData.totalTourCount] = new char[260];
+                strncpy(tourData.tourList[tourData.totalTourCount], en->d_name, strlen(en->d_name)-4); //places name of found map in tourList, removes last 4 characters (.csv)
+                tourData.totalTourCount++;
             }
         }
         closedir(dr); //closes directory
@@ -58,7 +59,7 @@ void logic_qml::proxdetection(int gpio, int level, uint32_t tick){ ///TODO - tes
     //Check sensors until it is safe, or wait a certain time period
     //If robot has steered too near an object 
     //resumeMoving(); //Commented for testing
-    stringOut = "Object detected, stopping movement";
+    //stringOut = "Object detected, stopping movement";
     //UI alertable?
 }
 
@@ -70,19 +71,20 @@ void logic_qml::callHelp() { ///TODO - write
 
 static int waiting = 0;
 static void wait_cb(void) { waiting = 0; }
-
+#if 0
 void logic_qml::doTour(int tourID){ 
     tourData.currentTourID = tourID;
     pthread_t dotourThread;
     pthread_create(&dotourThread,NULL,doTourWork,(void *)&tourData);
 }
-
+#endif
 static int dtwi = 0;
+#if 0
 void *logic_qml::doTourWork(void *tourDataIn){ //Legacy code, starts and loops through tour points
     struct tourDataStruct *tourDataStore;
     tourDataStore = (struct tourDataStruct *) tourDataIn;
 
-    num_waypoints = dev_read_csv(&tour, tourList[tourDataStore.currentTourID]); //Tour coordinates in 'tour' array
+    tourDataStore->num_waypoints = dev_read_csv(&tour, tourList[tourDataStore.currentTourID]); //Tour coordinates in 'tour' array
     int confirmer = 0;
     int info, qr_data;
     float error_x, error_y;
@@ -133,7 +135,7 @@ void logic_qml::doTourWork_cont(void) {
     dtwi++; 
     if(dtwi < num_waypoints) nav_set_travel(tour[dtwi].dx, tour[dtwi].dy, &logic_qml::doTourWork_cont);
 }
-
+#endif
 
 void logic_qml::emergencyStop(){ //Stops robot from moving. Awaits robot to continue moving via UI prompt calling resumeMoving
     nav_cancel(); ///Cancel or pause?
@@ -141,14 +143,14 @@ void logic_qml::emergencyStop(){ //Stops robot from moving. Awaits robot to cont
 }
 
 
-void logic_qml::giveInfo(){///TODO - Need to fix/test this 
+int logic_qml::giveInfo(){///TODO - Need to fix/test this
     //Checks current location internally
     //call audio out module with this input
-    if (tour[current_location].sound_name == "N/A"){
+    if (tour[tourData.current_location].sound_name == "N/A"){
         stringOut = strdup("No information available for this point"); ///Better output available? This will be printed to GUI
         return 0; //indicates no sound file at location
     } else {
-        sndcon(tour[current_location].sound_name);///TODO - check this
+        sndcon(tour[tourData.current_location].sound_name);///TODO - check this
         stringOut = strdup("Giving information"); ///Better output available? This will be printed to GUI
         return 1; //returns 1 to indicate there was information to provide to user
     }
@@ -178,16 +180,13 @@ void logic_qml::goNextTourPointWork(void){ //Moves the robot to the next tour po
 
     cap.read(frame);
     if (frame.empty()){//In case camera doesn't work
-        cerr<<"ERROR! Blank frame grabbed!\n";
-        return -1; ///Should info still be given if camera doesn't function?
-    }
-
-    if(tour[current_location].qr == 1){//Checking the QR location if QR exists at the location
+        //cerr<<"ERROR! Blank frame grabbed!\n";
+    }else if(tour[tourData.current_location].qr == 1){//Checking the QR location if QR exists at the location
         while(confirmer == 0){
             decode(frame, qrcode);//Reading the image and getting the coordinates 
             error_x = 0.1*tour[tourData.current_location].dx_qr;//Permissable errors in the x and y deviations
             error_y = 0.1*tour[tourData.current_location].dy_qr;
-            qr_data = stoi(qrcode.data);
+            qr_data = std::stoi(qrcode.data);
             if(qr_data == tour[tourData.current_location].data){//Checking if the QR code is correct and at correct coordinates
                 if((tour[tourData.current_location].dx_qr + error_x) > qrcode.dx && qrcode.dx > (tour[tourData.current_location].dx_qr - error_x)){//TODO - make a robot move a bit if not at correct coordinates
                     if((tour[tourData.current_location].dy_qr + error_y) > qrcode.dy && qrcode.dy > (tour[tourData.current_location].dy_qr - error_y)){
@@ -198,7 +197,7 @@ void logic_qml::goNextTourPointWork(void){ //Moves the robot to the next tour po
             }
         }
         //Provide information about the tour point if it exists
-        info = giveInfo(tourData.current_location);//This will be 1 if there is info to be given out here, and 0 if no info
+        info = giveInfo();//This will be 1 if there is info to be given out here, and 0 if no info
     }
 }
 
@@ -210,17 +209,17 @@ void logic_qml::resumeMoving(){ //Resumes the movement of the robot after emerge
 
 void logic_qml::startTour(int tourID){ //Loads tour data, opens camera
     tourData.currentTourID = tourID;
-    num_waypoints = dev_read_csv(&tour, tourList[tourID]); //Tour coordinates in 'tour' array
+    tourData.num_waypoints = dev_read_csv(&tour, tourData.tourList[tourID]); //Tour coordinates in 'tour' array
 
-    VideoCapture cap(0);
+    cv::VideoCapture cap(0);
 
     if(!cap.isOpened()){//Error call in case camera does not open
-        cerr<< "ERROR! Unable to open Camera\n";
-        return -1;
+        //cerr<< "ERROR! Unable to open Camera\n";
+    }else {
+        cap.set(CV_CAP_PROP_FRAME_WIDTH, 2592);
+        cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1944);
+        cap.set(CV_CAP_PROP_FPS, 10);
     }
-    cap.set(CV_CAP_PROP_FRAME_WIDTH, 2592);
-    cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1944);
-    cap.set(CV_CAP_PROP_FPS, 10);
 
     tourData.current_location = 0; //Ensures current location is set to start of tour
 
@@ -237,31 +236,31 @@ void *logic_qml::stopTourWork(void *tourDataIn){ //Stops the tour and returns th
     struct tourDataStruct *tourDataStore;
     tourDataStore = (struct tourDataStruct *) tourDataIn;
 
-    tourDataStore.isTour = false;
+    tourDataStore->isTour = false;
 
     //calculate route to go home, nav module
     int confirmer = 0;
     int info, qr_data;
     float error_x, error_y;
 
-    VideoCapture cap(0);
+    cv::VideoCapture cap(0);
 
     if(!cap.isOpened()){//Error call in case camera does not open
-        cerr<< "ERROR! Unable to open Camera\n";
-        return -1;
+        //cerr<< "ERROR! Unable to open Camera\n";
+    }else {
+        cap.set(CV_CAP_PROP_FRAME_WIDTH, 2592);
+        cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1944);
+        cap.set(CV_CAP_PROP_FPS, 10);
     }
-    cap.set(CV_CAP_PROP_FRAME_WIDTH, 2592);
-    cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1944);
-    cap.set(CV_CAP_PROP_FPS, 10);
 
     //get/calculate route, nav module
-    if(tourDataStore.current_location > tourDataStore.num_waypoints/2){
-        for(int i = tourDataStore.current_location; i < tourDataStore.num_waypoints; i++){
+    if(tourDataStore->current_location > tourDataStore->num_waypoints/2){
+        for(int i = tourDataStore->current_location; i < tourDataStore.num_waypoints; i++){
             //TODO - move robot to tour point indicated by tour[i].dx and tour[i].dy
             //TODO - wait to reach waypoint
             cap.read(frame);
             if (frame.empty()){//In case camera doesn't work
-                cerr<<"ERROR! Blank frame grabbed!\n";
+                //cerr<<"ERROR! Blank frame grabbed!\n";
                 break;
             }
 
@@ -371,8 +370,8 @@ QString logic_qml::speakTour(){
 QString logic_qml::getTourName(int tourID){ //Gets name of indexed tour
     qInfo("Getting tour name");
     QString tourname;
-    if (tourID < totalTourCount){
-        tourname = tourList[tourID];
+    if (tourID < tourData.totalTourCount){
+        tourname = tourData.tourList[tourID];
     }else{
         tourname = QString("Tour %1").arg(tourID);
     }

@@ -29,28 +29,28 @@
 #include <pthread.h>
 #include <unistd.h> 
 
-//#include "gpio_assign.h"
-//#include "gsound.h"
-//#include "movement.h"
-//#include "proximity.h"
-//#include "mapstruct.h"
-//#include "qr.hpp"
-//#include "opencv2/core.hpp"
-//#include "opencv2/highgui.hpp"
-//#include "opencv2/imgproc.hpp"
-//#include "opencv2/videoio/videoio_c.h"
-//#include "zbar.h"
-//#include "navigation.h"
+#include "gpio_assign.h"
+#include "gsound.h"
+#include "movement.h"
+#include "proximity.h"
+#include "mapstruct.h"
+#include "nav.h"
+#include "qr.hpp"
+#include "opencv2/core.hpp"
+#include "opencv2/highgui.hpp"
+#include "opencv2/imgproc.hpp"
+#include "opencv2/videoio/videoio_c.h"
+#include "zbar.h"
 
 #include<QDebug>
 
 class logic_qml : public QObject{
     Q_OBJECT
     private:
-        //proximity* proximity_logic; ///Commented out for frontend testings
-        //qr_Code qrcode;//instance of QR scanning class ///Commented out for frontend testings
-        //Mat frame;//Instance of image object ///Commented out for frontend testings
-        //Waypoint *tour;//Instance of tour array pointer ///Commented out for frontend testings
+        proximity* proximity_logic; ///Commented out for frontend testings
+        qr_Code qrcode;//instance of QR scanning class ///Commented out for frontend testings
+        cv::Mat frame;//Instance of image object ///Commented out for frontend testings
+        Waypoint *tour;//Instance of tour array pointer ///Commented out for frontend testings
 
         struct tourUpdateDataStruct{
             volatile int tourConfirms; //Marker for UI update when modifying tours
@@ -62,11 +62,11 @@ class logic_qml : public QObject{
             int currentTourID; //TourID passed from GUI
             int num_waypoints; //Number of waypoints that are in the loaded tour  ///set to 10 for test purposes, set to 0
             int totalTourCount; //Count of total tours
+            bool isTour = false; //Tracks if a tour is in progress
         };
 
         tourUpdateDataStruct tourUpdateData;
         tourDataStruct tourData;
-        bool isTour = false; //Tracks if a tour is in progress
 
     public:
         char* stringOut = strdup("Hello. I am your museum guide robot."); //String storage to be output on the GUI
@@ -76,7 +76,7 @@ class logic_qml : public QObject{
         Q_INVOKABLE void callHelp();
         Q_INVOKABLE void doTour(int tourID);
         Q_INVOKABLE void emergencyStop();
-        Q_INVOKABLE void giveInfo();
+        Q_INVOKABLE int giveInfo();
         Q_INVOKABLE void giveInfoAbout();
         Q_INVOKABLE void goNextTourPoint();
         Q_INVOKABLE void resumeMoving();
@@ -91,8 +91,12 @@ class logic_qml : public QObject{
         Q_INVOKABLE QString speakTour();
         Q_INVOKABLE QString getTourName(int tourID);
 
-        static void *doTourWork(void *tourDataIn);
-        static void *goNextTourPointWork(void *tourDataIn);
+        //static void *doTourWork(void *tourDataIn);
+        //static void *goNextTourPointWork(void *tourDataIn);
+        //static void *stopTourWork(void *tourDataIn);
+        //static void *tourUpdateWork(void *tourUpdateDataIn);
+        static void *doTourWork(void);
+        void goNextTourPointWork(void);
         static void *stopTourWork(void *tourDataIn);
         static void *tourUpdateWork(void *tourUpdateDataIn);
 };
