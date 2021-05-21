@@ -48,9 +48,7 @@ class logic_qml : public QObject{
     Q_OBJECT
     private:
         proximity* proximity_logic; ///Commented out for frontend testings
-        qr_Code qrcode;//instance of QR scanning class ///Commented out for frontend testings
-        cv::Mat frame;//Instance of image object ///Commented out for frontend testings
-        Waypoint *tour;//Instance of tour array pointer ///Commented out for frontend testings
+        cv::Videocapture* vCap;
 
         struct tourUpdateDataStruct{
             volatile int tourConfirms; //Marker for UI update when modifying tours
@@ -63,6 +61,9 @@ class logic_qml : public QObject{
             int num_waypoints; //Number of waypoints that are in the loaded tour  ///set to 10 for test purposes, set to 0
             int totalTourCount; //Count of total tours
             bool isTour = false; //Tracks if a tour is in progress
+            qr_Code qrcode;//instance of QR scanning class ///Commented out for frontend testings
+            cv::Mat frame;//Instance of image object ///Commented out for frontend testings
+            Waypoint *tour;//Instance of tour array pointer ///Commented out for frontend testings
         };
 
         tourUpdateDataStruct tourUpdateData;
