@@ -37,8 +37,8 @@ static float posx = 0.0f, posy = 0.0f;
 static void (*on_error)(int);
 
 static timer_t ticker;
-struct sigevent tickevt;
-struct itimerspec tickspec = { .it_interval = { .tv_sec = 0, .tv_nsec = SAMPLE_TIME_NS },
+static struct sigevent tickevt;
+static struct itimerspec tickspec = { .it_interval = { .tv_sec = 0, .tv_nsec = SAMPLE_TIME_NS },
                                .it_value = { .tv_sec = 0, .tv_nsec = 500000000 }};
 
 static int mag_read_indir(unsigned);

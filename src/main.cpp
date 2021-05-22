@@ -42,7 +42,7 @@ int main(int argc, char ** argv) { //Updated from RPi05041258
     QGuiApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
-    engine.rootContext()->setContextProperty("loigc_qml",new logic_qml);
+    engine.rootContext()->setContextProperty("logic_qml",new logic_qml);
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {

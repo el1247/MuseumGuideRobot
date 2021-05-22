@@ -14,6 +14,7 @@ HEADERS += \
         #include/logic.hpp \
         include/logic_qml.h \
         include/MadgwickAHRS.h \
+        include/mapstruct.h \
         include/movement.h \
         include/nav.h \
         include/proximity.h \
@@ -23,6 +24,8 @@ HEADERS += \
 
 SOURCES += \
         src/imu.c \
+        #src/filereader.c \
+        src/filereader.cpp \
         #src/logic.cpp \
         src/logic_qml.cpp \
         src/MadgwickAHRS.c \
@@ -59,8 +62,8 @@ LIBS += \
     -lopencv_core \
     -lopencv_highgui \
     -lopencv_imgproc \
-    #-lsndfile \
-    #-lao \
+    -lsndfile \
+    -lao \
     -lopencv_videoio
 
 INCLUDEPATH += \

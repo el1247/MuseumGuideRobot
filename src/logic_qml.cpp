@@ -48,6 +48,7 @@ logic_qml::logic_qml(){ //Initialiser
         }
         closedir(dr); //closes directory
     }
+    std::cout << "Logic_qml init finished" << std::endl;
 }
 
 
@@ -165,7 +166,7 @@ void logic_qml::giveInfoAbout(){
 
 
 void logic_qml::goNextTourPoint(){ 
-    nav_set_travel(tourData.tour[tourData.current_location].dx, tourData.tour[tourData.current_location].dy, &logic_qml::goNextTourPointWork);
+    //nav_set_travel(tourData.tour[tourData.current_location].dx, tourData.tour[tourData.current_location].dy, &logic_qml::goNextTourPointWork);
 }
 
 
@@ -207,7 +208,7 @@ void logic_qml::goNextTourPointWork(void){ //Moves the robot to the next tour po
             error_x = 0.1*tourData.tour[tourData.current_location].dx_qr;//Permissable errors in the x and y deviations
             error_y = 0.1*tourData.tour[tourData.current_location].dy_qr;
             qr_data = std::stoi(tourData.qrcode.data);
-            if(tourData.qr_data == tourData.tour[tourData.current_location].data){//Checking if the QR code is correct and at correct coordinates
+            if(qr_data == tourData.tour[tourData.current_location].data){//Checking if the QR code is correct and at correct coordinates
                 if((tourData.tour[tourData.current_location].dx_qr + error_x) > tourData.qrcode.dx && tourData.qrcode.dx > (tourData.tour[tourData.current_location].dx_qr - error_x)){//TODO - make a robot move a bit if not at correct coordinates
                     if((tourData.tour[tourData.current_location].dy_qr + error_y) > tourData.qrcode.dy && tourData.qrcode.dy > (tourData.tour[tourData.current_location].dy_qr - error_y)){
                         confirmer = 1;//Destination reached

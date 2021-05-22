@@ -75,7 +75,7 @@ class logic_qml : public QObject{
         logic_qml(); //Initialiser
         static void proxdetection(int gpio, int level, uint32_t tick);
         Q_INVOKABLE void callHelp();
-        Q_INVOKABLE void doTour(int tourID);
+        //Q_INVOKABLE void doTour(int tourID);
         Q_INVOKABLE void emergencyStop();
         Q_INVOKABLE int giveInfo();
         Q_INVOKABLE void giveInfoAbout();

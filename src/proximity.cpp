@@ -220,7 +220,7 @@ proximity::~proximity(){
 	if (i2cClose(prox_i2c)) std::cerr << "Error closing i2c write connection" << std::endl;
 }
 
-#if PROX_STANDALONE
+#if 0 //PROX_STANDALONE
 void proxdetection(int gpio, int level, uint32_t tick){ ///TODO - test and decide upon further logic
     ///Nav pause?
     std::cout << "Interrupt called" << std::endl;

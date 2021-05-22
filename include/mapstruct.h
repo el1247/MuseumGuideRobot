@@ -27,15 +27,15 @@ typedef struct{
     char *sound_name = NULL; //"N/A" for no sound at the location
 } Waypoint;
 
-int read_csv(Waypoint **result);
+extern int read_csv(Waypoint **result);
 
-int write_csv();
+extern int write_csv();
 
-int update_csv();
+extern int update_csv();
 
-int delete_csv();
+extern int delete_csv();
 
-int dev_read_csv(Waypoint **result, char *tour_name);
+extern int dev_read_csv(Waypoint **result, char *tour_name);
     
 #ifdef __cplusplus
 }

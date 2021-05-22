@@ -14,11 +14,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <fstream>
-#include <iostream>
-#include <vector>
+//#include <fstream>
+//#include <iostream>
+//#include <vector>
 #include <string.h>
-#include <sstream>
+//#include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
 #include "mapstruct.h"
@@ -285,7 +285,7 @@ int update_csv(){
 		while(confirmer_2 == 0){
 			printf("Does a QR code exist at this location?:\n");
 			scanf("%d", &qr_update);
-			if(qr == 1){
+            if(qr_update == 1){
 				printf("Enter the new value of dx_qr:\n");
 				scanf("%f", &dx_qr_update);
 
@@ -299,7 +299,7 @@ int update_csv(){
 				scanf("%d", &data_update);
 				confirmer_2 = 1;
 			}
-			else if(qr == 0){//Placeholders in case there is no QR code at location
+            else if(qr_update == 0){//Placeholders in case there is no QR code at location
 				dx_qr_update = 0;
 				dy_qr_update = 0;
 				face_update = 0;
