@@ -44,14 +44,16 @@ enum errorcode {
 class proximity{
 	private:
 		int prox_i2c; //Stores the handle for the i2c connections
-		errorcode error = noerror; //Record of any errors
+		
 		uint16_t ALS_thresh_low, ALS_thresh_high; //Stores the latest ALS threshold limits
 		uint16_t PS_thresh_low, PS_thresh_high; //Stores the latest PS threshold limits
 
-		int writeMSB_Prox(uint8_t reg, uint8_t MSB);
-		int writeLSB_Prox(uint8_t reg, uint8_t LSB);
+		int writeMSB_Prox(uint16_t reg, uint8_t MSB);
+		int writeLSB_Prox(uint16_t reg, uint8_t LSB);
 
 	public:
+		errorcode error = noerror; //Record of any errors
+	
 		uint8_t interruptpin, interruptmode; //interrupt gpio number and tracker if interrupts are enabled
 		uint16_t ALSval, PSval; //ALS value and PS value
 

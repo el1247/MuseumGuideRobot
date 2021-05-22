@@ -6,6 +6,7 @@ CFLAGS += -pthread
 CXXFLAGS ?= $(CFLAGS)
 INCLUDES = -Iinclude
 LIBS = -lpigpio -lrt -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_videoio -lzbar -lao -lsndfile -ldl -lm
+LIBS_nocv = -lpigpio -lrt -lzbar -lao -lsndfile -ldl -lm
 
 EXE = tpee4g8mgr
 VERSION = 0.0.1
@@ -40,6 +41,9 @@ qr-standalone : qr_module.cpp
 
 file-standalone : filereader.c
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(LDFLAGS) -DFILEREADER_STANDALONE -o $@ $< $(LIBS) 
+
+prox-standalone : proximity.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(LDFLAGS) -DPROX_STANDALONE -o $@ $< $(LIBS_nocv)
 
 clean:
 	-rm -rf build/* $(EXE)
