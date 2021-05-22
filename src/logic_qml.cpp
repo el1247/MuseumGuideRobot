@@ -146,11 +146,11 @@ void logic_qml::emergencyStop(){ //Stops robot from moving. Awaits robot to cont
 int logic_qml::giveInfo(){///TODO - Need to fix/test this
     //Checks current location internally
     //call audio out module with this input
-    if (tour[tourData.current_location].sound_name == "N/A"){
+    if (tourData.tour[tourData.current_location].sound_name == "N/A"){
         stringOut = strdup("No information available for this point"); ///Better output available? This will be printed to GUI
         return 0; //indicates no sound file at location
     } else {
-        sndcon(tour[tourData.current_location].sound_name);///TODO - check this
+        sndcon(tourData.tour[tourData.current_location].sound_name);///TODO - check this
         stringOut = strdup("Giving information"); ///Better output available? This will be printed to GUI
         return 1; //returns 1 to indicate there was information to provide to user
     }
@@ -165,7 +165,7 @@ void logic_qml::giveInfoAbout(){
 
 
 void logic_qml::goNextTourPoint(){ 
-    nav_set_travel(tour[tourData.current_location].dx, tour[tourData.current_location].dy, &logic_qml::goNextTourPointWork);
+    nav_set_travel(tourData.tour[tourData.current_location].dx, tourData.tour[tourData.current_location].dy, &logic_qml::goNextTourPointWork);
 }
 
 
@@ -198,18 +198,18 @@ void logic_qml::goNextTourPointWork(void){ //Moves the robot to the next tour po
         }
     #endif
     #if 1
-    cap.read(tourData.frame);
+    tourData.vCap->read(tourData.frame);
     if (tourData.frame.empty()){//In case camera doesn't work
         //cerr<<"ERROR! Blank frame grabbed!\n";
     }else if(tourData.tour[tourData.current_location].qr == 1){//Checking the QR location if QR exists at the location
         while(confirmer == 0){
-            decode(frame, qrcode);//Reading the image and getting the coordinates 
+            decode(tourData.frame, tourData.qrcode);//Reading the image and getting the coordinates
             error_x = 0.1*tourData.tour[tourData.current_location].dx_qr;//Permissable errors in the x and y deviations
             error_y = 0.1*tourData.tour[tourData.current_location].dy_qr;
             qr_data = std::stoi(tourData.qrcode.data);
             if(tourData.qr_data == tourData.tour[tourData.current_location].data){//Checking if the QR code is correct and at correct coordinates
-                if((tourData.tour[tourData.current_location].dx_qr + error_x) > qrcode.dx && qrcode.dx > (tourData.tour[tourData.current_location].dx_qr - error_x)){//TODO - make a robot move a bit if not at correct coordinates
-                    if((tourData.tour[tourData.current_location].dy_qr + error_y) > qrcode.dy && qrcode.dy > (tourData.tour[tourData.current_location].dy_qr - error_y)){
+                if((tourData.tour[tourData.current_location].dx_qr + error_x) > tourData.qrcode.dx && tourData.qrcode.dx > (tourData.tour[tourData.current_location].dx_qr - error_x)){//TODO - make a robot move a bit if not at correct coordinates
+                    if((tourData.tour[tourData.current_location].dy_qr + error_y) > tourData.qrcode.dy && tourData.qrcode.dy > (tourData.tour[tourData.current_location].dy_qr - error_y)){
                         confirmer = 1;//Destination reached
                         //TODO - Add stopping mechanisms
                     }
@@ -230,7 +230,7 @@ void logic_qml::resumeMoving(){ //Resumes the movement of the robot after emerge
 
 void logic_qml::startTour(int tourID){ //Loads tour data, opens camera
     tourData.currentTourID = tourID;
-    tourData.num_waypoints = dev_read_csv(&tour, tourData.tourList[tourID]); //Tour coordinates in 'tour' array
+    tourData.num_waypoints = dev_read_csv(&tourData.tour, tourData.tourList[tourID]); //Tour coordinates in 'tour' array
 
     #if 0
     cv::VideoCapture cap(0);
@@ -243,14 +243,14 @@ void logic_qml::startTour(int tourID){ //Loads tour data, opens camera
         cap.set(CV_CAP_PROP_FPS, 10);
     }
     #endif
-    vCap = new cap(0);
+    tourData.vCap = new cv::VideoCapture(0);
 
-    if(!vCap.isOpened()){//Error call in case camera does not open
+    if(!tourData.vCap->isOpened()){//Error call in case camera does not open
         //cerr<< "ERROR! Unable to open Camera\n";
     }else {
-        vCap.set(CV_CAP_PROP_FRAME_WIDTH, 2592);
-        vCap.set(CV_CAP_PROP_FRAME_HEIGHT, 1944);
-        vCap.set(CV_CAP_PROP_FPS, 10);
+        tourData.vCap->set(CV_CAP_PROP_FRAME_WIDTH, 2592);
+        tourData.vCap->set(CV_CAP_PROP_FRAME_HEIGHT, 1944);
+        tourData.vCap->set(CV_CAP_PROP_FPS, 10);
     }
 
     tourData.current_location = 0; //Ensures current location is set to start of tour
@@ -287,24 +287,24 @@ void *logic_qml::stopTourWork(void *tourDataIn){ //Stops the tour and returns th
 
     //get/calculate route, nav module
     if(tourDataStore->current_location > tourDataStore->num_waypoints/2){
-        for(int i = tourDataStore->current_location; i < tourDataStore.num_waypoints; i++){
+        for(int i = tourDataStore->current_location; i < tourDataStore->num_waypoints; i++){
             //TODO - move robot to tour point indicated by tour[i].dx and tour[i].dy
             //TODO - wait to reach waypoint
-            cap.read(frame);
-            if (frame.empty()){//In case camera doesn't work
+            cap.read(tourDataStore->frame);
+            if (tourDataStore->frame.empty()){//In case camera doesn't work
                 //cerr<<"ERROR! Blank frame grabbed!\n";
                 break;
             }
 
-            if(tour[i].qr == 1){//Checking the QR location if QR exists at the location
+            if(tourDataStore->tour[i].qr == 1){//Checking the QR location if QR exists at the location
                 while(confirmer == 0){
-                    decode(frame, qrcode);//Reading the image and getting the coordinates 
-                    error_x = 0.1*tour[i].dx_qr;//Permissible errors for the x and y coordinates
-                    error_y = 0.1*tour[i].dy_qr;
-                    qr_data = stoi(qrcode.data);
-                    if(qr_data == tour[i].data){//Checking whether QR code data is correct
-                        if((tour[i].dx_qr + error_x) > qrcode.dx && qrcode.dx > (tour[i].dx_qr - error_x)){
-                            if((tour[i].dy_qr + error_y) > qrcode.dy && qrcode.dy > (tour[i].dy_qr - error_y)){
+                    decode(tourDataStore->frame, tourDataStore->qrcode);//Reading the image and getting the coordinates
+                    error_x = 0.1*tourDataStore->tour[i].dx_qr;//Permissible errors for the x and y coordinates
+                    error_y = 0.1*tourDataStore->tour[i].dy_qr;
+                    qr_data = stoi(tourDataStore->qrcode.data);
+                    if(qr_data == tourDataStore->tour[i].data){//Checking whether QR code data is correct
+                        if((tourDataStore->tour[i].dx_qr + error_x) > tourDataStore->qrcode.dx && tourDataStore->qrcode.dx > (tourDataStore->tour[i].dx_qr - error_x)){
+                            if((tourDataStore->tour[i].dy_qr + error_y) > tourDataStore->qrcode.dy && tourDataStore->qrcode.dy > (tourDataStore->tour[i].dy_qr - error_y)){
                                 confirmer = 1;//Destination reached
                                 //TODO - Add stopping mechanisms
                             }
@@ -314,24 +314,24 @@ void *logic_qml::stopTourWork(void *tourDataIn){ //Stops the tour and returns th
             }
         }
     } else {
-        for(int i = tourDataStore.current_location; i >= 0; --i){
+        for(int i = tourDataStore->current_location; i >= 0; --i){
             //TODO - move robot to tour point indicated by tour[i].dx and tour[i].dy
             //TODO - wait to reach waypoint
-            cap.read(frame);
-            if (frame.empty()){//In case camera doesn't work
-                cerr<<"ERROR! Blank frame grabbed!\n";
+            cap.read(tourDataStore->frame);
+            if (tourDataStore->frame.empty()){//In case camera doesn't work
+                //cerr<<"ERROR! Blank frame grabbed!\n";
                 break;
             }
 
-            if(tour[i].qr == 1){//Checking the QR location if QR exists at the location
+            if(tourDataStore->tour[i].qr == 1){//Checking the QR location if QR exists at the location
                 while(confirmer == 0){
-                    decode(frame, qrcode);//Reading the image and getting the coordinates 
-                    error_x = 0.1*tour[i].dx_qr;
-                    error_y = 0.1*tour[i].dy_qr;
-                    qr_data = stoi(qrcode.data);
-                    if(qr_data == tour[i].data){
-                        if((tour[i].dx_qr + error_x) > qrcode.dx && qrcode.dx > (tour[i].dx_qr - error_x)){
-                            if((tour[i].dy_qr + error_y) > qrcode.dy && qrcode.dy > (tour[i].dy_qr - error_y)){
+                    decode(tourDataStore->frame, tourDataStore->qrcode);//Reading the image and getting the coordinates
+                    error_x = 0.1*tourDataStore->tour[i].dx_qr;
+                    error_y = 0.1*tourDataStore->tour[i].dy_qr;
+                    qr_data = stoi(tourDataStore->qrcode.data);
+                    if(qr_data == tourDataStore->tour[i].data){
+                        if((tourDataStore->tour[i].dx_qr + error_x) > tourDataStore->qrcode.dx && tourDataStore->qrcode.dx > (tourDataStore->tour[i].dx_qr - error_x)){
+                            if((tourDataStore->tour[i].dy_qr + error_y) > tourDataStore->qrcode.dy && tourDataStore->qrcode.dy > (tourDataStore->tour[i].dy_qr - error_y)){
                                 confirmer = 1;//Destination reached
                                 //TODO - Add stopping mechanisms
                             }

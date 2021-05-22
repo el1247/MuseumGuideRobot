@@ -48,7 +48,6 @@ class logic_qml : public QObject{
     Q_OBJECT
     private:
         proximity* proximity_logic; ///Commented out for frontend testings
-        cv::Videocapture* vCap;
 
         struct tourUpdateDataStruct{
             volatile int tourConfirms; //Marker for UI update when modifying tours
@@ -64,6 +63,7 @@ class logic_qml : public QObject{
             qr_Code qrcode;//instance of QR scanning class ///Commented out for frontend testings
             cv::Mat frame;//Instance of image object ///Commented out for frontend testings
             Waypoint *tour;//Instance of tour array pointer ///Commented out for frontend testings
+            cv::VideoCapture* vCap;
         };
 
         tourUpdateDataStruct tourUpdateData;
