@@ -27,7 +27,11 @@
 #define EMPTY_WAY "No waypoints found\n"
 
 int dev_read_csv(Waypoint **result, char *tour_name){
-	FILE* fp = fopen(tour_name, "r+");
+    char tour_name_full[260];
+    strcpy(tour_name_full, tour_name);
+    strcat(tour_name_full, ".csv");
+
+    FILE* fp = fopen(tour_name_full, "r+");
 	int struct_size;
 
 	if (!fp){/*Error call in case file does not open*/

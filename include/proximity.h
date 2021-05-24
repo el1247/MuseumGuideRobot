@@ -35,6 +35,7 @@ enum errorcode {
 	ALSread_fail,
 	ALSmaxvalue_exceed_fail,
 	PSread_fail,
+    PSmaxvalue_exceed_fail,
 	MSBwrite_read_fail,
 	MSBwrite_write_fail,
 	LSBwrite_read_fail,

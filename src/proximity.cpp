@@ -51,8 +51,9 @@
 
 //Constants
 #define ALS_SENS 0.024 //based on selected integration time, check table 14 of data sheet
-#define ALS_MAX 1573 //based on selected integration time, check table 14 of data sheet
-
+#define ALS_MAX 1573 // units lux, based on selected integration time, check table 14 of data sheet
+#define PS_SENS 0.02288
+#define PS_MAX 1500 //units cm
 
 proximity::proximity(uint8_t inputpin, uint16_t ALS_thresh_low_ini, uint16_t ALS_thresh_high_ini, uint16_t PS_thresh_low_ini, uint16_t PS_thresh_high_ini){
 	//Initialises GPIO libary and establishes I2C connection to proximity sensor
@@ -154,8 +155,8 @@ int proximity::measureALS(){
 		return 1;
 	}
 	ALSval *= ALS_SENS;
-	if  (ALSval < ALS_MAX) {
-		std::cerr << "ALS value exceeded stated maximum lux" << std::endl;
+    if  (ALSval > ALS_MAX) {
+        std::cerr << "ALS value exceeded stated maximum lux" << std::endl;
 		error = ALSmaxvalue_exceed_fail; //marks failure with ALS multiplication
 		return 1;
 	}
@@ -171,7 +172,13 @@ int proximity::measurePS(){
 		error = PSread_fail; //marks failure to read PS DATA 
 		return 1;
 	}
-	return 0;
+    PSval *= PS_SENS;
+    if  (PSval > PS_MAX) {
+        std::cerr << "PS value exceeded stated distance" << std::endl;
+        error = PSmaxvalue_exceed_fail; //marks failure with PS multiplication
+        return 1;
+    }
+    return 0;
 }
 
 
@@ -196,11 +203,11 @@ int proximity::writeLSB_Prox(uint16_t reg, uint8_t LSB){
 	int16_t temp;
 	if ((temp = i2cReadWordData(prox_i2c, reg)) < 0){
 		error = LSBwrite_read_fail;
-		std::cout << "prox_i2c: " << prox_i2c << std::endl;
-		std::cout << "Reg: " << reg << std::endl;
-		std::cout << "PROX_ALS_CONFIG: " << PROX_ALS_CONF << std::endl;
-		std::cout << "Temp: " << temp << std::endl;
-		std::cout << "LSB read fail" << std::endl;
+        //std::cout << "prox_i2c: " << prox_i2c << std::endl;
+        //std::cout << "Reg: " << reg << std::endl;
+        //std::cout << "PROX_ALS_CONFIG: " << PROX_ALS_CONF << std::endl;
+        //std::cout << "Temp: " << temp << std::endl;
+        //std::cout << "LSB read fail" << std::endl;
 		return 1;
 	}
 	uint8_t MSB = temp >> 8;
@@ -217,7 +224,6 @@ int proximity::writeLSB_Prox(uint16_t reg, uint8_t LSB){
 proximity::~proximity(){
 	//Closes GPIO libary and I2C connection to proximity sensor
 	if (i2cClose(prox_i2c)) std::cerr << "Error closing i2c read connection" << std::endl;
-	if (i2cClose(prox_i2c)) std::cerr << "Error closing i2c write connection" << std::endl;
 }
 
 #if 0 //PROX_STANDALONE
