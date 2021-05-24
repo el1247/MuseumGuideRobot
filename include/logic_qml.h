@@ -54,7 +54,7 @@ class logic_qml : public QObject{
             char *message;
         };
         struct tourDataStruct{
-            char *tourList[3]; //List of tours
+            char *tourList[10]; //List of tours
             int current_location; //Current point in the tour ///set to 7 for test purposes, set to 0
             int currentTourID; //TourID passed from GUI
             int num_waypoints; //Number of waypoints that are in the loaded tour  ///set to 10 for test purposes, set to 0
@@ -73,7 +73,7 @@ class logic_qml : public QObject{
         char* stringOut = strdup("Hello. I am your museum guide robot."); //String storage to be output on the GUI
 
         logic_qml(); //Initialiser
-        static void proxdetection();
+        static void proxdetection(int gpio, int level, uint32_t tick);
         Q_INVOKABLE void callHelp();
         Q_INVOKABLE void emergencyStop();
         Q_INVOKABLE int giveInfo();
@@ -95,6 +95,7 @@ class logic_qml : public QObject{
         static void *goNextTourPointWork(void *tourDataIn);
         static void *stopTourWork(void *tourDataIn);
         static void *tourUpdateWork(void *tourUpdateDataIn);
+        static void *tourWriteWork(void *tourUpdateDataIn);
 };
 extern void nav_callback();
 #endif

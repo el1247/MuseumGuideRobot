@@ -62,7 +62,7 @@ class proximity{
 		~proximity(); //Destructor
 		int configALSthresh(uint16_t ALSint_thresh_low, uint16_t ALSint_thresh_high);
 		int configPSthresh(uint16_t PSint_thresh_low, uint16_t PSint_thresh_high);
-		int configinterrupt(void(*methodcall)(int, int, uint32_t));
+        int configinterrupt(void(*methodcall)(int, int, uint32_t));
 		int measureALS(); //Method for measuring ALS value
 		int measurePS(); //Method for measuring PS value
 };
