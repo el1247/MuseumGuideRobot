@@ -9,6 +9,7 @@ Window {
     color: "#52473b" //Previously "#000000"
     title: qsTr("Museum Guide Robot GUI")
 
+    property int menuheight : 280
     property int buttonspacingh : 120 //Horizontal spacing of buttons 120
     property int buttonspacingt : 20 //Spacing of buttons from top 20
     property int buttonspacingb : 40 //Spacing of buttons from bottom 50
@@ -31,7 +32,7 @@ Window {
 
     Rectangle {
         id: logorectangle
-        width: 125
+        width: 150
         height: 30
         color: "#ffffff"
         radius: 10
@@ -193,7 +194,7 @@ Window {
             x: 65
             y: 34
             anchors.fill: parent
-            text: isadmin ? qsTr("Shut Down") : qsTr("Report error")
+            text: isadmin ? qsTr("Shutdown") : qsTr("Report error")
             anchors.verticalCenter: parent.verticalCenter
             font.pixelSize: window.bannerfontsize
             horizontalAlignment: Text.AlignHCenter
@@ -262,7 +263,7 @@ Window {
             x: 0
             y: 140
             width: parent.width
-            height: 280
+            height: menuheight
             color: window.backgroundcolour
             border.width: 0
             anchors.bottom: parent.bottom
@@ -418,7 +419,7 @@ Window {
         Rectangle {
             id: starttourbuttonsrectangle
             width: parent.width
-            height: 280
+            height: menuheight
             color: window.backgroundcolour
             border.width: 0
             anchors.bottom: parent.bottom
@@ -589,7 +590,7 @@ Window {
             x: 0
             y: 140
             width: parent.width
-            height: 280
+            height: menuheight
             visible: false
             color: window.backgroundcolour
             border.width: 0
@@ -628,7 +629,7 @@ Window {
                     visible: moreinfobuttonrectangle.givingmoreinfo ? false : true
                     onClicked:{
                         moreinfobuttonrectangle.givingmoreinfo = true; //disables button from being pressed again
-                        logic_qml.giveInfo(logic_qml.getlocation());
+                        logic_qml.giveInfo();
                         textdisplaytext.text = qsTr(logic_qml.speak());
                         moreinfobuttonrectangle.givingmoreinfo = false; //enables button being pressed again
                     }
@@ -705,6 +706,8 @@ Window {
                             }
                         } else {
                             textdisplaytext.text = qsTr("Finishing tour, thank you for visiting us today!")
+                            nexttourpointbuttontext.text =  qsTr("Next tour point");
+                            nexttourpointbuttonrectangle.color = window.buttoncolourbase;
                             stoptour();
                         }
 
@@ -790,13 +793,12 @@ Window {
 
         }
 
-
         Rectangle {
             id: resumemovingrectangle
             x: 0
             y: 140
             width: parent.width
-            height: 280
+            height: menuheight
             visible: false
             color: window.backgroundcolour
             border.width: 0
@@ -859,7 +861,7 @@ Window {
             x: 0
             y: 140
             width: parent.width
-            height: 280
+            height: menuheight
             visible: false
             color: window.backgroundcolour
             border.width: 0
@@ -991,7 +993,7 @@ Window {
             x: 0
             y: 140
             width: parent.width
-            height: 280
+            height: menuheight
             visible: false
             color: window.backgroundcolour
             border.width: 0
@@ -1120,7 +1122,7 @@ Window {
             x: 0
             y: 140
             width: parent.width
-            height: 280
+            height: menuheight
             visible: false
             color: window.backgroundcolour
             border.width: 0
@@ -1269,7 +1271,7 @@ Window {
             x: 0
             y: 140
             width: parent.width
-            height: 280
+            height: menuheight
             visible: false
             color: window.backgroundcolour
             border.width: 0
@@ -1379,7 +1381,24 @@ Window {
                     id: admintourlistmouseArea
                     anchors.fill: parent
                     onClicked: {
-                        textdisplaytext.text = qsTr("The stored tours are : " + tournames[0] + ", " + tournames[1] + ", " + tournames[2]);
+                        switch (window.totalTourCount){
+                        case(0) :
+                            textdisplaytext.text = qsTr("There are no stored tours");
+                            break;
+                        case(1) :
+                            textdisplaytext.text = qsTr("There is 1 stored tour: " + tournames[0]);
+                            break;
+                        case(2):
+                            textdisplaytext.text = qsTr("There are 2 stored tours: " + tournames[0] + " and " + tournames[1]);
+                            break;
+                        case(3):
+                            textdisplaytext.text = qsTr("There are 3 stored tours: " + tournames[0] + ", " + tournames[1] + " and " + tournames[2]);
+                            break;
+                        default:
+                            textdisplaytext.text = qsTr("There are "+ window.totalTourCount +" stored tours, of which: " + tournames[0] + ", " + tournames[1] + ", " + tournames[2] + " are available");
+                        }
+
+
                     }
                 }
             }
@@ -1465,6 +1484,7 @@ Window {
             textdisplaytext.text = qsTr("Unable to identify current mode");
             mainbuttons.rectangle.visible = true;
             window.mode = 0;
+            logic_qml.stopTour();
             break;
         }
     }

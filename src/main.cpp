@@ -26,6 +26,7 @@
 
 int main(int argc, char ** argv) { //Updated from RPi05041258
     /* Initialise pigpio library */
+    gpioCfgSetInternals(1<<10);
     if(gpioInitialise() < 0) return 1;
     atexit(gpioTerminate);
     
