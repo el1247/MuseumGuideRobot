@@ -27,7 +27,7 @@ logic_qml::logic_qml(){ //Initialiser
     tourData.totalTourCount = 0;
     tourData.currentTourID = 0;
 
-    proximity_logic = new proximity(1,25,1537,30,1500); ///Sample values currently //Input pin. ALS low threshold, ALS high threshold, PS low threshold, PS high threshold
+    proximity_logic = new proximity(5,25,1537,30,1500); ///Sample values currently //Input pin. ALS low threshold, ALS high threshold, PS low threshold, PS high threshold
     if(proximity_logic->interruptmode){
         if (proximity_logic->configinterrupt(proxdetection)) goto proxintfail;
     }else{
@@ -52,22 +52,17 @@ logic_qml::logic_qml(){ //Initialiser
 }
 
 
-void logic_qml::proxdetection(int gpio, int level, uint32_t tick){ ///TODO - test and decide upon further logic
-    ///Nav pause?
-    m_stop();
-    //Further stopping logic
-    //Reverse robot slightly?
-    //Check sensors until it is safe, or wait a certain time period
-    //If robot has steered too near an object 
-    //resumeMoving(); //Commented for testing
-    //stringOut = "Object detected, stopping movement";
-    //UI alertable?
+void logic_qml::proxdetection(){ ///TODO - test and decide upon further logic
+    //nav_cancel();
+    std::cout << "Object detected, stopping movement" << std::endl;
+    sleep(1);
+    //nav_resume();
 }
 
 
 void logic_qml::callHelp() { ///TODO - write
     stringOut = strdup("Kindly go fetch a member of staff from the help desk. I will be waiting here."); //configures string to be printed to GUI
-    nav_cancel(); ///Cancel or pause? should call help pause the robot from moving?
+    //nav_cancel();
 }
 
 static int waiting = 0;
@@ -76,7 +71,7 @@ static int dtwi = 0;
 
 
 void logic_qml::emergencyStop(){ //Stops robot from moving. Awaits robot to continue moving via UI prompt calling resumeMoving
-    nav_cancel(); ///Cancel or pause?
+    //nav_cancel(); ///Cancel
 }
 
 
@@ -152,7 +147,7 @@ void logic_qml::resumeMoving(){ //Resumes the movement of the robot after emerge
 
 
 void logic_qml::startTour(int tourID){ //Loads tour data, opens camera
-    nav_cancel(); //Stops call current movements
+    //nav_cancel(); //Stops call current movements
     tourData.currentTourID = tourID;
     std::cout << "Tour selected: "<< tourData.tourList[tourID] << std::endl;
     tourData.num_waypoints = dev_read_csv(&tourData.tour, tourData.tourList[tourID]); //Tour coordinates in 'tour' array
@@ -183,7 +178,6 @@ void *logic_qml::stopTourWork(void *tourDataIn){ //Stops the tour and returns th
 
     tourDataStore->isTour = false;
 
-    //calculate route to go home, nav module
     int confirmer = 0;
     int info, qr_data;
     float error_x, error_y;

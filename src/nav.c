@@ -131,6 +131,10 @@ void nav_cancel(void) {
     m_stop();
 }
 
+void nav_resume(void){
+    state = NAV_TRAVEL;
+}
+
 void nav_fini(void) {
     timer_delete(ticker);
     nav_cancel();

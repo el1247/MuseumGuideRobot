@@ -25,6 +25,7 @@ extern void nav_set_turn(float hdg, void (*callback)(void));
 extern void nav_set_travel(float x, float y, void (*callback)(void));
 extern void nav_fini(void);
 extern void nav_cancel(void);
+extern void nav_resume(void);
 
 #ifdef __cplusplus
 }

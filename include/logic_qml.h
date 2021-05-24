@@ -73,7 +73,7 @@ class logic_qml : public QObject{
         char* stringOut = strdup("Hello. I am your museum guide robot."); //String storage to be output on the GUI
 
         logic_qml(); //Initialiser
-        static void proxdetection(int gpio, int level, uint32_t tick);
+        static void proxdetection();
         Q_INVOKABLE void callHelp();
         Q_INVOKABLE void emergencyStop();
         Q_INVOKABLE int giveInfo();
