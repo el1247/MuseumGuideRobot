@@ -20,7 +20,6 @@
 
 logic_qml::logic_qml(){ //Initialiser
     tourUpdateData.tourConfirms = 1;
-    //sprintf(tourUpdateData.message, "Message");
 
     tourData.current_location = 0;
     tourData.num_waypoints = 0;
@@ -32,7 +31,7 @@ logic_qml::logic_qml(){ //Initialiser
         if (proximity_logic->configinterrupt(proxdetection)) goto proxintfail;
     }else{
         proxintfail: std::cout << "Initiating non interruptmethod" << std::endl;
-        //System restart most or polling code
+        //System restart should be called
     }
 
     DIR *dr; //Section scans directory for tours
@@ -64,15 +63,15 @@ logic_qml::logic_qml(){ //Initialiser
 
 
 void logic_qml::proxdetection(int gpio, int level, uint32_t tick){ //Interrupt function to be called by proximity sensor
-    //nav_cancel();
+    nav_cancel();
     std::cout << "Object detected, stopping movement" << std::endl;
     sleep(1);
-    //nav_resume();
+    nav_resume();
 }
 
 
 void logic_qml::callHelp() { //Stops the robot and informs user to fetch a member of staff
-    //nav_cancel();
+    nav_cancel();
     stringOut = strdup("Kindly go fetch a member of staff from the help desk. I will be waiting here."); //configures string to be printed to GUI
 }
 
@@ -82,13 +81,11 @@ static int dtwi = 0;
 
 
 void logic_qml::emergencyStop(){ //Stops robot from moving. Awaits robot to continue moving via UI prompt calling resumeMoving
-    //nav_cancel(); ///Cancel
+    nav_cancel(); 
 }
 
 
 int logic_qml::giveInfo(){//Gives information about tour point
-    //call audio out module with this input
-#if 1
     if (!strncmp(tourData.tour[tourData.current_location].sound_name, "N/A", 3)){
         stringOut = strdup("No information available for this point"); ///Better output available? This will be printed to GUI
         return 0; //indicates no sound file at location
@@ -97,8 +94,6 @@ int logic_qml::giveInfo(){//Gives information about tour point
         sprintf(stringOut, "Information at point %d",tourData.current_location);
         return 1; //returns 1 to indicate there was information to provide to user
     }
-#endif
-    sprintf(stringOut, "Information at point %d", tourData.current_location);
     return 0;
 }
 
@@ -128,13 +123,13 @@ void *logic_qml::goNextTourPointWork(void *tourDataIn){ //Moves the robot to the
     float error_x, error_y;
 
     if (tourDataStore->current_location < tourDataStore->num_waypoints){
-        //nav_set_travel(tourDataStore->tour[tourDataStore->current_location + 1].dx, tourDataStore->tour[tourDataStore->current_location + 1].dy, &nav_callback);
+        nav_set_travel(tourDataStore->tour[tourDataStore->current_location + 1].dx, tourDataStore->tour[tourDataStore->current_location + 1].dy, &nav_callback);
 
         tourDataStore->current_location++; //Updates current_location
 
         tourDataStore->vCap->read(tourDataStore->frame);
         if (tourDataStore->frame.empty()){//In case camera doesn't work
-            //cerr<<"ERROR! Blank frame grabbed!\n";
+            cerr<<"ERROR! Blank frame grabbed!\n";
         }else if(tourDataStore->tour[tourDataStore->current_location].qr == 1){//Checking the QR location if QR exists at the location
             while(confirmer == 0){
                 decode(tourDataStore->frame, tourDataStore->qrcode);//Reading the image and getting the coordinates
@@ -145,12 +140,11 @@ void *logic_qml::goNextTourPointWork(void *tourDataIn){ //Moves the robot to the
                     if((tourDataStore->tour[tourDataStore->current_location].dx_qr + error_x) > tourDataStore->qrcode.dx && tourDataStore->qrcode.dx > (tourDataStore->tour[tourDataStore->current_location].dx_qr - error_x)){//TODO - make a robot move a bit if not at correct coordinates
                         if((tourDataStore->tour[tourDataStore->current_location].dy_qr + error_y) > tourDataStore->qrcode.dy && tourDataStore->qrcode.dy > (tourDataStore->tour[tourDataStore->current_location].dy_qr - error_y)){
                             confirmer = 1;//Destination reached
-                            //m_stop();
+                            m_stop();
                         }
                     }
                 }
             }
-            //Provide information about the tour point if it exists
         }
     }else{
         stopTourWork(tourDataIn);
@@ -159,25 +153,16 @@ void *logic_qml::goNextTourPointWork(void *tourDataIn){ //Moves the robot to the
 
 
 void logic_qml::resumeMoving(){ //Resumes the movement of the robot after emergencyStop is called
-    //nav_resume();
+    nav_resume();
 }
 
 
 void logic_qml::startTour(int tourID){ //Loads tour data, opens camera
-    //nav_cancel(); //Stops call current movements
+    nav_cancel(); //Stops call current movements
+
     tourData.currentTourID = tourID;
     std::cout << "Tour selected: "<< tourData.tourList[tourID] << std::endl;
     tourData.num_waypoints = dev_read_csv(&tourData.tour, tourData.tourList[tourID]); //Tour coordinates in 'tour' array
-
-    tourData.num_waypoints = 5;
-    //tourData.tour[0].qr = 0;
-    tourData.tour[0].sound_name = strdup("N/A");
-    tourData.tour[1].sound_name = strdup("Tourpoint1.wav");
-    tourData.tour[2].sound_name = strdup("tourpoint2.wav");
-    tourData.tour[3].sound_name = strdup("tourpoint3.wav");
-    tourData.tour[4].sound_name = strdup("tourpoint4.wav");
-    tourData.tour[5].sound_name = strdup("tourpoint5.wav");
-
     tourData.current_location = 0; //Ensures current location is set to start of tour
 
     goNextTourPoint(); //Moves the robot to the first tour point
@@ -201,7 +186,7 @@ void *logic_qml::stopTourWork(void *tourDataIn){ //Stops the tour and returns th
 
     if(tourDataStore->current_location > tourDataStore->num_waypoints/2){
         for(int i = tourDataStore->current_location; i < tourDataStore->num_waypoints; i++){
-            //nav_set_travel(tourDataStore->tour[i].dx, tourDataStore->tour[i].dy, &nav_callback);
+            nav_set_travel(tourDataStore->tour[i].dx, tourDataStore->tour[i].dy, &nav_callback);
             //wait for arrival
 
             tourDataStore->vCap->read(tourDataStore->frame);
@@ -220,7 +205,7 @@ void *logic_qml::stopTourWork(void *tourDataIn){ //Stops the tour and returns th
                         if((tourDataStore->tour[i].dx_qr + error_x) > tourDataStore->qrcode.dx && tourDataStore->qrcode.dx > (tourDataStore->tour[i].dx_qr - error_x)){
                             if((tourDataStore->tour[i].dy_qr + error_y) > tourDataStore->qrcode.dy && tourDataStore->qrcode.dy > (tourDataStore->tour[i].dy_qr - error_y)){
                                 confirmer = 1;//Destination reached
-                                //m_stop();
+                                m_stop();
                             }
                         }
                     }
@@ -229,12 +214,12 @@ void *logic_qml::stopTourWork(void *tourDataIn){ //Stops the tour and returns th
         }
     } else {
         for(int i = tourDataStore->current_location; i >= 0; --i){
-            //nav_set_travel(tourDataStore->tour[i].dx, tourDataStore->tour[i].dy, &nav_callback);
+            nav_set_travel(tourDataStore->tour[i].dx, tourDataStore->tour[i].dy, &nav_callback);
             //wait for arrival
 
             tourDataStore->vCap->read(tourDataStore->frame);
             if (tourDataStore->frame.empty()){//In case camera doesn't work
-                //cerr<<"ERROR! Blank frame grabbed!\n";
+                cerr<<"ERROR! Blank frame grabbed!\n";
                 break;
             }
 
@@ -248,7 +233,7 @@ void *logic_qml::stopTourWork(void *tourDataIn){ //Stops the tour and returns th
                         if((tourDataStore->tour[i].dx_qr + error_x) > tourDataStore->qrcode.dx && tourDataStore->qrcode.dx > (tourDataStore->tour[i].dx_qr - error_x)){
                             if((tourDataStore->tour[i].dy_qr + error_y) > tourDataStore->qrcode.dy && tourDataStore->qrcode.dy > (tourDataStore->tour[i].dy_qr - error_y)){
                                 confirmer = 1;//Destination reached
-                                //m_stop();
+                                m_stop();
                             }
                         }
                     }
@@ -277,7 +262,7 @@ void *logic_qml::tourUpdateWork(void *tourUpdateDataIn){ ///TODO: Convert code f
     struct tourUpdateDataStruct *tourUpdateDataStore;
     tourUpdateDataStore = (struct tourUpdateDataStruct *) tourUpdateDataIn;
     while(tourUpdateDataStore->tourConfirms) usleep(50000);
-    //sprintf(tourUpdateDataStore->message, "Enter updated tour name");
+    sprintf(tourUpdateDataStore->message, "Enter updated tour name");
     pthread_exit(NULL);
 }
 
@@ -292,7 +277,7 @@ void *logic_qml::tourWriteWork(void *tourUpdateDataIn){ ///TODO: Convert code fr
     struct tourUpdateDataStruct *tourUpdateDataStore;
     tourUpdateDataStore = (struct tourUpdateDataStruct *) tourUpdateDataIn;
     while(tourUpdateDataStore->tourConfirms) usleep(50000);
-    //sprintf(tourUpdateDataStore->message, "Enter new tour name");
+    sprintf(tourUpdateDataStore->message, "Enter new tour name");
     pthread_exit(NULL);
 }
 
