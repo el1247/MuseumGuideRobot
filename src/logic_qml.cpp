@@ -93,8 +93,8 @@ int logic_qml::giveInfo(){//Gives information about tour point
         stringOut = strdup("No information available for this point"); ///Better output available? This will be printed to GUI
         return 0; //indicates no sound file at location
     } else {
-        //sndcon(tourData.tour[tourData.current_location].sound_name);
-        stringOut = strdup("Giving information"); ///Better output available? This will be printed to GUI
+        sndcon(tourData.tour[tourData.current_location].sound_name);
+        sprintf(stringOut, "Information at point %d",tourData.current_location);
         return 1; //returns 1 to indicate there was information to provide to user
     }
 #endif
@@ -172,11 +172,11 @@ void logic_qml::startTour(int tourID){ //Loads tour data, opens camera
     tourData.num_waypoints = 5;
     //tourData.tour[0].qr = 0;
     tourData.tour[0].sound_name = strdup("N/A");
-    tourData.tour[1].sound_name = strdup("N/A");
-    tourData.tour[2].sound_name = strdup("N/A");
-    tourData.tour[3].sound_name = strdup("N/A");
-    tourData.tour[4].sound_name = strdup("N/A");
-    tourData.tour[5].sound_name = strdup("N/A");
+    tourData.tour[1].sound_name = strdup("Tourpoint1.wav");
+    tourData.tour[2].sound_name = strdup("tourpoint2.wav");
+    tourData.tour[3].sound_name = strdup("tourpoint3.wav");
+    tourData.tour[4].sound_name = strdup("tourpoint4.wav");
+    tourData.tour[5].sound_name = strdup("tourpoint5.wav");
 
     tourData.current_location = 0; //Ensures current location is set to start of tour
 
